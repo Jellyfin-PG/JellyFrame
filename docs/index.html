@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jellyframe - The Sure Foundation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #030305;
+      color: white;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow-x: hidden;
+    }
+    
+    .bg-grid {
+      background-size: 50px 50px;
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      backdrop-filter: blur(12px);
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-8px);
+    }
+
+    .jelly-text-gradient {
+      background: linear-gradient(135deg, #aa5cff 0%, #00a4dc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .jelly-bg-gradient {
+      background: linear-gradient(135deg, #aa5cff 0%, #00a4dc 100%);
+    }
+
+    .jelly-glow {
+      box-shadow: 0 0 30px rgba(170, 92, 255, 0.3);
+      transition: box-shadow 0.3s ease;
+    }
+    
+    .jelly-glow:hover {
+      box-shadow: 0 0 50px rgba(0, 164, 220, 0.5);
+    }
+
+    .svg-glow-jelly {
+      filter: drop-shadow(0 0 15px rgba(170, 92, 255, 0.7));
+    }
+
+    .svg-glow-white {
+      filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    }
+
+    .guideline {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1), transparent);
+    }
+  </style>
+</head>
+<body class="bg-grid antialiased selection:bg-[#aa5cff] selection:text-white">
+
+  <div class="guideline left-12 hidden lg:block"></div>
+  <div class="guideline right-12 hidden lg:block"></div>
+  <div class="guideline left-1/2 -translate-x-1/2 hidden lg:block opacity-50"></div>
+
+  <nav class="relative z-50 flex items-center justify-between px-8 lg:px-24 py-8">
+    <div class="flex items-center gap-3">
+      <svg viewBox="0 0 512 512" class="w-8 h-8" xmlns="http://www.w3.org/2000/svg">
+        <path d="M256 200 L452 300 L256 400 L60 300 Z" fill="white" opacity="0.9" />
+        <g transform="translate(269, 300)">
+          <path d="M28.8,0 L-14.4,-16 L-14.4,16 Z" fill="#aa5cff" />
+        </g>
+      </svg>
+      <span class="text-sm font-black tracking-[0.3em] uppercase">Jellyframe</span>
+    </div>
+    <div class="hidden md:flex gap-12 text-xs font-bold tracking-[0.2em] text-white/50 uppercase">
+      <a href="#" class="hover:text-white transition-colors">Architecture</a>
+      <a href="#" class="hover:text-white transition-colors">Documentation</a>
+      <a href="#" class="hover:text-white transition-colors">Manifesto</a>
+    </div>
+    <button class="px-6 py-2 rounded-full border border-white/20 text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-all">
+      Initialize
+    </button>
+  </nav>
+
+  <main class="relative z-10 flex flex-col items-center justify-center min-h-[80vh] px-6 text-center pt-10">
+    <div class="w-64 h-64 md:w-96 md:h-96 mb-8 relative">
+      <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+        <defs>
+          <linearGradient id="jellyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#aa5cff;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#00a4dc;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <path d="M60 300 V 380 L 256 480 V 400 Z" fill="white" opacity="0.4" />
+        <path d="M452 300 V 380 L 256 480 V 400 Z" fill="white" opacity="0.2" />
+        <path d="M256 200 L452 300 L256 400 L60 300 Z" fill="white" opacity="0.9" class="svg-glow-white" />
+        <g transform="translate(269, 300)" class="svg-glow-jelly">
+           <path d="M28.8,0 L-14.4,-16 L-14.4,16 Z" fill="url(#jellyGradient)" />
+        </g>
+        <g stroke="white" stroke-width="2" opacity="0.3" stroke-dasharray="8 8">
+          <line x1="256" y1="200" x2="256" y2="40" />
+          <line x1="60" y1="300" x2="60" y2="140" />
+          <line x1="452" y1="300" x2="452" y2="140" />
+        </g>
+        <path d="M256 40 L452 140 L256 240 L60 140 Z" fill="none" stroke="white" stroke-width="3" opacity="0.15" />
+        <line x1="256" y1="40" x2="256" y2="480" stroke="white" stroke-width="1" opacity="0.05" />
+      </svg>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-[#aa5cff]/10 blur-[100px] -z-10 rounded-full"></div>
+    </div>
+
+    <div class="max-w-4xl mx-auto space-y-6">
+      <p class="text-[10px] md:text-xs font-bold tracking-[0.4em] text-white/40 uppercase">
+        A Steadfast Architecture
+      </p>
+      <h1 class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter uppercase leading-[0.9]">
+        The Sure Foundation <br />
+        <span class="text-white/30 text-3xl md:text-5xl lg:text-6xl tracking-tight">For Your</span> 
+        <span class="jelly-text-gradient">Media Core</span>
+      </h1>
+      <p class="text-sm md:text-base text-white/50 max-w-2xl mx-auto tracking-wide leading-relaxed mt-6">
+        Constructed with absolute precision. Jellyframe provides a structural, unwavering framework for self-hosted media, replacing chaos with righteous application and order.
+      </p>
+    </div>
+
+    <div class="mt-12 flex flex-col sm:flex-row gap-6 items-center">
+      <button class="jelly-bg-gradient jelly-glow text-white px-10 py-5 rounded-2xl text-xs font-black tracking-[0.2em] uppercase transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3">
+        Deploy Framework
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+      </button>
+      <button class="px-10 py-5 rounded-2xl bg-white/5 border border-white/10 text-white text-xs font-black tracking-[0.2em] uppercase hover:bg-white/10 hover:border-white/30 transition-all">
+        Read Documentation
+      </button>
+    </div>
+  </main>
+
+  <section class="relative z-10 max-w-7xl mx-auto px-6 py-32">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <div class="glass-card p-10 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-[#aa5cff]/10 blur-[50px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-[#aa5cff]/20 transition-all"></div>
+        <div class="text-white/20 mb-6 font-black text-4xl">01</div>
+        <h3 class="text-xl font-black uppercase tracking-widest mb-4">Structural Integrity</h3>
+        <p class="text-sm text-white/50 leading-relaxed">
+          Built on a bedrock of open-source principles. No telemetry, no shifting paradigms. A steadfast environment that remains under your absolute control.
+        </p>
+      </div>
+
+      <div class="glass-card p-10 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-[#00a4dc]/10 blur-[50px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-[#00a4dc]/20 transition-all"></div>
+        <div class="text-white/20 mb-6 font-black text-4xl">02</div>
+        <h3 class="text-xl font-black uppercase tracking-widest mb-4">Righteous Application</h3>
+        <p class="text-sm text-white/50 leading-relaxed">
+          Uncompromising performance meets precise intent. Every line of code serves a purpose, delivering high-fidelity media without bloat or distraction.
+        </p>
+      </div>
+
+      <div class="glass-card p-10 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-[#aa5cff]/10 blur-[50px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-[#00a4dc]/20 transition-all"></div>
+        <div class="text-white/20 mb-6 font-black text-4xl">03</div>
+        <h3 class="text-xl font-black uppercase tracking-widest mb-4">Unwavering Access</h3>
+        <p class="text-sm text-white/50 leading-relaxed">
+          Cross-platform architecture designed to bridge the gap between your physical servers and global access points, maintaining truth in your library.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="border-t border-white/10 relative z-10">
+    <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between">
+      <div class="flex items-center gap-3 mb-6 md:mb-0 opacity-50">
+        <svg viewBox="0 0 512 512" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg">
+          <path d="M256 200 L452 300 L256 400 L60 300 Z" fill="white" />
+        </svg>
+        <span class="text-[10px] font-black tracking-[0.3em] uppercase">Jellyframe Blueprint</span>
+      </div>
+      <div class="text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase">
+        Establishing the head of the corner.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
