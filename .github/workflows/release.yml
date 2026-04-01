@@ -2,11 +2,8 @@ name: Build & Release
 
 on:
   push:
-    branches: [ main ]
     tags:
       - 'v*'
-  pull_request:
-    branches: [ main ]
 
 permissions:
   contents: write
@@ -35,12 +32,10 @@ jobs:
         run: dotnet publish --configuration Release --no-build --output ./publish
 
       - name: Get version from tag
-        if: startsWith(github.ref, 'refs/tags/v')
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Zip release artifacts
-        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           cd publish
           zip -j ../JellyFrame_${{ steps.version.outputs.VERSION }}.zip \
@@ -49,20 +44,17 @@ jobs:
             Jint.dll
 
       - name: Compute MD5 checksum
-        if: startsWith(github.ref, 'refs/tags/v')
         id: checksum
         run: |
           echo "MD5=$(md5sum JellyFrame_${{ steps.version.outputs.VERSION }}.zip | awk '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Get previous tag
-        if: startsWith(github.ref, 'refs/tags/v')
         id: previoustag
         run: |
           PREV=$(git tag --sort=-version:refname | grep -v "^${{ github.ref_name }}$" | head -n1)
           echo "PREV=${PREV}" >> $GITHUB_OUTPUT
 
       - name: Generate changelog
-        if: startsWith(github.ref, 'refs/tags/v')
         id: changelog
         run: |
           if [ -n "${{ steps.previoustag.outputs.PREV }}" ]; then
@@ -75,7 +67,6 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
