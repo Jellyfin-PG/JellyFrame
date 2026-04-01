@@ -1,6 +1,11 @@
-# JellyFrame
+![Build Status](https://img.shields.io/github/actions/workflow/status/Jellyfin-PG/Jellyframe/release.yml)
+![License](https://img.shields.io/github/license/Jellyfin-PG/Jellyframe)
 
-A complete customization and extension framework for [Jellyfin](https://jellyfin.org). Install community mods and themes from the dashboard, or build your own with a full server-side JavaScript API.
+<div align="center">
+  <img src="assets/skinmanager.svg" alt="Skin Manager Logo" width="120" />
+  <h1>Jellyframe</h1>
+  <p>A complete customization and extension framework for [Jellyfin](https://jellyfin.org). Install community mods and themes from the dashboard, or build your own with a full server-side JavaScript API.</p>
+</div>
 
 ---
 
