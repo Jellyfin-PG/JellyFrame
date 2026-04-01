@@ -57,9 +57,9 @@
     ],
     "previewUrl": "",
     "sourceUrl": "https://github.com/Jellyfin-PG/JellyFrame",
-    "cssUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/media-bar/media-bar.css",
-    "jsUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/media-bar/browser.js",
-    "serverJs": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/media-bar/server.js",
+    "cssUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/media-bar-style.css",
+    "jsUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/media-bar-client.js",
+    "serverJs": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/media-bar-server.js",
     "permissions": [
       "jellyfin.read",
       "jellyfin.write",
