@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MediaBrowser.Common.Api;
 using Jellyfin.Plugin.JellyFrame.Services;
+using System.Diagnostics;
 
 namespace Jellyfin.Plugin.JellyFrame.Controllers
 {
@@ -27,9 +28,8 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
             var paths = Plugin.Instance?.AppPaths;
             if (paths == null) return StatusCode(StatusCodes.Status503ServiceUnavailable);
 
-            var cacheDir = Path.Combine(paths.DataPath, "JellyFrame", "mods");
+            var (fileCount, totalBytes, cacheDir) = ModResourceCache.GetInfo(paths);
             var entries = new List<object>();
-            long totalBytes = 0;
 
             if (Directory.Exists(cacheDir))
             {

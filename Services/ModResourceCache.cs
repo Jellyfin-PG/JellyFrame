@@ -86,7 +86,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             if (string.IsNullOrWhiteSpace(url))
                 return null;
 
-            var cacheDir  = GetCacheDir(paths);
+            var cacheDir = GetCacheDir(paths);
 
             var cacheFile = (type == "serverjs" || vars == null)
                 ? GetCacheFilePath(cacheDir, mod.Id, mod.Version, type, varsHash: null)
@@ -95,7 +95,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             if (File.Exists(cacheFile))
             {
                 try { return await File.ReadAllTextAsync(cacheFile, Encoding.UTF8); }
-                catch {  }
+                catch { }
             }
 
             var urlLock = GetUrlLock(url);
@@ -150,12 +150,22 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             return source;
         }
 
+        public static (int fileCount, long totalBytes, string cacheDir) GetInfo(IApplicationPaths paths)
+        {
+            var dir = GetCacheDir(paths);
+            if (!Directory.Exists(dir)) return (0, 0, dir);
+            var files = Directory.GetFiles(dir);
+            long total = 0;
+            foreach (var f in files) try { total += new FileInfo(f).Length; } catch { }
+            return (files.Length, total, dir);
+        }
+
         private static string GetCacheDir(IApplicationPaths paths)
-            => Path.Combine(paths.DataPath, "JellyFrame", "cache");
+            => Path.Combine(paths.DataPath, "JellyFrame", "mods");
 
         private static string GetCacheFilePath(string cacheDir, string modId, string version, string type, string varsHash)
         {
-            var ext  = type == "css" ? "css" : "js";
+            var ext = type == "css" ? "css" : "js";
             var name = varsHash != null
                 ? $"{SafeId(modId)}__{SafeId(version)}__{type}__{varsHash}.{ext}"
                 : $"{SafeId(modId)}__{SafeId(version)}__{type}.{ext}";
