@@ -10,8 +10,8 @@
     "previewUrl": "",
     "sourceUrl": "https://github.com/Jellyfin-PG/JellyFrame",
     "cssUrl": null,
-    "jsUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/now-playing/browser.js",
-    "serverJs": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/now-playing/server.js",
+    "jsUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/now-playing-browser.js",
+    "serverJs": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/now-playing-server.js",
     "permissions": [
       "jellyfin.read",
       "store",
