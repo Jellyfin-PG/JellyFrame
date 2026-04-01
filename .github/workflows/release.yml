@@ -1,0 +1,66 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish --configuration Release --no-build --output ./publish
+
+      - name: Get version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Zip release artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd publish
+          zip -j ../JellyFrame_${{ steps.version.outputs.VERSION }}.zip \
+            Jellyfin.Plugin.JellyFrame.dll \
+            Acornima.dll \
+            Jint.dll
+
+      - name: Compute MD5 checksum
+        if: startsWith(github.ref, 'refs/tags/')
+        id: checksum
+        run: |
+          echo "MD5=$(md5sum JellyFrame_${{ steps.version.outputs.VERSION }}.zip | awk '{print $1}')" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: JellyFrame v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## JellyFrame v${{ steps.version.outputs.VERSION }}
+            ### Installation
+            Download `JellyFrame_${{ steps.version.outputs.VERSION }}.zip`, extract, and copy the DLLs to your Jellyfin plugins folder.
+            **MD5:** `${{ steps.checksum.outputs.MD5 }}`
+            Update this value in `manifest.json` for the plugin catalogue.
+          files: JellyFrame_${{ steps.version.outputs.VERSION }}.zip
