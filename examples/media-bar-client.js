@@ -168,8 +168,8 @@
             if (item.year)            parts.push('<span>' + item.year + '</span>');
             if (item.rating)          parts.push('<span>' + item.rating + '</span>');
             if (item.runTimeTicks)    parts.push('<span>' + formatRuntime(item.runTimeTicks) + '</span>');
-            if (item.genres && item.genres.length) parts.push('<span>' + item.genres.slice(0, 3).join(' · ') + '</span>');
-            meta.innerHTML = parts.join('<span class="jfmb-sep"> ● </span>');
+            if (item.genres && item.genres.length) parts.push('<span>' + item.genres.slice(0, 3).join(' . ') + '</span>');
+            meta.innerHTML = parts.join('<span class="jfmb-sep"> * </span>');
             overlay.appendChild(meta);
 
             if (item.overview) {
