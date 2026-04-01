@@ -266,13 +266,13 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public Task SendNotification(string userId, string name, string description, string type = "Normal")
         {
-            _logger.LogWarning("[JellyFrame] mm.jellyfin.sendNotification is not available (INotificationManager removed from SDK)");
+            _logger.LogWarning("[JellyFrame] jf.jellyfin.sendNotification is not available (INotificationManager removed from SDK)");
             return Task.CompletedTask;
         }
 
         public Task BroadcastNotification(string name, string description, string type = "Normal")
         {
-            _logger.LogWarning("[JellyFrame] mm.jellyfin.broadcastNotification is not available (INotificationManager removed from SDK)");
+            _logger.LogWarning("[JellyFrame] jf.jellyfin.broadcastNotification is not available (INotificationManager removed from SDK)");
             return Task.CompletedTask;
         }
 

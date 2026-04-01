@@ -9,25 +9,25 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 {
     public sealed class JsRuntime : IDisposable
     {
-        private Engine            _engine;
+        private Engine _engine;
         private JellyFrameContext _context;
-        private readonly ILogger  _logger;
-        private bool              _disposed;
-        private bool              _loaded;
-        private readonly object   _lock = new();
+        private readonly ILogger _logger;
+        private bool _disposed;
+        private bool _loaded;
+        private readonly object _lock = new();
 
-        public string          ModId    => _context?.ModId;
-        public RoutesSurface   Routes   => _context?.Routes;
+        public string ModId => _context?.ModId;
+        public RoutesSurface Routes => _context?.Routes;
         public GatedJellyfinSurface Jellyfin => _context?.Jellyfin;
-        public bool            IsLoaded => _loaded && !_disposed;
-        public Engine          Engine   => _engine;
-        public DateTime?       LoadedAt { get; private set; }
+        public bool IsLoaded => _loaded && !_disposed;
+        public Engine Engine => _engine;
+        public DateTime? LoadedAt { get; private set; }
 
         public JsRuntime(JellyFrameContext context, ILogger logger)
         {
             _context = context;
-            _logger  = logger;
-            _engine  = BuildEngine();
+            _logger = logger;
+            _engine = BuildEngine();
             RegisterGlobals();
 
             _context._rawRoutes?.SetEngine(_engine);
@@ -47,8 +47,27 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         private void RegisterGlobals()
         {
-            _engine.SetValue("mm",      _context);
+            _engine.SetValue("__jfCtx", _context);
             _engine.SetValue("console", new JsConsole(_logger, _context.ModId));
+            _engine.Execute(
+                "var jf = {" +
+                "  vars:      __jfCtx.Vars," +
+                "  log:       __jfCtx.Log," +
+                "  cache:     __jfCtx.Cache," +
+                "  perms:     __jfCtx.Perms," +
+                "  routes:    __jfCtx.Routes," +
+                "  http:      __jfCtx.Http," +
+                "  jellyfin:  __jfCtx.Jellyfin," +
+                "  store:     __jfCtx.Store," +
+                "  userStore: __jfCtx.UserStore," +
+                "  scheduler: __jfCtx.Scheduler," +
+                "  bus:       __jfCtx.Bus," +
+                "  webhooks:  __jfCtx.Webhooks," +
+                "  rpc:       __jfCtx.Rpc," +
+                "  onStart:   function(fn) { __jfCtx.OnStart(fn); }," +
+                "  onStop:    function(fn)  { __jfCtx.OnStop(fn); }" +
+                "};"
+            );
         }
 
         public void LoadScript(string script)
@@ -60,8 +79,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 {
                     _engine.Execute(script);
                     _context.InvokeStart();
-                    _loaded   = true;
-                    LoadedAt  = DateTime.UtcNow;
+                    _loaded = true;
+                    LoadedAt = DateTime.UtcNow;
                     _logger.LogInformation("[JellyFrame] Mod {ModId} loaded — {Routes} route(s)",
                         _context.ModId, _context._rawRoutes?.Routes.Count ?? 0);
                 }
@@ -95,16 +114,16 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public ModHealthSnapshot GetHealthSnapshot() => new ModHealthSnapshot
         {
-            ModId              = ModId,
-            IsLoaded           = IsLoaded,
-            RouteCount         = _context?._rawRoutes?.Routes?.Count ?? 0,
-            SchedulerTasks     = _context?._rawScheduler?.Count ?? 0,
-            CacheEntries       = _context?.Cache?.Count ?? 0,
-            StoreKeys          = _context?._rawStore?.Keys()?.Length ?? 0,
-            UserStoreUsers     = _context?._rawUserStore?.Users()?.Length ?? 0,
+            ModId = ModId,
+            IsLoaded = IsLoaded,
+            RouteCount = _context?._rawRoutes?.Routes?.Count ?? 0,
+            SchedulerTasks = _context?._rawScheduler?.Count ?? 0,
+            CacheEntries = _context?.Cache?.Count ?? 0,
+            StoreKeys = _context?._rawStore?.Keys()?.Length ?? 0,
+            UserStoreUsers = _context?._rawUserStore?.Users()?.Length ?? 0,
             RegisteredWebhooks = _context?._rawWebhooks?.List() ?? Array.Empty<string>(),
-            RpcMethods         = _context?._rawRpc?.Methods() ?? Array.Empty<string>(),
-            LoadedAt           = LoadedAt
+            RpcMethods = _context?._rawRpc?.Methods() ?? Array.Empty<string>(),
+            LoadedAt = LoadedAt
         };
 
         public Task<bool> HandleRequestAsync(HttpContext context)
@@ -154,7 +173,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             {
                 if (_disposed) return;
                 _disposed = true;
-                _loaded   = false;
+                _loaded = false;
                 _logger.LogInformation("[JellyFrame] Disposing runtime for mod {ModId}", _context?.ModId);
 
                 _context?.InvokeStop();
@@ -170,11 +189,11 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         private sealed class JsConsole
         {
             private readonly ILogger _logger;
-            private readonly string  _modId;
+            private readonly string _modId;
             public JsConsole(ILogger logger, string modId) { _logger = logger; _modId = modId; }
-            public void Log(string msg)   => _logger.LogInformation("[Mod:{Id}] {Msg}", _modId, msg);
-            public void Info(string msg)  => _logger.LogInformation("[Mod:{Id}] {Msg}", _modId, msg);
-            public void Warn(string msg)  => _logger.LogWarning("[Mod:{Id}] {Msg}", _modId, msg);
+            public void Log(string msg) => _logger.LogInformation("[Mod:{Id}] {Msg}", _modId, msg);
+            public void Info(string msg) => _logger.LogInformation("[Mod:{Id}] {Msg}", _modId, msg);
+            public void Warn(string msg) => _logger.LogWarning("[Mod:{Id}] {Msg}", _modId, msg);
             public void Error(string msg) => _logger.LogError("[Mod:{Id}] {Msg}", _modId, msg);
             public void Debug(string msg) => _logger.LogDebug("[Mod:{Id}] {Msg}", _modId, msg);
         }
