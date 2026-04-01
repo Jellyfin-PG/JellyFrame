@@ -13,6 +13,8 @@
     var initialized  = false;
     var lastPath     = '';
 
+
+
     function injectCSS() {
         if (document.getElementById(STYLE_ID)) return;
         var s = document.createElement('style');
@@ -68,6 +70,8 @@
         document.head.appendChild(s);
     }
 
+
+
     function fetchViaServerMod() {
         return fetch(API_BASE + '/items')
             .then(function (r) {
@@ -119,6 +123,8 @@
             .catch(fetchViaApiClient);
     }
 
+
+
     function formatRuntime(ticks) {
         if (!ticks) return '';
         var m = Math.floor(ticks / 600000000);
@@ -132,6 +138,7 @@
         bar.id       = BAR_ID;
         var slideEls = [];
         var dotEls   = [];
+
 
         items.forEach(function (item, i) {
             var slide = document.createElement('div');
@@ -234,6 +241,7 @@
             }
         }
 
+
         var leftBtn = document.createElement('button');
         leftBtn.className = 'jfmb-arrow jfmb-arrow-left';
         leftBtn.innerHTML = '&#8249;';
@@ -246,6 +254,7 @@
         rightBtn.onclick = function () { goTo(currentIndex + 1); resetTimer(); };
         bar.appendChild(rightBtn);
 
+
         var pauseBtn = document.createElement('button');
         pauseBtn.className = 'jfmb-pause';
         pauseBtn.title = 'Pause / Resume';
@@ -256,6 +265,7 @@
             paused ? clearInterval(timer) : resetTimer();
         };
         bar.appendChild(pauseBtn);
+
 
         var dotsWrap = document.createElement('div');
         dotsWrap.className = 'jfmb-dots';
@@ -271,6 +281,8 @@
         resetTimer();
         return bar;
     }
+
+
 
     function findTarget() {
         var selectors = [
@@ -315,6 +327,7 @@
 
             var bar = buildBar(items);
 
+
             var insertBefore = findTarget();
             if (insertBefore && insertBefore.parentNode) {
                 insertBefore.parentNode.insertBefore(bar, insertBefore);
@@ -330,6 +343,8 @@
             isFetching = false;
         });
     }
+
+
 
     var observer = new MutationObserver(function () {
         var path = window.location.hash || window.location.pathname;
