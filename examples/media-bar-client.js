@@ -2,16 +2,16 @@
     'use strict';
 
     var INTERVAL_MS = parseInt('{{SLIDE_INTERVAL}}', 10) || 8000;
-    var API_BASE    = '/JellyFrame/mods/media-bar/api';
-    var STYLE_ID    = 'jf-media-bar-style';
-    var BAR_ID      = 'jf-media-bar';
+    var API_BASE = '/JellyFrame/mods/media-bar/api';
+    var STYLE_ID = 'jf-media-bar-style';
+    var BAR_ID = 'jf-media-bar';
 
     var currentIndex = 0;
-    var timer        = null;
-    var paused       = false;
-    var isFetching   = false;
-    var initialized  = false;
-    var lastPath     = '';
+    var timer = null;
+    var paused = false;
+    var isFetching = false;
+    var initialized = false;
+    var lastPath = '';
 
 
 
@@ -96,22 +96,22 @@
             ImageTypes: 'Backdrop'
         })).then(function (res) {
             return (res.Items || []).map(function (item) {
-                var bdTag   = item.BackdropImageTags && item.BackdropImageTags[0];
+                var bdTag = item.BackdropImageTags && item.BackdropImageTags[0];
                 var logoTag = item.ImageTags && item.ImageTags.Logo;
                 if (!bdTag) return null;
                 return {
-                    id:              item.Id,
-                    name:            item.Name   || '',
-                    overview:        item.Overview || '',
-                    year:            item.ProductionYear || null,
-                    rating:          item.OfficialRating || null,
+                    id: item.Id,
+                    name: item.Name || '',
+                    overview: item.Overview || '',
+                    year: item.ProductionYear || null,
+                    rating: item.OfficialRating || null,
                     communityRating: item.CommunityRating || null,
-                    runTimeTicks:    item.RunTimeTicks || null,
-                    genres:          item.Genres || [],
-                    isFavorite:      !!(item.UserData && item.UserData.IsFavorite),
-                    backdropUrl:     ApiClient.getImageUrl(item.Id, { type: 'Backdrop', maxWidth: 1920, tag: bdTag }),
-                    logoUrl:         logoTag ? ApiClient.getImageUrl(item.Id, { type: 'Logo', maxWidth: 400, tag: logoTag }) : null,
-                    detailUrl:       '#!/details?id=' + item.Id
+                    runTimeTicks: item.RunTimeTicks || null,
+                    genres: item.Genres || [],
+                    isFavorite: !!(item.UserData && item.UserData.IsFavorite),
+                    backdropUrl: ApiClient.getImageUrl(item.Id, { type: 'Backdrop', maxWidth: 1920, tag: bdTag }),
+                    logoUrl: logoTag ? ApiClient.getImageUrl(item.Id, { type: 'Logo', maxWidth: 400, tag: logoTag }) : null,
+                    detailUrl: '#!/details?id=' + item.Id + (item.ServerId ? '&serverId=' + item.ServerId : '')
                 };
             }).filter(Boolean);
         }).catch(function () { return []; });
@@ -134,10 +134,10 @@
     function buildBar(items) {
         currentIndex = 0;
 
-        var bar      = document.createElement('div');
-        bar.id       = BAR_ID;
+        var bar = document.createElement('div');
+        bar.id = BAR_ID;
         var slideEls = [];
-        var dotEls   = [];
+        var dotEls = [];
 
 
         items.forEach(function (item, i) {
@@ -165,9 +165,9 @@
             meta.className = 'jfmb-meta';
             var parts = [];
             if (item.communityRating) parts.push('<span class="jfmb-rating">&#9733; ' + item.communityRating.toFixed(1) + '</span>');
-            if (item.year)            parts.push('<span>' + item.year + '</span>');
-            if (item.rating)          parts.push('<span>' + item.rating + '</span>');
-            if (item.runTimeTicks)    parts.push('<span>' + formatRuntime(item.runTimeTicks) + '</span>');
+            if (item.year) parts.push('<span>' + item.year + '</span>');
+            if (item.rating) parts.push('<span>' + item.rating + '</span>');
+            if (item.runTimeTicks) parts.push('<span>' + formatRuntime(item.runTimeTicks) + '</span>');
             if (item.genres && item.genres.length) parts.push('<span>' + item.genres.slice(0, 3).join(' . ') + '</span>');
             meta.innerHTML = parts.join('<span class="jfmb-sep"> * </span>');
             overlay.appendChild(meta);
@@ -211,7 +211,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ favourite: itm.isFavorite })
-                    }).catch(function () {});
+                    }).catch(function () { });
                 };
             })(favBtn, item);
             btns.appendChild(favBtn);
@@ -337,7 +337,7 @@
             }
 
             initialized = true;
-            isFetching  = false;
+            isFetching = false;
         }).catch(function (err) {
             console.error('[media-bar]', err);
             isFetching = false;

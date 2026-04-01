@@ -1,5 +1,5 @@
 var CACHE_TTL_MS = 5 * 60 * 1000;
-var MAX_ITEMS    = 20;
+var MAX_ITEMS = 20;
 
 jf.onStart(function () {
     jf.log.info('media-bar started');
@@ -32,8 +32,8 @@ function buildCache() {
 
 function fetchItems() {
     var playlistId = (jf.vars['PLAYLIST_ID'] || '').trim();
-    var itemIdsRaw = (jf.vars['ITEM_IDS']    || '').trim();
-    var limit      = parseInt(jf.vars['ITEM_COUNT'] || '10', 10);
+    var itemIdsRaw = (jf.vars['ITEM_IDS'] || '').trim();
+    var limit = parseInt(jf.vars['ITEM_COUNT'] || '10', 10);
     limit = Math.min(Math.max(limit, 1), MAX_ITEMS);
 
     var rawItems = [];
@@ -68,7 +68,7 @@ function fetchPlaylistItems(playlistId) {
         return [];
     }
     var items = jf.jellyfin.getItems({
-        parentId:  playlistId,
+        parentId: playlistId,
         recursive: 'false'
     });
     return items || [];
@@ -87,19 +87,19 @@ function fetchByIds(ids) {
 
 function fetchLatest(limit) {
     var movies = jf.jellyfin.getItems({
-        type:      'Movie',
+        type: 'Movie',
         recursive: 'true',
-        sortBy:    'DateCreated',
+        sortBy: 'DateCreated',
         sortOrder: 'Descending',
-        limit:     String(Math.ceil(limit / 2))
+        limit: String(Math.ceil(limit / 2))
     }) || [];
 
     var shows = jf.jellyfin.getItems({
-        type:      'Series',
+        type: 'Series',
         recursive: 'true',
-        sortBy:    'DateCreated',
+        sortBy: 'DateCreated',
         sortOrder: 'Descending',
-        limit:     String(Math.ceil(limit / 2))
+        limit: String(Math.ceil(limit / 2))
     }) || [];
 
     var combined = movies.concat(shows);
@@ -110,37 +110,37 @@ function mapItem(item) {
     if (!item || !item.id) return null;
 
     var serverId = item.serverId || '';
-    var itemId   = item.id;
+    var itemId = item.id;
 
-    var backdropTag  = (item.backdropImageTags  && item.backdropImageTags[0])  || null;
-    var logoTag      = (item.imageBlurHashes && item.imageBlurHashes.Logo)
-                     ? Object.keys(item.imageBlurHashes.Logo)[0] : null;
-    var primaryTag   = (item.imageTags && item.imageTags.Primary) || null;
+    var backdropTag = (item.backdropImageTags && item.backdropImageTags[0]) || null;
+    var logoTag = (item.imageBlurHashes && item.imageBlurHashes.Logo)
+        ? Object.keys(item.imageBlurHashes.Logo)[0] : null;
+    var primaryTag = (item.imageTags && item.imageTags.Primary) || null;
 
     var imageBase = '/Items/' + itemId + '/Images/';
 
     return {
-        id:           itemId,
-        name:         item.name         || '',
-        type:         item.type         || '',
-        overview:     item.overview     || '',
-        year:         item.productionYear || null,
-        rating:       item.officialRating || null,
+        id: itemId,
+        name: item.name || '',
+        type: item.type || '',
+        overview: item.overview || '',
+        year: item.productionYear || null,
+        rating: item.officialRating || null,
         communityRating: item.communityRating || null,
-        runTimeTicks: item.runTimeTicks  || null,
-        genres:       item.genres        || [],
-        isFavorite:   !!(item.userData && item.userData.isFavorite),
-        playbackUrl:  '/web/index.html#/details?id=' + itemId,
-        detailUrl:    '/web/index.html#/details?id=' + itemId,
-        backdropUrl:  backdropTag
-                        ? imageBase + 'Backdrop/0?tag=' + backdropTag + '&quality=90&maxWidth=1920'
-                        : (primaryTag ? imageBase + 'Primary?tag=' + primaryTag + '&quality=90&maxWidth=1920' : null),
-        logoUrl:      logoTag
-                        ? imageBase + 'Logo?tag=' + logoTag + '&quality=90&maxWidth=400'
-                        : null,
-        primaryUrl:   primaryTag
-                        ? imageBase + 'Primary?tag=' + primaryTag + '&quality=90&maxWidth=400'
-                        : null
+        runTimeTicks: item.runTimeTicks || null,
+        genres: item.genres || [],
+        isFavorite: !!(item.userData && item.userData.isFavorite),
+        playbackUrl: '#/details?id=' + itemId + (serverId ? '&serverId=' + serverId : ''),
+        detailUrl: '#/details?id=' + itemId + (serverId ? '&serverId=' + serverId : ''),
+        backdropUrl: backdropTag
+            ? imageBase + 'Backdrop/0?tag=' + backdropTag + '&quality=90&maxWidth=1920'
+            : (primaryTag ? imageBase + 'Primary?tag=' + primaryTag + '&quality=90&maxWidth=1920' : null),
+        logoUrl: logoTag
+            ? imageBase + 'Logo?tag=' + logoTag + '&quality=90&maxWidth=400'
+            : null,
+        primaryUrl: primaryTag
+            ? imageBase + 'Primary?tag=' + primaryTag + '&quality=90&maxWidth=400'
+            : null
     };
 }
 
@@ -164,8 +164,8 @@ jf.routes.get('/items', function (req, res) {
 
 jf.routes.post('/favourite/:itemId', function (req, res) {
     var itemId = req.pathParams['itemId'];
-    var body   = req.body || {};
-    var state  = body.favourite !== false;
+    var body = req.body || {};
+    var state = body.favourite !== false;
 
     var users = jf.jellyfin.getUsers() || [];
     if (users.length === 0) return res.status(500).json({ error: 'No users found' });
