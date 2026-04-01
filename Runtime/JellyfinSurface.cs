@@ -362,7 +362,11 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
             foreach (var (_, handler) in handlers)
             {
-                try { await handler(data); }
+                try
+                {
+                    var task = handler(data);
+                    if (task != null) await task;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "[JellyFrame] Event handler error for {Event}", eventName);

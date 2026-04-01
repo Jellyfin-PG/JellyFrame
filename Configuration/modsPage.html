@@ -210,7 +210,7 @@
 
                     <div style="padding:1em;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:1em;">
                         <div style="display:flex;align-items:center;gap:1em;margin-bottom:.75em;">
-                            <p style="margin:0;font-size:.9em;font-weight:600;">Mod Cache</p>
+                            <p style="margin:0;font-size:.9em;font-weight:600;">Resource Cache</p>
                             <button type="button" id="btnRefreshCacheInfo"
                                 style="padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.78em;">
                                 ↻ Refresh
@@ -416,13 +416,13 @@
 
                     var imgContainer = document.createElement('div');
                     imgContainer.className = 'cardImageContainer coveredImage';
+                    imgContainer.style.cursor = 'zoom-in';
+                    imgContainer.title = 'Click to preview';
+                    imgContainer.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        openPreviewModal(mod);
+                    });
                     if ((mod.previewUrl || "")) {
-                        imgContainer.style.cursor = 'zoom-in';
-                        imgContainer.title = 'Click to preview';
-                        imgContainer.addEventListener('click', function (e) {
-                            e.stopPropagation();
-                            openPreviewModal(mod);
-                        });
                         var img = document.createElement('img');
                         img.src = (mod.previewUrl || "");
                         img.alt = (mod.name || "");
@@ -591,7 +591,6 @@
                     footer.appendChild(btnRow);
                     cardBox.appendChild(footer);
                     card.appendChild(cardBox);
-                    card.addEventListener('click', function () { toggleMod(mod); });
                     return card;
                 }
 
@@ -738,11 +737,25 @@
                     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100001;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;';
                     var imgWrap = document.createElement('div');
                     imgWrap.style.cssText = 'position:relative;max-width:92vw;max-height:82vh;border-radius:10px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.8);';
-                    var img = document.createElement('img');
-                    img.src = item.previewUrl;
-                    img.alt = item.name;
-                    img.style.cssText = 'display:block;max-width:92vw;max-height:82vh;object-fit:contain;border-radius:10px;';
-                    imgWrap.appendChild(img);
+                    if (item.previewUrl) {
+                        var img = document.createElement('img');
+                        img.src = item.previewUrl;
+                        img.alt = item.name;
+                        img.style.cssText = 'display:block;max-width:92vw;max-height:82vh;object-fit:contain;border-radius:10px;';
+                        imgWrap.appendChild(img);
+                    } else {
+                        var placeholder = document.createElement('div');
+                        placeholder.style.cssText = 'width:480px;max-width:92vw;height:270px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;';
+                        var placeholderIcon = document.createElement('div');
+                        placeholderIcon.style.cssText = 'font-size:3em;opacity:.3;';
+                        placeholderIcon.textContent = '🖼';
+                        var placeholderText = document.createElement('div');
+                        placeholderText.style.cssText = 'font-size:.82em;opacity:.35;letter-spacing:.05em;';
+                        placeholderText.textContent = 'No preview available';
+                        placeholder.appendChild(placeholderIcon);
+                        placeholder.appendChild(placeholderText);
+                        imgWrap.appendChild(placeholder);
+                    }
                     var info = document.createElement('div');
                     info.style.cssText = 'margin-top:14px;text-align:center;';
                     var title = document.createElement('div');
@@ -768,9 +781,15 @@
                     var mod = modalContext;
                     var container = document.getElementById('mmModalVars');
                     var values = {};
+                    container.querySelectorAll('input[type=hidden][data-var-key]').forEach(function (input) {
+                        values[input.dataset.varKey] = input.value;
+                    });
                     container.querySelectorAll('[data-var-key]').forEach(function (input) {
-                        if (input.type === 'hidden' || !values.hasOwnProperty(input.dataset.varKey)) {
-                            values[input.dataset.varKey] = input.value;
+                        if (input.type === 'hidden') return;
+                        if (!values.hasOwnProperty(input.dataset.varKey)) {
+                            values[input.dataset.varKey] = input.type === 'checkbox'
+                                ? (input.checked ? 'true' : 'false')
+                                : input.value;
                         }
                     });
 
