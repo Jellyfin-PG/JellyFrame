@@ -41,5 +41,68 @@
         "default": "false"
       }
     ]
+  },
+  {
+    "id": "media-bar",
+    "name": "Media Bar",
+    "author": "grimmdev",
+    "description": "A featured content slideshow bar on the Jellyfin home page. Showcases backdrop images, logos, ratings, genres, and plot summaries for your media with auto-advancing slides, navigation arrows, and play/detail/favourite buttons. Configure a playlist ID for curated content or let it pick from your latest additions automatically.",
+    "version": "1.0.0",
+    "jellyfin": "10.10+",
+    "tags": [
+      "home",
+      "slideshow",
+      "featured",
+      "ui"
+    ],
+    "previewUrl": "",
+    "sourceUrl": "https://github.com/Jellyfin-PG/JellyFrame",
+    "cssUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/media-bar/media-bar.css",
+    "jsUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/media-bar/browser.js",
+    "serverJs": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/media-bar/server.js",
+    "permissions": [
+      "jellyfin.read",
+      "jellyfin.write",
+      "store",
+      "scheduler"
+    ],
+    "requires": [],
+    "vars": [
+      {
+        "key": "PLAYLIST_ID",
+        "name": "Playlist ID",
+        "description": "Jellyfin item ID of a playlist to use as the source for the bar. Leave blank to use the latest additions from your library.",
+        "type": "text",
+        "default": ""
+      },
+      {
+        "key": "ITEM_IDS",
+        "name": "Manual Item IDs",
+        "description": "Comma-separated list of Jellyfin item IDs to feature. Ignored if Playlist ID is set.",
+        "type": "text",
+        "default": ""
+      },
+      {
+        "key": "ITEM_COUNT",
+        "name": "Number of Items",
+        "description": "How many items to show in the bar (1–20).",
+        "type": "number",
+        "default": "10"
+      },
+      {
+        "key": "SLIDE_INTERVAL",
+        "name": "Slide Interval (ms)",
+        "description": "How long each slide is shown before auto-advancing. Default is 8000 (8 seconds).",
+        "type": "number",
+        "default": "8000"
+      },
+      {
+        "key": "SHUFFLE",
+        "name": "Shuffle Items",
+        "description": "Randomise the order of items each time the bar loads.",
+        "type": "boolean",
+        "default": "true"
+      }
+    ]
   }
 ]
