@@ -161,15 +161,3 @@ jf.routes.get('/items', function (req, res) {
     }
     return res.json({ count: items.length, items: items });
 });
-
-jf.routes.post('/favourite/:itemId', function (req, res) {
-    var itemId = req.pathParams['itemId'];
-    var body = req.body || {};
-    var state = body.favourite !== false;
-
-    var users = jf.jellyfin.getUsers() || [];
-    if (users.length === 0) return res.status(500).json({ error: 'No users found' });
-
-    jf.jellyfin.setFavorite(users[0].id, itemId, state);
-    return res.json({ ok: true, itemId: itemId, favourite: state });
-});
