@@ -374,26 +374,48 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             }
         }
 
-        private static object SerializeItem(BaseItem item) => new
+        private static object SerializeItem(BaseItem item)
         {
-            id = item.Id.ToString("N"),
-            name = item.Name,
-            type = item.GetBaseItemKind().ToString(),
-            path = item.Path,
-            overview = item.Overview,
-            premiereDate = item.PremiereDate,
-            officialRating = item.OfficialRating,
-            communityRating = item.CommunityRating,
-            genres = item.Genres,
-            tags = item.Tags,
-            providerIds = item.ProviderIds,
-            parentId = item.ParentId.ToString("N"),
-            productionYear = item.ProductionYear,
-            runTimeTicks = item.RunTimeTicks,
-            isFavorite = false,
-            dateCreated = item.DateCreated,
-            dateModified = item.DateModified
-        };
+            static string GetTag(ItemImageInfo info)
+                => info?.BlurHash ?? info?.Path ?? string.Empty;
+
+            return new
+            {
+                id = item.Id.ToString("N"),
+                name = item.Name,
+                type = item.GetBaseItemKind().ToString(),
+                path = item.Path,
+                overview = item.Overview,
+                premiereDate = item.PremiereDate,
+                officialRating = item.OfficialRating,
+                communityRating = item.CommunityRating,
+                genres = item.Genres,
+                tags = item.Tags,
+                providerIds = item.ProviderIds,
+                parentId = item.ParentId.ToString("N"),
+                productionYear = item.ProductionYear,
+                runTimeTicks = item.RunTimeTicks,
+                isFavorite = false,
+                dateCreated = item.DateCreated,
+                dateModified = item.DateModified,
+                seriesName = (item as MediaBrowser.Controller.Entities.TV.Episode)?.SeriesName,
+                seasonName = (item as MediaBrowser.Controller.Entities.TV.Episode)?.SeasonName,
+                indexNumber = item.IndexNumber,
+                imageTags = item.ImageInfos == null ? null : new
+                {
+                    Primary = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Primary) is var p && p != null ? GetTag(p) : null,
+                    Thumb = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Thumb) is var t && t != null ? GetTag(t) : null,
+                    Banner = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Banner) is var b && b != null ? GetTag(b) : null,
+                    Logo = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Logo) is var l && l != null ? GetTag(l) : null,
+                    Backdrop = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Backdrop) is var bd && bd != null ? GetTag(bd) : null
+                },
+                backdropImageTags = item.ImageInfos == null ? Array.Empty<string>()
+                    : item.ImageInfos
+                        .Where(i => i.Type == ImageType.Backdrop)
+                        .Select(i => GetTag(i))
+                        .ToArray()
+            };
+        }
 
         private static object SerializeSession(SessionInfo s) => new
         {

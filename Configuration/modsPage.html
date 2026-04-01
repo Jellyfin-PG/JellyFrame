@@ -286,9 +286,19 @@
                         state.pendingVars = null;
                         el('modsUrl').value = cfg.ModsUrl || '';
                         el('chkDebug').checked = cfg.DebugLogging || false;
+
+                        var cached = safeParseJson(cfg.CachedMods, []);
+                        if (Array.isArray(cached) && cached.length > 0) {
+                            state.mods = cached;
+                            buildTypeChips(cached);
+                            buildTagChips(cached);
+                            render();
+                        }
+
                         Dashboard.hideLoadingMsg();
                         updateActiveBar();
                         updatePending();
+
                         var url = el('modsUrl').value.trim();
                         if (url) loadMods(url);
                     });
@@ -300,7 +310,9 @@
                 }
 
                 function loadMods(url) {
-                    el('modGrid').innerHTML = '<div class="stateMsg">Loading mods…</div>';
+                    if (state.mods.length === 0) {
+                        el('modGrid').innerHTML = '<div class="stateMsg">Loading mods\u2026</div>';
+                    }
                     el('mm-tagFilters').innerHTML = '';
                     el('typeFilters').innerHTML = '';
                     fetch(url)
@@ -312,7 +324,11 @@
                             render();
                         })
                         .catch(function (err) {
-                            el('modGrid').innerHTML = '<div class="stateMsg">Could not load mods: ' + err.message + '</div>';
+                            if (state.mods.length === 0) {
+                                el('modGrid').innerHTML = '<div class="stateMsg">Could not load mods: ' + err.message + '</div>';
+                            } else {
+                                console.warn('[JellyFrame] Could not refresh mods from URL:', err.message, '— showing cached mods');
+                            }
                         });
                 }
 
