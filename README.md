@@ -9,6 +9,23 @@
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <a href="assets/screen01.png">
+    <img src="assets/screen01.png" width="45%" alt="Jellyframe Theme Marketplace" />
+  </a>
+   
+  <a href="assets/screen02.png">
+    <img src="assets/screen02.png" width="45%" alt="Jellyframe Mod Marketplace" />
+  </a>
+</p>
+<p align="center">
+  <em>Click on an image to view it full size.</em>
+</p>
+
+---
+
 ## Installation
 
 JellyFrame depends on the **File Transformation** plugin to inject CSS and JavaScript into Jellyfin's web interface. Both plugins must be installed from the same plugin catalogue — install them in the order below.
