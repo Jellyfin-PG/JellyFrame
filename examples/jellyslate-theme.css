@@ -1,0 +1,109 @@
+:root {
+    --jfs-accent:    {{ACCENT_COLOR}};
+    --jfs-bg:        {{BACKGROUND_COLOR}};
+    --jfs-surface:   color-mix(in srgb, var(--jfs-bg) 80%, #fff 20%);
+    --jfs-surface-2: color-mix(in srgb, var(--jfs-bg) 90%, #fff 10%);
+    --jfs-border:    rgba(255, 255, 255, 0.07);
+    --jfs-text:      {{TEXT_COLOR}};
+    --jfs-muted:     color-mix(in srgb, var(--jfs-text) 50%, transparent 50%);
+    --jfs-radius:    {{CARD_RADIUS}};
+    --jfs-font:      {{FONT_FAMILY}};
+}
+
+body,
+.layout-mobile body {
+    font-family: var(--jfs-font) !important;
+    color: var(--jfs-text) !important;
+}
+
+.backgroundContainer,
+.backdropContainer,
+.backgroundContainer-img {
+    background-color: var(--jfs-bg) !important;
+}
+
+.mainDrawer,
+.navDrawer {
+    background: var(--jfs-surface-2) !important;
+    border-right: 1px solid var(--jfs-border) !important;
+}
+
+.mainHeader,
+.skinHeader {
+    background: var(--jfs-surface-2) !important;
+    border-bottom: 1px solid var(--jfs-border) !important;
+}
+
+.card .cardBox {
+    background: var(--jfs-surface) !important;
+    border-radius: var(--jfs-radius) !important;
+    overflow: hidden !important;
+    border: 1px solid var(--jfs-border) !important;
+}
+
+.cardImageContainer {
+    border-radius: 0 !important;
+}
+
+.itemsContainer {
+    gap: 12px !important;
+}
+
+.raised,
+.button-submit {
+    background: var(--jfs-accent) !important;
+    color: #fff !important;
+    border-radius: calc(var(--jfs-radius) / 1.5) !important;
+}
+
+a,
+.emby-tab-button.is-selected,
+.itemTabBar .emby-tab-button.is-selected,
+.headerTabs .emby-tab-button.is-selected {
+    color: var(--jfs-accent) !important;
+}
+
+.emby-tab-button.is-selected::after {
+    background: var(--jfs-accent) !important;
+}
+
+.emby-input,
+.emby-textarea,
+.emby-select {
+    background: var(--jfs-surface) !important;
+    border-color: var(--jfs-border) !important;
+    color: var(--jfs-text) !important;
+    border-radius: calc(var(--jfs-radius) / 1.5) !important;
+}
+
+.dialogContainer .dialog,
+.sheet {
+    background: var(--jfs-surface-2) !important;
+    border: 1px solid var(--jfs-border) !important;
+    border-radius: var(--jfs-radius) !important;
+}
+
+.pageTitle,
+.headerTitle,
+.detailPageTitle {
+    color: var(--jfs-text) !important;
+}
+
+.secondary,
+.cardText-secondary,
+.overview {
+    color: var(--jfs-muted) !important;
+}
+
+.listItem {
+    border-bottom: 1px solid var(--jfs-border) !important;
+}
+
+.listItem:hover {
+    background: var(--jfs-surface) !important;
+}
+
+.progressbar-inner,
+.playedIndicator {
+    background: var(--jfs-accent) !important;
+}

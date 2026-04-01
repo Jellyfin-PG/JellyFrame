@@ -1,0 +1,45 @@
+[
+  {
+    "id": "now-playing",
+    "name": "Now Playing",
+    "author": "grimmdev",
+    "description": "Shows what's currently playing across all active Jellyfin sessions as a live ticker in the header. Polls every 15 seconds and updates instantly on playback events. Requires the server mod for session data.",
+    "version": "1.0.0",
+    "jellyfin": "10.10+",
+    "tags": ["ui", "playback", "header", "server", "example"],
+    "previewUrl": "",
+    "sourceUrl": "https://github.com/Jellyfin-PG/JellyFrame",
+    "cssUrl": null,
+    "jsUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/now-playing/browser.js",
+    "serverJs": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/mods/now-playing/server.js",
+    "permissions": [
+      "jellyfin.read",
+      "store",
+      "scheduler"
+    ],
+    "requires": [],
+    "vars": [
+      {
+        "key": "INSTANCE_LABEL",
+        "name": "Instance Label",
+        "description": "Label returned by the /sessions endpoint. Useful if you run multiple Jellyfin servers.",
+        "type": "text",
+        "default": "My Jellyfin"
+      },
+      {
+        "key": "POLL_INTERVAL",
+        "name": "Poll Interval (ms)",
+        "description": "How often the browser ticker refreshes session data. Default is 15000 (15 seconds). Minimum recommended: 5000.",
+        "type": "number",
+        "default": "15000"
+      },
+      {
+        "key": "SHOW_USER",
+        "name": "Show Username",
+        "description": "When enabled, the ticker also shows the username next to the currently playing title.",
+        "type": "boolean",
+        "default": "false"
+      }
+    ]
+  }
+]

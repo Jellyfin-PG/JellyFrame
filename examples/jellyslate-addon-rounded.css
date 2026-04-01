@@ -1,0 +1,31 @@
+.mainDrawer,
+.navDrawer {
+    border-radius: 0 16px 16px 0 !important;
+}
+
+.mainHeader,
+.skinHeader {
+    border-radius: 0 0 16px 16px !important;
+}
+
+.dialogContainer .dialog,
+.actionSheet,
+.sheet {
+    border-radius: 20px !important;
+}
+
+.emby-input,
+.emby-textarea,
+.emby-select {
+    border-radius: 10px !important;
+}
+
+.raised,
+.button-submit,
+.emby-button {
+    border-radius: 10px !important;
+}
+
+.cardImageContainer {
+    border-radius: 0 !important;
+}

@@ -1,0 +1,23 @@
+.mainDrawer,
+.navDrawer {
+    backdrop-filter: blur(24px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.5) !important;
+    background: rgba(16, 16, 24, 0.6) !important;
+}
+
+.mainHeader,
+.skinHeader {
+    backdrop-filter: blur(20px) saturate(1.4) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
+    background: rgba(16, 16, 24, 0.55) !important;
+}
+
+.dialogContainer .dialog,
+.actionSheet,
+.sheet,
+.popupContainer {
+    backdrop-filter: blur(28px) saturate(1.6) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(1.6) !important;
+    background: rgba(20, 20, 32, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}

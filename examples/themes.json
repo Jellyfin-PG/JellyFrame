@@ -1,0 +1,81 @@
+[
+  {
+    "id": "jellyslate",
+    "name": "JellySlate",
+    "author": "grimmdev",
+    "description": "A clean, minimal dark theme for Jellyfin. Fully configurable accent color, background, text color, card radius, and font family. Optional frosted glass and extra-rounded corners addons.",
+    "version": "1.0.0",
+    "jellyfin": "10.10+",
+    "tags": ["dark", "minimal", "configurable", "example"],
+    "previewUrl": "",
+    "sourceUrl": "https://github.com/Jellyfin-PG/JellyFrame",
+    "cssUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/themes/jellyslate/theme.css",
+    "vars": [
+      {
+        "key": "ACCENT_COLOR",
+        "name": "Accent Color",
+        "description": "Applied to buttons, links, active tabs, and progress bars.",
+        "type": "color",
+        "default": "#00a4dc"
+      },
+      {
+        "key": "BACKGROUND_COLOR",
+        "name": "Background Color",
+        "description": "Main page background. Use a dark color for best results.",
+        "type": "color",
+        "default": "#0e0e14"
+      },
+      {
+        "key": "TEXT_COLOR",
+        "name": "Text Color",
+        "description": "Primary text color across the interface.",
+        "type": "color",
+        "default": "#e8e8f0"
+      },
+      {
+        "key": "CARD_RADIUS",
+        "name": "Card Radius",
+        "description": "Corner radius applied to media cards and dialogs.",
+        "type": "text",
+        "default": "8px"
+      },
+      {
+        "key": "FONT_FAMILY",
+        "name": "Font Family",
+        "description": "Font stack for the entire interface. Use any system font or a Google Fonts @import in a custom CSS addon.",
+        "type": "text",
+        "default": "ui-sans-serif, system-ui, -apple-system, sans-serif"
+      },
+      {
+        "key": "ENABLE_BLUR",
+        "name": "Frosted Glass",
+        "description": "Adds backdrop-filter blur to the sidebar, header, and dialogs.",
+        "type": "boolean",
+        "default": "false"
+      },
+      {
+        "key": "ENABLE_ROUNDED",
+        "name": "Extra Rounded",
+        "description": "Applies stronger corner rounding to the sidebar, header, and dialogs.",
+        "type": "boolean",
+        "default": "false"
+      }
+    ],
+    "addons": [
+      {
+        "id": "blur-addon",
+        "name": "Frosted Glass",
+        "description": "Backdrop blur on the navigation drawer, header, and all dialogs.",
+        "cssUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/themes/jellyslate/addon-blur.css",
+        "triggerVar": "ENABLE_BLUR"
+      },
+      {
+        "id": "rounded-addon",
+        "name": "Extra Rounded",
+        "description": "Stronger corner rounding on the sidebar, header, dialogs, inputs, and buttons.",
+        "cssUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@1.0.0/themes/jellyslate/addon-rounded.css",
+        "triggerVar": "ENABLE_ROUNDED"
+      }
+    ]
+  }
+]
