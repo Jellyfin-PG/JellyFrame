@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>JellyFrame — Themes</title>
+    <style>
+        .jfThemePage .cardImageContainer {
+            height: 140px !important;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .jfThemePage .cardImageContainer img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            display: block;
+            pointer-events: none;
+        }
+
+        .jfThemePage .activeRing .cardBox {
+            outline: 3px solid #00a4dc;
+            outline-offset: -3px;
+            border-radius: 4px;
+        }
+
+        .jfThemePage .themeTypeBadge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            z-index: 2;
+            pointer-events: none;
+            background: rgba(0, 164, 220, .85);
+            color: #fff;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+        }
+
+        .jfThemePage .activeCheck {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #00a4dc;
+            color: #fff;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .jfThemePage .stateMsg {
+            padding: 3em 1em;
+            text-align: center;
+            opacity: .45;
+        }
+
+        .jfThemePage .activeBar {
+            display: flex;
+            align-items: center;
+            gap: .75em;
+            padding: .6em 1em;
+            background: rgba(0, 164, 220, .1);
+            border: 1px solid rgba(0, 164, 220, .3);
+            border-radius: 4px;
+            margin-bottom: 1em;
+            font-size: .9em;
+        }
+
+        .jfAddonToggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 5px;
+        }
+
+        .jfAddonToggle input[type=checkbox] {
+            width: 36px;
+            height: 20px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: background .2s;
+            flex-shrink: 0;
+        }
+
+        .jfAddonToggle input[type=checkbox]:checked {
+            background: #00a4dc;
+        }
+
+        .jfAddonToggle input[type=checkbox]::after {
+            content: '';
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            transition: left .2s;
+        }
+
+        .jfAddonToggle input[type=checkbox]:checked::after {
+            left: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="JellyFrameThemesPage" data-role="page" class="page type-interior pluginConfigurationPage jfThemePage"
+        data-require="emby-input,emby-button,emby-select">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <h2>Themes</h2>
+
+                <div id="jfThemeTabs"
+                    style="display:flex;gap:4px;margin-bottom:1.5em;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0;">
+                    <button type="button" class="jfThemeTab jfThemeTabActive" data-tab="themes"
+                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid #00a4dc;color:#00a4dc;font-size:.9em;font-weight:600;letter-spacing:.03em;">
+                        Marketplace
+                    </button>
+                    <button type="button" class="jfThemeTab" data-tab="settings"
+                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:rgba(255,255,255,0.5);font-size:.9em;font-weight:600;letter-spacing:.03em;">
+                        Settings
+                    </button>
+                </div>
+
+                <div id="tabThemes">
+
+                    <div class="activeBar" id="jft-activeBar" style="display:none">
+                        <span>Active theme: <strong id="activeThemeName">None</strong></span>
+                        <button type="button" id="btnDeactivate"
+                            style="margin-left:auto;padding:5px 14px;border-radius:4px;border:1px solid rgba(220,80,80,0.5);background:rgba(220,80,80,0.18);color:#e08080;cursor:pointer;font-size:.82em;font-weight:600;">
+                            Deactivate
+                        </button>
+                    </div>
+
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="themesUrl">Theme Repository URL</label>
+                        <input type="url" id="themesUrl" class="emby-input"
+                            placeholder="https://raw.githubusercontent.com/…/themes.json" />
+                    </div>
+                    <div style="margin-bottom:1.5em">
+                        <button is="emby-button" type="button" id="jft-btnLoad" class="raised emby-button">Load
+                            Themes</button>
+                    </div>
+
+
+                    <div class="inputContainer" style="margin-bottom:.25em">
+                        <label class="inputLabel inputLabelUnfocused" for="jft-searchInput">Search</label>
+                        <input type="text" id="jft-searchInput" class="emby-input" placeholder="Search themes…" />
+                    </div>
+                    <div id="jft-tagFilters"
+                        style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:16px;"></div>
+
+
+                    <div id="themeGrid" class="itemsContainer vertical-wrap">
+                        <div class="stateMsg">Enter a repository URL above and click <strong>Load Themes</strong>.</div>
+                    </div>
+
+
+                    <div style="margin-top:1.5em;display:flex;align-items:center;gap:1em;flex-wrap:wrap">
+                        <span id="jft-pendingLabel" style="font-size:.85em;opacity:.6">No pending changes</span>
+                        <button is="emby-button" type="button" id="jft-btnSave" class="raised button-submit emby-button"
+                            disabled>Save &amp; Apply</button>
+                    </div>
+                    <p style="font-size:.8em;opacity:.45;margin-top:.75em">
+                        After saving, hard-refresh with <strong>Ctrl+Shift+R</strong> to see your theme.
+                    </p>
+
+                </div>
+
+                <div id="jft-tabSettings" style="display:none">
+                    <div style="padding:1em;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:1em;">
+                        <div style="display:flex;align-items:center;gap:1em;margin-bottom:.75em;">
+                            <p style="margin:0;font-size:.9em;font-weight:600;">Theme Cache</p>
+                            <button type="button" id="btnRefreshThemeCache"
+                                style="padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.78em;">
+                                ↻ Refresh
+                            </button>
+                        </div>
+                        <p style="margin:0 0 .75em;font-size:.8em;opacity:.55;">Cached files are pre-compiled theme
+                            stylesheets. Purging forces a fresh download on next page load.</p>
+                        <div id="themeCacheInfoBar" style="font-size:.82em;opacity:.6;margin-bottom:.75em;">Loading…
+                        </div>
+                        <div id="themeCacheList"
+                            style="display:flex;flex-direction:column;gap:6px;margin-bottom:.75em;max-height:220px;overflow-y:auto;">
+                        </div>
+                        <div style="display:flex;gap:.6em;flex-wrap:wrap;">
+                            <button type="button" id="btnPurgeAllThemes"
+                                style="padding:6px 16px;border-radius:4px;border:1px solid rgba(220,80,80,0.5);background:rgba(220,80,80,0.18);color:#e08080;cursor:pointer;font-size:.82em;font-weight:600;">
+                                Purge All
+                            </button>
+                            <button type="button" id="btnPurgeSelectedThemes"
+                                style="padding:6px 16px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.82em;"
+                                disabled>
+                                Purge Selected
+                            </button>
+                        </div>
+                        <p id="themeCacheResult" style="margin:.6em 0 0;font-size:.8em;color:#60e090;display:none;"></p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            (function () {
+                var PLUGIN_ID = 'd4e5f6a7-b8c9-0123-defa-456789012345';
+
+                var state = {
+                    config: {},
+                    themes: [],
+                    activeId: null,
+                    pendingId: null,
+                    pendingVars: null,
+                    themeVars: {},
+                    query: '',
+                    activeTags: []
+                };
+
+                var CHIP_OFF = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;';
+                var CHIP_ON = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid #00a4dc;background:#00a4dc;color:#fff;font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;font-weight:700;';
+
+                function el(id) { return document.getElementById(id); }
+                function escHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+                function safeParseJson(s, fallback) { try { return JSON.parse(s || '{}'); } catch (e) { return fallback; } }
+
+                function initThemesPage() {
+                    switchThemeTab('themes');
+                    ApiClient.getPluginConfiguration(PLUGIN_ID).then(function (cfg) {
+                        state.config = cfg;
+                        state.activeId = cfg.ActiveTheme || null;
+                        state.themeVars = safeParseJson(cfg.ThemeVars, {});
+
+                        el('themesUrl').value = cfg.ThemesUrl || '';
+                        el('jft-searchInput').value = '';
+
+                        updateActiveBar();
+
+                        if (cfg.CachedThemes) {
+                            try {
+                                state.themes = JSON.parse(cfg.CachedThemes) || [];
+                                if (state.themes.length > 0) {
+                                    buildTagFilters();
+                                    render();
+                                }
+                            } catch (e) { }
+                        }
+                    });
+                }
+
+                var jftPageEl2 = document.querySelector('.jfThemePage');
+                (jftPageEl2 ? jftPageEl2 : document).querySelectorAll('.jfThemeTab').forEach(function (btn) {
+                    btn.addEventListener('click', function () { switchThemeTab(btn.dataset.tab); });
+                });
+
+                var jftPageEl = document.querySelector('.jfThemePage');
+                if (jftPageEl) {
+                    jftPageEl.addEventListener('viewshow', initThemesPage);
+                }
+
+                el('jft-btnLoad').addEventListener('click', function () {
+                    var url = el('themesUrl').value.trim();
+                    if (!url) return;
+                    loadThemes(url);
+                });
+
+                function loadThemes(url) {
+                    el('themeGrid').innerHTML = '<div class="stateMsg">Loading themes…</div>';
+                    el('jft-tagFilters').innerHTML = '';
+
+                    fetch(url)
+                        .then(function (r) { return r.json(); })
+                        .then(function (themes) {
+                            state.themes = themes || [];
+                            buildTagFilters();
+                            render();
+                        })
+                        .catch(function (err) {
+                            el('themeGrid').innerHTML = '<div class="stateMsg">Could not load themes: ' + escHtml(err.message) + '</div>';
+                        });
+                }
+
+                function buildTagFilters() {
+                    var set = {};
+                    state.themes.forEach(function (t) { (t.tags || []).forEach(function (g) { set[g] = true; }); });
+                    var tags = Object.keys(set).sort();
+                    state.activeTags = [];
+                    var c = el('jft-tagFilters');
+                    c.innerHTML = '';
+                    tags.forEach(function (tag) {
+                        var b = document.createElement('span');
+                        b.setAttribute('style', CHIP_OFF);
+                        b.textContent = tag;
+                        b.addEventListener('click', function () {
+                            var i = state.activeTags.indexOf(tag);
+                            if (i === -1) { state.activeTags.push(tag); b.setAttribute('style', CHIP_ON); }
+                            else { state.activeTags.splice(i, 1); b.setAttribute('style', CHIP_OFF); }
+                            render();
+                        });
+                        c.appendChild(b);
+                    });
+                }
+
+                function render() {
+                    var q = (state.query || '').toLowerCase();
+                    var list = state.themes.filter(function (t) {
+                        var match = !q ||
+                            (t.name || '').toLowerCase().includes(q) ||
+                            (t.author || '').toLowerCase().includes(q) ||
+                            (t.description || '').toLowerCase().includes(q);
+                        var tagMatch = state.activeTags.length === 0 ||
+                            state.activeTags.every(function (tag) { return (t.tags || []).includes(tag); });
+                        return match && tagMatch;
+                    });
+
+                    var grid = el('themeGrid');
+                    if (list.length === 0) {
+                        grid.innerHTML = '<div class="stateMsg">No themes match your search.</div>';
+                        return;
+                    }
+                    grid.innerHTML = '';
+                    list.forEach(function (t) { grid.appendChild(buildCard(t)); });
+                }
+
+                el('jft-searchInput').addEventListener('input', function () { state.query = this.value; render(); });
+
+                function buildCard(theme) {
+                    var effectiveId = state.pendingId !== null ? state.pendingId : state.activeId;
+                    var isActive = effectiveId === theme.id;
+                    var hasVars = (theme.vars || []).length > 0 || (theme.addons || []).length > 0;
+
+                    var card = document.createElement('div');
+                    card.className = 'card overflowBackdropCard' + (isActive ? ' activeRing' : '');
+                    card.style.cssText = 'min-width:200px;max-width:260px;cursor:pointer;';
+
+                    var cardBox = document.createElement('div');
+                    cardBox.className = 'cardBox';
+
+                    var cardScalable = document.createElement('div');
+                    cardScalable.className = 'cardScalable';
+
+                    var cardPadder = document.createElement('div');
+                    cardPadder.className = 'cardPadder cardPadder-backdrop';
+
+                    var cardContent = document.createElement('div');
+                    cardContent.className = 'cardContent';
+
+                    var imgContainer = document.createElement('div');
+                    imgContainer.className = 'cardImageContainer coveredImage';
+
+                    if (theme.previewUrl) {
+                        imgContainer.style.cursor = 'zoom-in';
+                        imgContainer.title = 'Click to preview';
+                        imgContainer.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            openPreviewModal(theme);
+                        });
+                        var img = document.createElement('img');
+                        img.src = theme.previewUrl;
+                        img.alt = theme.name || '';
+                        img.onerror = function () {
+                            img.remove();
+                            var fb = document.createElement('div');
+                            fb.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5em;opacity:.2;pointer-events:none;';
+                            fb.textContent = '🎨';
+                            imgContainer.appendChild(fb);
+                        };
+                        imgContainer.appendChild(img);
+                    } else {
+                        var fb = document.createElement('div');
+                        fb.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5em;opacity:.2;pointer-events:none;';
+                        fb.textContent = '🎨';
+                        imgContainer.appendChild(fb);
+                    }
+
+                    var badge = document.createElement('div');
+                    badge.className = 'themeTypeBadge';
+                    badge.style.pointerEvents = 'none';
+                    badge.textContent = (theme.addons || []).length > 0 ? 'CSS+' : 'CSS';
+                    imgContainer.appendChild(badge);
+
+                    if (isActive) {
+                        var chk = document.createElement('div');
+                        chk.className = 'activeCheck';
+                        chk.textContent = '✓';
+                        chk.style.pointerEvents = 'none';
+                        imgContainer.appendChild(chk);
+                    }
+
+                    cardContent.appendChild(imgContainer);
+                    cardPadder.appendChild(cardContent);
+                    cardScalable.appendChild(cardPadder);
+                    cardBox.appendChild(cardScalable);
+
+                    var footer = document.createElement('div');
+                    footer.className = 'cardFooter';
+
+                    var nameEl = document.createElement('div');
+                    nameEl.className = 'cardText';
+                    nameEl.textContent = theme.name || '';
+                    footer.appendChild(nameEl);
+
+                    if (theme.author) {
+                        var authEl = document.createElement('div');
+                        authEl.className = 'cardText cardText-secondary';
+                        authEl.textContent = 'by ' + theme.author;
+                        footer.appendChild(authEl);
+                    }
+
+                    if (theme.description) {
+                        var descEl = document.createElement('div');
+                        descEl.className = 'cardText cardText-secondary';
+                        descEl.style.cssText = 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.8em;opacity:.7;margin-top:.2em';
+                        descEl.textContent = theme.description;
+                        footer.appendChild(descEl);
+                    }
+
+                    if ((theme.tags || []).length > 0) {
+                        var tagRow = document.createElement('div');
+                        tagRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:.5em;';
+                        (theme.tags || []).slice(0, 4).forEach(function (tag) {
+                            var t = document.createElement('span');
+                            t.style.cssText = 'display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);line-height:1.6;';
+                            t.textContent = tag;
+                            tagRow.appendChild(t);
+                        });
+                        footer.appendChild(tagRow);
+                    }
+
+                    if ((theme.addons || []).length > 0) {
+                        var addEl = document.createElement('div');
+                        addEl.style.cssText = 'margin-top:.4em;font-size:.78em;opacity:.5;';
+                        addEl.textContent = (theme.addons || []).length + ' addon(s) available';
+                        footer.appendChild(addEl);
+                    }
+
+                    var btnRow = document.createElement('div');
+                    btnRow.style.cssText = 'display:flex;gap:.4em;margin-top:.6em;padding-bottom:.4em';
+
+                    var activateBtn = document.createElement('button');
+                    activateBtn.type = 'button';
+                    activateBtn.style.cssText = 'flex:1;padding:.4em .5em;font-size:.78em;border-radius:4px;border:none;cursor:pointer;font-weight:600;'
+                        + (isActive
+                            ? 'background:#00a4dc;color:#fff;'
+                            : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);');
+                    activateBtn.textContent = isActive ? '✓ Active' : 'Apply';
+                    activateBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        selectTheme(theme);
+                    });
+                    btnRow.appendChild(activateBtn);
+
+                    if (isActive && hasVars) {
+                        var cfgBtn = document.createElement('button');
+                        cfgBtn.type = 'button';
+                        cfgBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;';
+                        cfgBtn.textContent = '⚙';
+                        cfgBtn.title = 'Configure theme';
+                        cfgBtn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            openVarsModal(theme);
+                        });
+                        btnRow.appendChild(cfgBtn);
+                    }
+
+                    if (theme.sourceUrl) {
+                        var srcBtn = document.createElement('a');
+                        srcBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;';
+                        srcBtn.textContent = '↗';
+                        srcBtn.title = 'View source';
+                        srcBtn.href = theme.sourceUrl;
+                        srcBtn.target = '_blank';
+                        srcBtn.rel = 'noopener noreferrer';
+                        srcBtn.addEventListener('click', function (e) { e.stopPropagation(); });
+                        btnRow.appendChild(srcBtn);
+                    }
+
+                    footer.appendChild(btnRow);
+                    cardBox.appendChild(footer);
+                    card.appendChild(cardBox);
+                    return card;
+                }
+
+                function selectTheme(theme) {
+                    var effectiveId = state.pendingId !== null ? state.pendingId : state.activeId;
+                    if (effectiveId === theme.id) return;
+
+                    state.pendingId = theme.id;
+                    el('jft-btnSave').disabled = false;
+                    updatePending();
+                    updateActiveBar();
+                    render();
+
+                    var hasVars = (theme.vars || []).length > 0 || (theme.addons || []).length > 0;
+                    if (hasVars) openVarsModal(theme);
+                }
+
+                function deactivateTheme() {
+                    state.pendingId = '';
+                    state.pendingVars = {};
+                    el('jft-btnSave').disabled = false;
+                    updatePending();
+                    updateActiveBar();
+                    render();
+                }
+
+                el('btnDeactivate').addEventListener('click', deactivateTheme);
+
+                el('jft-btnSave').addEventListener('click', doSave);
+
+                function doSave() {
+                    var newId = state.pendingId !== null ? state.pendingId : state.activeId;
+                    var newVars = state.pendingVars !== null ? state.pendingVars : state.themeVars;
+
+                    var cfg = Object.assign({}, state.config, {
+                        ThemesUrl: el('themesUrl').value.trim(),
+                        ActiveTheme: newId || '',
+                        CachedThemes: state.themes.length > 0 ? JSON.stringify(state.themes) : state.config.CachedThemes || '',
+                        ThemeVars: JSON.stringify(newVars || {})
+                    });
+
+                    el('jft-btnSave').disabled = true;
+                    ApiClient.updatePluginConfiguration(PLUGIN_ID, cfg).then(function () {
+                        state.config = cfg;
+                        state.activeId = newId;
+                        state.themeVars = newVars;
+                        state.pendingId = null;
+                        state.pendingVars = null;
+                        updatePending();
+                        updateActiveBar();
+                        render();
+                    }).catch(function () {
+                        el('jft-btnSave').disabled = false;
+                    });
+                }
+
+                function currentId() { return state.pendingId !== null ? state.pendingId : state.activeId; }
+                function currentVars() { return state.pendingVars !== null ? state.pendingVars : state.themeVars; }
+
+                function updateActiveBar() {
+                    var id = currentId();
+                    var name = '';
+                    if (id) {
+                        var t = state.themes.find(function (x) { return x.id === id; });
+                        name = t ? t.name : id;
+                    }
+                    el('jft-activeBar').style.display = id ? 'flex' : 'none';
+                    el('activeThemeName').textContent = name || '';
+                }
+
+                function updatePending() {
+                    var hasPending = state.pendingId !== null || state.pendingVars !== null;
+                    el('jft-pendingLabel').textContent = hasPending ? 'Unsaved changes' : 'No pending changes';
+                    el('jft-pendingLabel').style.opacity = hasPending ? '1' : '.6';
+                }
+
+                function openVarsModal(theme) {
+                    var saved = Object.assign({}, currentVars());
+
+                    var overlay = document.createElement('div');
+                    overlay.id = 'jfThemeModalOverlay';
+                    overlay.style.cssText = [
+                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,.75)',
+                        'z-index:100000', 'display:flex', 'align-items:center',
+                        'justify-content:center', 'padding:20px'
+                    ].join(';') + ';';
+
+                    var dialog = document.createElement('div');
+                    dialog.style.cssText = 'background:#1e1e2e;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:24px;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;';
+
+                    var title = document.createElement('h3');
+                    title.style.cssText = 'margin:0 0 4px;font-size:1.05em;';
+                    title.textContent = theme.name + ' — Configuration';
+                    dialog.appendChild(title);
+
+                    var subtitle = document.createElement('p');
+                    subtitle.style.cssText = 'margin:0 0 1.2em;font-size:.8em;opacity:.45;';
+                    subtitle.textContent = 'Variables apply CSS custom properties. Addon toggles add extra stylesheets.';
+                    dialog.appendChild(subtitle);
+
+                    var regularVars = (theme.vars || []).filter(function (v) { return (v.type || 'text') !== 'boolean'; });
+                    if (regularVars.length > 0) {
+                        var varsSection = document.createElement('div');
+                        varsSection.style.cssText = 'display:flex;flex-direction:column;gap:12px;margin-bottom:1.2em;';
+
+                        regularVars.forEach(function (v) {
+                            var row = document.createElement('div');
+                            row.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
+
+                            var label = document.createElement('label');
+                            label.htmlFor = 'tv-' + v.key;
+                            label.style.cssText = 'font-size:.85em;font-weight:600;';
+                            label.textContent = v.name || v.key;
+                            row.appendChild(label);
+
+                            if (v.description) {
+                                var hint = document.createElement('div');
+                                hint.style.cssText = 'font-size:.76em;opacity:.45;margin-bottom:2px;';
+                                hint.textContent = v.description;
+                                row.appendChild(hint);
+                            }
+
+                            var inputType = (v.type || 'text').toLowerCase();
+                            var input = document.createElement('input');
+                            input.type = inputType === 'number' ? 'number' : 'text';
+                            input.id = 'tv-' + v.key;
+                            input.value = saved[v.key] !== undefined ? saved[v.key] : (v.default || '');
+                            input.style.cssText = 'padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:5px;color:inherit;font-size:.85em;font-family:inherit;width:100%;box-sizing:border-box;';
+                            input.dataset.varKey = v.key;
+                            row.appendChild(input);
+                            varsSection.appendChild(row);
+                        });
+
+                        dialog.appendChild(varsSection);
+                    }
+
+                    if ((theme.addons || []).length > 0) {
+                        var addonsTitle = document.createElement('p');
+                        addonsTitle.style.cssText = 'margin:0 0 .75em;font-size:.88em;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.06em;';
+                        addonsTitle.textContent = 'Addon Stylesheets';
+                        dialog.appendChild(addonsTitle);
+
+                        var addonsSection = document.createElement('div');
+                        addonsSection.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-bottom:1.2em;';
+
+                        (theme.addons || []).forEach(function (addon) {
+                            if (!addon.triggerVar) return;
+
+                            var row = document.createElement('div');
+                            row.className = 'jfAddonToggle';
+
+                            var chk = document.createElement('input');
+                            chk.type = 'checkbox';
+                            chk.id = 'addon-' + addon.id;
+                            chk.checked = saved[addon.triggerVar] === 'true' ||
+                                (saved[addon.triggerVar] === undefined &&
+                                    (theme.vars || []).some(function (v) {
+                                        return v.key === addon.triggerVar && v.default === 'true';
+                                    }));
+                            chk.dataset.varKey = addon.triggerVar;
+                            row.appendChild(chk);
+
+                            var info = document.createElement('div');
+                            info.style.cssText = 'flex:1;';
+
+                            var addonName = document.createElement('div');
+                            addonName.style.cssText = 'font-size:.88em;font-weight:600;';
+                            addonName.textContent = addon.name || addon.id;
+                            info.appendChild(addonName);
+
+                            if (addon.description) {
+                                var addonDesc = document.createElement('div');
+                                addonDesc.style.cssText = 'font-size:.77em;opacity:.5;';
+                                addonDesc.textContent = addon.description;
+                                info.appendChild(addonDesc);
+                            }
+
+                            row.appendChild(info);
+
+                            row.style.cursor = 'pointer';
+                            row.addEventListener('click', function (e) {
+                                if (e.target !== chk) chk.checked = !chk.checked;
+                            });
+
+                            addonsSection.appendChild(row);
+                        });
+
+                        dialog.appendChild(addonsSection);
+                    }
+
+                    var actions = document.createElement('div');
+                    actions.style.cssText = 'display:flex;justify-content:flex-end;gap:.6em;margin-top:.5em;';
+
+                    var cancelBtn = document.createElement('button');
+                    cancelBtn.type = 'button';
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.style.cssText = 'padding:7px 18px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;font-size:.88em;';
+                    cancelBtn.addEventListener('click', closeModal);
+
+                    var saveBtn = document.createElement('button');
+                    saveBtn.setAttribute('is', 'emby-button');
+                    saveBtn.className = 'raised button-submit emby-button';
+                    saveBtn.textContent = 'Apply';
+                    saveBtn.addEventListener('click', function () {
+                        var newVars = Object.assign({}, currentVars());
+
+                        dialog.querySelectorAll('[data-var-key]').forEach(function (input) {
+                            if (input.type === 'checkbox') {
+                                newVars[input.dataset.varKey] = input.checked ? 'true' : 'false';
+                            } else {
+                                newVars[input.dataset.varKey] = input.value;
+                            }
+                        });
+
+                        state.pendingVars = newVars;
+                        el('jft-btnSave').disabled = false;
+                        updatePending();
+                        closeModal();
+                        render();
+                    });
+
+                    actions.appendChild(cancelBtn);
+                    actions.appendChild(saveBtn);
+                    dialog.appendChild(actions);
+
+                    overlay.appendChild(dialog);
+                    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+                    document.body.appendChild(overlay);
+                }
+
+                function closeModal() {
+                    var o = document.getElementById('jfThemeModalOverlay');
+                    if (o) o.remove();
+                }
+
+                function openPreviewModal(theme) {
+                    var overlay = document.createElement('div');
+                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100001;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;';
+
+                    var img = document.createElement('img');
+                    img.src = theme.previewUrl;
+                    img.style.cssText = 'max-width:90vw;max-height:80vh;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.8);object-fit:contain;pointer-events:none;';
+
+                    var info = document.createElement('div');
+                    info.style.cssText = 'margin-top:12px;text-align:center;opacity:.7;font-size:.88em;';
+                    info.textContent = (theme.name || '') + (theme.author ? ' by ' + theme.author : '');
+
+                    overlay.appendChild(img);
+                    overlay.appendChild(info);
+                    overlay.addEventListener('click', function () { overlay.remove(); });
+                    document.addEventListener('keydown', function onKey(e) {
+                        if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
+                    });
+                    document.body.appendChild(overlay);
+                }
+
+                var selectedThemeCacheIds = [];
+
+                function switchThemeTab(name) {
+                    var panels = { themes: 'tabThemes', settings: 'jft-tabSettings' };
+                    Object.keys(panels).forEach(function (k) {
+                        document.getElementById(panels[k]).style.display = k === name ? '' : 'none';
+                    });
+                    var jftRoot = document.querySelector('.jfThemePage') || document;
+                    jftRoot.querySelectorAll('.jfThemeTab').forEach(function (btn) {
+                        var active = btn.dataset.tab === name;
+                        btn.style.borderBottomColor = active ? '#00a4dc' : 'transparent';
+                        btn.style.color = active ? '#00a4dc' : 'rgba(255,255,255,0.5)';
+                    });
+                    if (name === 'settings') loadThemeCacheInfo();
+                }
+
+
+
+                function loadThemeCacheInfo() {
+                    var infoBar = document.getElementById('themeCacheInfoBar');
+                    var list = document.getElementById('themeCacheList');
+                    var purgeSel = document.getElementById('btnPurgeSelectedThemes');
+                    infoBar.textContent = 'Loading…';
+                    list.innerHTML = '';
+                    selectedThemeCacheIds = [];
+                    if (purgeSel) purgeSel.disabled = true;
+
+                    ApiClient.ajax({ url: ApiClient.getUrl('JellyFrame/api/themes/cache'), type: 'GET', dataType: 'json' })
+                        .then(function (data) {
+                            var kb = (data.totalBytes / 1024).toFixed(1);
+                            infoBar.textContent = data.fileCount + ' file(s) · ' + kb + ' KB  —  ' + data.cacheDir;
+
+                            var grouped = {};
+                            (data.entries || []).forEach(function (e) {
+                                if (!grouped[e.themeId]) grouped[e.themeId] = [];
+                                grouped[e.themeId].push(e);
+                            });
+
+                            if (Object.keys(grouped).length === 0) {
+                                list.innerHTML = '<div style="font-size:.82em;opacity:.45;padding:.4em 0;">Cache is empty.</div>';
+                                return;
+                            }
+
+                            Object.keys(grouped).sort().forEach(function (themeId) {
+                                var files = grouped[themeId];
+                                var kb2 = (files.reduce(function (s, f) { return s + f.sizeBytes; }, 0) / 1024).toFixed(1);
+                                var row = document.createElement('div');
+                                row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:4px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);cursor:pointer;user-select:none;';
+
+                                var chk = document.createElement('input');
+                                chk.type = 'checkbox';
+                                chk.style.cssText = 'flex-shrink:0;accent-color:#00a4dc;cursor:pointer;';
+                                chk.addEventListener('change', function () {
+                                    if (chk.checked) {
+                                        if (!selectedThemeCacheIds.includes(themeId)) selectedThemeCacheIds.push(themeId);
+                                    } else {
+                                        selectedThemeCacheIds = selectedThemeCacheIds.filter(function (x) { return x !== themeId; });
+                                    }
+                                    if (purgeSel) purgeSel.disabled = selectedThemeCacheIds.length === 0;
+                                });
+
+                                var label = document.createElement('div');
+                                label.style.cssText = 'flex:1;font-size:.83em;';
+                                var typeList = files.map(function (f) { return f.type; }).join(', ');
+                                label.innerHTML = '<span style="font-weight:600;">' + escHtml(themeId) + '</span>'
+                                    + '<span style="opacity:.45;margin-left:.5em;">v' + escHtml(files[0].version) + '</span>'
+                                    + '<span style="opacity:.35;margin-left:.5em;font-size:.9em;">[' + typeList + ']</span>';
+
+                                var size = document.createElement('div');
+                                size.style.cssText = 'font-size:.78em;opacity:.4;flex-shrink:0;font-variant-numeric:tabular-nums;';
+                                size.textContent = kb2 + ' KB';
+
+                                row.appendChild(chk);
+                                row.appendChild(label);
+                                row.appendChild(size);
+                                row.addEventListener('click', function (e) {
+                                    if (e.target !== chk) chk.checked = !chk.checked;
+                                    chk.dispatchEvent(new Event('change'));
+                                });
+                                list.appendChild(row);
+                            });
+                        })
+                        .catch(function () {
+                            infoBar.textContent = 'Failed to load theme cache info.';
+                        });
+                }
+
+                function doPurgeThemes(themeIds) {
+                    var resultEl = document.getElementById('themeCacheResult');
+                    var body = themeIds && themeIds.length > 0 ? JSON.stringify({ themeIds: themeIds }) : '{}';
+                    ApiClient.ajax({
+                        url: ApiClient.getUrl('JellyFrame/api/themes/cache/purge'),
+                        type: 'POST',
+                        data: body,
+                        contentType: 'application/json',
+                        dataType: 'json'
+                    }).then(function (res) {
+                        if (resultEl) {
+                            resultEl.style.display = '';
+                            resultEl.style.color = '#60e090';
+                            resultEl.textContent = '✓ Purged. Cache will rebuild on next page load.';
+                            setTimeout(function () { resultEl.style.display = 'none'; }, 4000);
+                        }
+                        selectedThemeCacheIds = [];
+                        loadThemeCacheInfo();
+                    }).catch(function () {
+                        if (resultEl) {
+                            resultEl.style.display = '';
+                            resultEl.style.color = '#e06060';
+                            resultEl.textContent = '✗ Purge failed. Check that you are logged in as admin.';
+                        }
+                    });
+                }
+
+                document.getElementById('btnPurgeAllThemes').addEventListener('click', function () {
+                    if (confirm('Purge the entire theme cache? All themes will re-download on next page load.'))
+                        doPurgeThemes([]);
+                });
+                document.getElementById('btnPurgeSelectedThemes').addEventListener('click', function () {
+                    if (selectedThemeCacheIds.length === 0) return;
+                    if (confirm('Purge cache for: ' + selectedThemeCacheIds.join(', ') + '?'))
+                        doPurgeThemes(selectedThemeCacheIds);
+                });
+                document.getElementById('btnRefreshThemeCache').addEventListener('click', loadThemeCacheInfo);
+
+            })();
+        </script>
+
+    </div>
+</body>
+
+</html>

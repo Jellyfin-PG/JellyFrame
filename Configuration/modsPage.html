@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>JellyFrame — Mods</title>
+    <style>
+        .jfModsPage .cardImageContainer {
+            height: 130px !important;
+            position: relative;
+            overflow: hidden;
+            background-size: cover !important;
+            background-position: top center !important;
+        }
+
+        .jfModsPage .card.enabledCard .cardBox {
+            outline: 3px solid #00a4dc;
+            outline-offset: -3px;
+            border-radius: 4px;
+        }
+
+        .jfModsPage .activeBar {
+            display: flex;
+            align-items: center;
+            gap: .75em;
+            padding: .6em 1em;
+            background: rgba(0, 164, 220, .1);
+            border: 1px solid rgba(0, 164, 220, .3);
+            border-radius: 4px;
+            margin-bottom: 1em;
+            font-size: .9em;
+        }
+
+        .jfModsPage .typeBadge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            z-index: 2;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+        }
+
+        .jfModsPage .typeBadge-js {
+            background: rgba(200, 160, 0, .85);
+            color: #fff;
+        }
+
+        .jfModsPage .typeBadge-css {
+            background: rgba(30, 100, 220, .85);
+            color: #fff;
+        }
+
+        .jfModsPage .typeBadge-both {
+            background: rgba(120, 50, 200, .85);
+            color: #fff;
+        }
+
+        .jfModsPage .typeBadge-srv {
+            background: rgba(20, 140, 70, .85);
+            color: #fff;
+        }
+
+        .jfModsPage .typeBadge-mixed {
+            background: rgba(200, 90, 20, .85);
+            color: #fff;
+        }
+
+        .jfModsPage .enabledCheck {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #00a4dc;
+            color: #fff;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .jfModsPage .stateMsg {
+            padding: 3em 1em;
+            text-align: center;
+            opacity: .45;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="JellyFrameConfigurationPage" data-role="page"
+        class="page type-interior pluginConfigurationPage jfModsConfigPage jfModsPage"
+        data-require="emby-input,emby-button,emby-select">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <h2>Mods</h2>
+
+
+                <div id="mmTabs"
+                    style="display:flex;gap:4px;margin-bottom:1.5em;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0;">
+                    <button type="button" class="mmTab mmTabActive" data-tab="marketplace"
+                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid #00a4dc;color:#00a4dc;font-size:.9em;font-weight:600;letter-spacing:.03em;">
+                        Marketplace
+                    </button>
+                    <button type="button" class="mmTab" data-tab="health"
+                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:rgba(255,255,255,0.5);font-size:.9em;font-weight:600;letter-spacing:.03em;">
+                        Health
+                    </button>
+                    <button type="button" class="mmTab" data-tab="settings"
+                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:rgba(255,255,255,0.5);font-size:.9em;font-weight:600;letter-spacing:.03em;">
+                        Settings
+                    </button>
+                </div>
+
+
+                <div id="tabMarketplace">
+                    <div class="activeBar" id="mm-activeBar" style="display:none">
+                        <span><strong id="activeCount">0</strong> mod(s) active</span>
+                        <button type="button" id="btnDisableAll"
+                            style="margin-left:auto;padding:6px 16px;border-radius:4px;border:1px solid rgba(220,80,80,0.5);background:rgba(220,80,80,0.18);color:#e08080;cursor:pointer;font-size:.82em;font-weight:600;letter-spacing:.02em;">
+                            Disable All
+                        </button>
+                    </div>
+
+
+                    <div id="whatsNewBar"
+                        style="display:none;gap:10px;padding:.65em 1em;background:rgba(255,200,50,.08);border:1px solid rgba(255,200,50,.25);border-radius:4px;margin-bottom:1em;font-size:.88em;align-items:center;">
+                        <span>🆕</span>
+                        <span id="whatsNewText" style="flex:1"></span>
+                        <button type="button" id="btnWhatsNewDismiss"
+                            style="background:none;border:none;cursor:pointer;opacity:.5;font-size:1.1em;line-height:1;padding:0 4px;">✕</button>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="modsUrl">Mod Repository URL</label>
+                        <input type="url" id="modsUrl" class="emby-input"
+                            placeholder="https://raw.githubusercontent.com/…/mods.json" />
+                    </div>
+                    <div style="margin-bottom:1.5em">
+                        <button is="emby-button" type="button" id="mm-btnLoad" class="raised emby-button">Load
+                            Mods</button>
+                    </div>
+
+                    <div class="inputContainer" style="margin-bottom:.25em">
+                        <label class="inputLabel inputLabelUnfocused" for="mm-searchInput">Search</label>
+                        <input type="text" id="mm-searchInput" class="emby-input" placeholder="Search mods…" />
+                    </div>
+
+                    <div id="typeFilters"
+                        style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;margin-bottom:4px;"></div>
+                    <div id="mm-tagFilters"
+                        style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:16px;"></div>
+
+                    <div id="modGrid" class="itemsContainer vertical-wrap">
+                        <div class="stateMsg">Enter a repository URL above and click <strong>Load Mods</strong>.</div>
+                    </div>
+
+                    <div style="margin-top:1.5em;display:flex;align-items:center;gap:1em;flex-wrap:wrap">
+                        <span id="mm-pendingLabel" style="font-size:.85em;opacity:.6">No pending changes</span>
+                        <button is="emby-button" type="button" id="mm-btnSave" class="raised button-submit emby-button"
+                            disabled>Save &amp; Apply</button>
+                    </div>
+                    <p style="font-size:.8em;opacity:.45;margin-top:.75em">
+                        After saving, hard-refresh with <strong>Ctrl+Shift+R</strong> to see changes.
+                    </p>
+                </div>
+
+
+                <div id="tabHealth" style="display:none">
+                    <div style="display:flex;align-items:center;gap:1em;margin-bottom:1em;">
+                        <h3 style="margin:0;font-size:1em;font-weight:600;">Server Mod Health</h3>
+                        <button type="button" id="btnRefreshHealth"
+                            style="padding:4px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.82em;">
+                            ↻ Refresh
+                        </button>
+                    </div>
+                    <div id="pluginHealthSummary" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:1.5em;">
+                    </div>
+                    <div id="healthGrid" style="display:flex;flex-direction:column;gap:10px;">
+                        <div class="stateMsg" style="opacity:.4;font-size:.9em">Loading health data…</div>
+                    </div>
+                </div>
+
+
+                <div id="mm-tabSettings" style="display:none">
+
+
+                    <div
+                        style="padding:.75em 1em;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:1em;">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.9em;">
+                            <input type="checkbox" id="chkDebug" is="emby-checkbox" />
+                            <span>Enable debug logging (writes to Jellyfin log)</span>
+                        </label>
+                        <p style="font-size:.78em;opacity:.4;margin:.4em 0 0 24px">Takes effect immediately — no page
+                            reload needed.</p>
+                    </div>
+
+
+                    <div style="padding:1em;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:1em;">
+                        <div style="display:flex;align-items:center;gap:1em;margin-bottom:.75em;">
+                            <p style="margin:0;font-size:.9em;font-weight:600;">Mod Cache</p>
+                            <button type="button" id="btnRefreshCacheInfo"
+                                style="padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.78em;">
+                                ↻ Refresh
+                            </button>
+                        </div>
+                        <p style="margin:0 0 .75em;font-size:.8em;opacity:.55;">
+                            Cached files are pre-compiled JS/CSS downloads stored on disk.
+                            Purging forces a fresh download and re-compilation on next page load.
+                            <strong>Permissions only apply to server-side JS</strong> — CSS and browser JS are
+                            unaffected.
+                        </p>
+                        <div id="cacheInfoBar" style="font-size:.82em;opacity:.6;margin-bottom:.75em;">Loading…</div>
+                        <div id="cacheModList"
+                            style="display:flex;flex-direction:column;gap:6px;margin-bottom:.75em;max-height:220px;overflow-y:auto;">
+                        </div>
+                        <div style="display:flex;gap:.6em;flex-wrap:wrap;">
+                            <button type="button" id="btnPurgeAll"
+                                style="padding:6px 16px;border-radius:4px;border:1px solid rgba(220,80,80,0.5);background:rgba(220,80,80,0.18);color:#e08080;cursor:pointer;font-size:.82em;font-weight:600;">
+                                Purge All Cache
+                            </button>
+                            <button type="button" id="btnPurgeSelected"
+                                style="padding:6px 16px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.82em;"
+                                disabled>
+                                Purge Selected
+                            </button>
+                        </div>
+                        <p id="cacheActionResult" style="margin:.6em 0 0;font-size:.8em;color:#60e090;display:none;">
+                        </p>
+                    </div>
+
+
+                    <div style="padding:.75em 1em;background:rgba(255,255,255,0.04);border-radius:6px;">
+                        <p style="margin:0 0 .3em;font-size:.9em;font-weight:600;">Plugin Info</p>
+                        <p style="margin:0;font-size:.82em;opacity:.55;" id="pluginVersionLabel">Loading…</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            (function () {
+                var PLUGIN_ID = 'd4e5f6a7-b8c9-0123-defa-456789012345';
+
+                var CHIP_OFF = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;';
+                var CHIP_ON = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid #00a4dc;background:#00a4dc;color:#fff;font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;font-weight:700;';
+
+                var state = {
+                    mods: [],
+                    enabledIds: [],
+                    pendingIds: null,
+                    modVars: {},
+                    pendingVars: null,
+                    config: {},
+                    activeTags: [],
+                    typeFilter: 'all',
+                    query: ''
+                };
+
+                var modalContext = null;
+
+                function el(id) { return document.getElementById(id); }
+
+                function loadConfig() {
+                    switchTab('marketplace');
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(PLUGIN_ID).then(function (cfg) {
+                        state.config = cfg;
+                        state.enabledIds = cfg.EnabledMods || [];
+                        state.pendingIds = null;
+                        state.modVars = safeParseJson(cfg.ModVars, {});
+                        state.pendingVars = null;
+                        el('modsUrl').value = cfg.ModsUrl || '';
+                        el('chkDebug').checked = cfg.DebugLogging || false;
+                        Dashboard.hideLoadingMsg();
+                        updateActiveBar();
+                        updatePending();
+                        var url = el('modsUrl').value.trim();
+                        if (url) loadMods(url);
+                    });
+                }
+
+                function safeParseJson(str, fallback) {
+                    try { return JSON.parse(str || '{}') || fallback; }
+                    catch (e) { return fallback; }
+                }
+
+                function loadMods(url) {
+                    el('modGrid').innerHTML = '<div class="stateMsg">Loading mods…</div>';
+                    el('mm-tagFilters').innerHTML = '';
+                    el('typeFilters').innerHTML = '';
+                    fetch(url)
+                        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                        .then(function (mods) {
+                            state.mods = mods;
+                            buildTypeChips(mods);
+                            buildTagChips(mods);
+                            render();
+                        })
+                        .catch(function (err) {
+                            el('modGrid').innerHTML = '<div class="stateMsg">Could not load mods: ' + err.message + '</div>';
+                        });
+                }
+
+                function buildTypeChips(mods) {
+                    var types = ['all'], seen = {};
+                    mods.forEach(function (m) {
+                        var parts = [];
+                        if (m.cssUrl) parts.push('css');
+                        if (m.jsUrl) parts.push('js');
+                        if (m.serverJs) parts.push('server');
+                        var t = parts.length > 1 ? 'mixed' : (parts[0] || (m.type || 'js').toLowerCase());
+                        if (!seen[t]) { seen[t] = true; types.push(t); }
+                    });
+                    var c = el('typeFilters');
+                    c.innerHTML = '';
+                    types.forEach(function (type) {
+                        var b = document.createElement('span');
+                        b.setAttribute('style', type === 'all' ? CHIP_ON : CHIP_OFF);
+                        b.textContent = type === 'all' ? 'All' : type.toUpperCase();
+                        b.addEventListener('click', function () {
+                            state.typeFilter = type;
+                            c.querySelectorAll('span').forEach(function (s) {
+                                s.setAttribute('style', s === b ? CHIP_ON : CHIP_OFF);
+                            });
+                            render();
+                        });
+                        c.appendChild(b);
+                    });
+                }
+
+                function buildTagChips(mods) {
+                    var set = {};
+                    mods.forEach(function (m) { (m.tags || []).forEach(function (t) { set[t] = true; }); });
+                    state.activeTags = [];
+                    var c = el('mm-tagFilters');
+                    c.innerHTML = '';
+                    Object.keys(set).sort().forEach(function (tag) {
+                        var b = document.createElement('span');
+                        b.setAttribute('style', CHIP_OFF);
+                        b.textContent = tag;
+                        b.addEventListener('click', function () {
+                            var i = state.activeTags.indexOf(tag);
+                            if (i === -1) { state.activeTags.push(tag); b.setAttribute('style', CHIP_ON); }
+                            else { state.activeTags.splice(i, 1); b.setAttribute('style', CHIP_OFF); }
+                            render();
+                        });
+                        c.appendChild(b);
+                    });
+                }
+
+                function render() {
+                    var q = state.query.toLowerCase();
+                    var ids = currentIds();
+                    var list = state.mods.filter(function (m) {
+                        var mq = !q ||
+                            (m.name || '').toLowerCase().includes(q) ||
+                            (m.author || '').toLowerCase().includes(q) ||
+                            (m.description || '').toLowerCase().includes(q);
+                        var mt = state.activeTags.length === 0 ||
+                            state.activeTags.every(function (t) { return (m.tags || []).includes(t); });
+                        var mtype = state.typeFilter === 'all' ||
+                            (state.typeFilter === 'css' && !!m.cssUrl && !m.jsUrl && !m.serverJs) ||
+                            (state.typeFilter === 'js' && !!m.jsUrl && !m.cssUrl && !m.serverJs) ||
+                            (state.typeFilter === 'server' && !!m.serverJs && !m.cssUrl && !m.jsUrl) ||
+                            (state.typeFilter === 'mixed' && ([!!m.cssUrl, !!m.jsUrl, !!m.serverJs].filter(Boolean).length > 1));
+                        return mq && mt && mtype;
+                    });
+
+                    var grid = el('modGrid');
+                    if (list.length === 0) {
+                        grid.innerHTML = '<div class="stateMsg">No mods match your search.</div>';
+                        return;
+                    }
+                    grid.innerHTML = '';
+                    list.forEach(function (m) { grid.appendChild(buildCard(m, ids)); });
+                }
+
+                function buildCard(mod, ids) {
+                    var isOn = ids.indexOf(mod.id) !== -1;
+                    var type = ((mod.type || "js") || 'js').toLowerCase();
+                    var hasVars = ((mod.vars || []) || []).length > 0;
+                    var hasCss = !!(mod.cssUrl || "");
+                    var hasJs = !!(mod.jsUrl || "");
+                    var hasSrv = !!(mod.serverJs || "");
+
+                    var card = document.createElement('div');
+                    card.className = 'card overflowBackdropCard' + (isOn ? ' enabledCard' : '');
+                    card.style.cssText = 'min-width:200px;max-width:260px;';
+
+                    var cardBox = document.createElement('div');
+                    cardBox.className = 'cardBox';
+
+                    var cardScalable = document.createElement('div');
+                    cardScalable.className = 'cardScalable';
+
+                    var cardPadder = document.createElement('div');
+                    cardPadder.className = 'cardPadder cardPadder-backdrop';
+
+                    var cardContent = document.createElement('div');
+                    cardContent.className = 'cardContent';
+
+                    var imgContainer = document.createElement('div');
+                    imgContainer.className = 'cardImageContainer coveredImage';
+                    if ((mod.previewUrl || "")) {
+                        imgContainer.style.cursor = 'zoom-in';
+                        imgContainer.title = 'Click to preview';
+                        imgContainer.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            openPreviewModal(mod);
+                        });
+                        var img = document.createElement('img');
+                        img.src = (mod.previewUrl || "");
+                        img.alt = (mod.name || "");
+                        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;display:block;pointer-events:none;';
+                        img.onerror = function () {
+                            img.remove();
+                            var fallback = document.createElement('div');
+                            fallback.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5em;opacity:.2;pointer-events:none;';
+                            fallback.textContent = hasCss && !hasJs && !hasSrv ? '🎨' : hasSrv ? '🖥' : '⚙';
+                            imgContainer.appendChild(fallback);
+                        };
+                        imgContainer.appendChild(img);
+                    } else {
+                        var fallback = document.createElement('div');
+                        fallback.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5em;opacity:.2;pointer-events:none;';
+                        fallback.textContent = hasCss && !hasJs && !hasSrv ? '🎨' : hasSrv ? '🖥' : '⚙';
+                        imgContainer.appendChild(fallback);
+                    }
+
+                    var badgeParts = [];
+                    if (hasCss) badgeParts.push('CSS');
+                    if (hasJs) badgeParts.push('JS');
+                    if (hasSrv) badgeParts.push('SRV');
+                    if (badgeParts.length === 0) badgeParts.push(type.toUpperCase());
+                    var frontendCount = (hasCss ? 1 : 0) + (hasJs ? 1 : 0);
+                    var badgeClass = hasSrv && frontendCount > 0 ? 'mixed' : hasSrv ? 'srv' : (hasCss && hasJs ? 'both' : hasCss ? 'css' : 'js');
+                    var badge = document.createElement('div');
+                    badge.className = 'typeBadge typeBadge-' + badgeClass;
+                    badge.textContent = badgeParts.join('+');
+                    imgContainer.appendChild(badge);
+
+                    if (isOn) {
+                        var chk = document.createElement('div');
+                        chk.className = 'enabledCheck';
+                        chk.textContent = '✓';
+                        chk.style.pointerEvents = 'none';
+                        imgContainer.appendChild(chk);
+                    }
+
+                    if (hasVars) {
+                        var varsBadge = document.createElement('div');
+                        varsBadge.style.cssText = 'position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:3px;font-size:9px;padding:1px 6px;z-index:1;letter-spacing:.04em;pointer-events:none;';
+                        varsBadge.textContent = 'CONFIGURABLE';
+                        imgContainer.appendChild(varsBadge);
+                    }
+
+                    cardContent.appendChild(imgContainer);
+                    cardPadder.appendChild(cardContent);
+                    cardScalable.appendChild(cardPadder);
+                    cardBox.appendChild(cardScalable);
+
+                    var footer = document.createElement('div');
+                    footer.className = 'cardFooter';
+
+                    var nameEl = document.createElement('div');
+                    nameEl.className = 'cardText';
+                    nameEl.style.fontWeight = 'bold';
+                    nameEl.textContent = (mod.name || "");
+                    footer.appendChild(nameEl);
+
+                    if ((mod.author || "")) {
+                        var authEl = document.createElement('div');
+                        authEl.className = 'cardText cardText-secondary';
+                        authEl.textContent = 'by ' + (mod.author || "");
+                        footer.appendChild(authEl);
+                    }
+
+                    if ((mod.description || "")) {
+                        var descEl = document.createElement('div');
+                        descEl.className = 'cardText cardText-secondary';
+                        descEl.style.cssText = 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.8em;opacity:.7;margin-top:.2em';
+                        descEl.textContent = (mod.description || "");
+                        footer.appendChild(descEl);
+                    }
+
+                    if (((mod.tags || []) || []).length > 0) {
+                        var tagRow = document.createElement('div');
+                        tagRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:.5em;margin-bottom:.2em';
+                        (mod.tags || []).slice(0, 4).forEach(function (tag) {
+                            var t = document.createElement('span');
+                            t.style.cssText = 'display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);line-height:1.6;';
+                            t.textContent = tag;
+                            tagRow.appendChild(t);
+                        });
+                        footer.appendChild(tagRow);
+                    }
+
+                    if ((mod.permissions || []).length > 0) {
+                        var permRow = document.createElement('div');
+                        permRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:.5em;';
+                        var permColors = {
+                            'http': '#e08020',
+                            'jellyfin.read': '#2080e0',
+                            'jellyfin.write': '#c04040',
+                            'store': '#20a060',
+                            'scheduler': '#8040c0',
+                            'webhooks': '#20a0a0',
+                            'rpc': '#a06020',
+                            'bus': '#606060'
+                        };
+                        (mod.permissions || []).forEach(function (p) {
+                            var badge = document.createElement('span');
+                            var col = permColors[p] || '#555';
+                            badge.style.cssText = 'display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.03em;background:' + col + '22;border:1px solid ' + col + '66;color:' + col + ';line-height:1.6;';
+                            badge.textContent = '🔒 ' + p;
+                            badge.title = 'Permission required: ' + p;
+                            permRow.appendChild(badge);
+                        });
+                        footer.appendChild(permRow);
+                    }
+
+                    if ((mod.requires || []).length > 0) {
+                        var reqEl = document.createElement('div');
+                        reqEl.style.cssText = 'margin-top:.45em;font-size:.78em;opacity:.6;';
+                        var missingDeps = (mod.requires || []).filter(function (dep) {
+                            return !getEnabledIds().includes(dep);
+                        });
+                        if (missingDeps.length > 0) {
+                            reqEl.style.color = '#e06060';
+                            reqEl.textContent = '⚠ Requires: ' + missingDeps.join(', ') + ' (not enabled)';
+                        } else {
+                            reqEl.textContent = '↳ Requires: ' + (mod.requires || []).join(', ');
+                        }
+                        footer.appendChild(reqEl);
+                    }
+
+                    var btnRow = document.createElement('div');
+                    btnRow.style.cssText = 'display:flex;gap:.4em;margin-top:.6em;padding-bottom:.4em';
+
+                    var toggleBtn = document.createElement('button');
+                    toggleBtn.setAttribute('is', 'emby-button');
+                    toggleBtn.className = 'raised emby-button' + (isOn ? ' button-submit' : '');
+                    toggleBtn.style.cssText = 'flex:1;padding:.35em .5em;font-size:.78em';
+                    toggleBtn.textContent = isOn ? '✓ Enabled' : 'Enable';
+                    toggleBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        toggleMod(mod);
+                    });
+                    btnRow.appendChild(toggleBtn);
+
+                    if (isOn && hasVars) {
+                        var cfgBtn = document.createElement('button');
+                        cfgBtn.type = 'button';
+                        cfgBtn.style.cssText = 'padding:.35em .6em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;';
+                        cfgBtn.textContent = '⚙';
+                        cfgBtn.title = 'Configure variables';
+                        cfgBtn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            openVarsModal(mod);
+                        });
+                        btnRow.appendChild(cfgBtn);
+                    }
+
+                    if ((mod.sourceUrl || "")) {
+                        var srcBtn = document.createElement('a');
+                        srcBtn.style.cssText = 'padding:.35em .6em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;';
+                        srcBtn.textContent = '↗';
+                        srcBtn.title = 'View source';
+                        srcBtn.href = (mod.sourceUrl || "");
+                        srcBtn.target = '_blank';
+                        srcBtn.rel = 'noopener noreferrer';
+                        srcBtn.addEventListener('click', function (e) { e.stopPropagation(); });
+                        btnRow.appendChild(srcBtn);
+                    }
+
+                    footer.appendChild(btnRow);
+                    cardBox.appendChild(footer);
+                    card.appendChild(cardBox);
+                    card.addEventListener('click', function () { toggleMod(mod); });
+                    return card;
+                }
+
+                function openVarsModal(mod) {
+                    var vars = (mod.vars || []) || [];
+                    var saved = (state.pendingVars || state.modVars)[mod.id] || {};
+                    modalContext = mod;
+
+                    var existing = document.getElementById('mmModalOverlay');
+                    if (existing) existing.remove();
+
+                    var overlay = document.createElement('div');
+                    overlay.id = 'mmModalOverlay';
+                    overlay.style.cssText = [
+                        'position:fixed',
+                        'inset:0',
+                        'background:rgba(0,0,0,0.75)',
+                        'z-index:100000',
+                        'display:flex',
+                        'align-items:center',
+                        'justify-content:center',
+                        'padding:20px'
+                    ].join(';');
+
+                    var dialog = document.createElement('div');
+                    dialog.style.cssText = [
+                        'background:#1a1d21',
+                        'border:1px solid rgba(255,255,255,0.12)',
+                        'border-radius:10px',
+                        'padding:28px',
+                        'width:100%',
+                        'max-width:440px',
+                        'box-shadow:0 24px 60px rgba(0,0,0,0.7)',
+                        'position:relative',
+                        'overflow-y:auto',
+                        'max-height:90vh'
+                    ].join(';');
+
+                    var title = document.createElement('div');
+                    title.style.cssText = 'font-size:1.05em;font-weight:bold;margin-bottom:4px;color:#fff;';
+                    title.textContent = (mod.name || "");
+                    dialog.appendChild(title);
+
+                    var subtitle = document.createElement('div');
+                    subtitle.style.cssText = 'font-size:.78em;opacity:.5;margin-bottom:20px;';
+                    subtitle.textContent = 'Configure variables. Leave blank to use the default.';
+                    dialog.appendChild(subtitle);
+
+                    var varContainer = document.createElement('div');
+                    varContainer.id = 'mmModalVars';
+                    vars.forEach(function (v) {
+                        var row = document.createElement('div');
+                        row.style.marginBottom = '16px';
+
+                        var lbl = document.createElement('div');
+                        lbl.style.cssText = 'font-size:.82em;font-weight:600;margin-bottom:3px;';
+                        lbl.textContent = (v.name || v.key || "") || v.key;
+                        row.appendChild(lbl);
+
+                        if ((v.description || "")) {
+                            var desc = document.createElement('div');
+                            desc.style.cssText = 'font-size:.72em;opacity:.5;margin-bottom:5px;';
+                            desc.textContent = (v.description || "");
+                            row.appendChild(desc);
+                        }
+
+                        var inputType = ((v.type || "text") || 'text').toLowerCase();
+                        var input;
+
+                        if (inputType === 'boolean') {
+                            var trueVal = (v.trueValue !== undefined ? v.trueValue : "true") !== undefined ? (v.trueValue !== undefined ? v.trueValue : "true") : 'true';
+                            var falseVal = (v.falseValue !== undefined ? v.falseValue : "false") !== undefined ? (v.falseValue !== undefined ? v.falseValue : "false") : 'false';
+                            var savedBool = saved[v.key] !== undefined ? saved[v.key] : ((v.default || "") === 'true' || (v.default || "") === trueVal ? trueVal : falseVal);
+                            input = document.createElement('select');
+                            [['true', trueVal], ['false', falseVal]].forEach(function (pair) {
+                                var o = document.createElement('option');
+                                o.value = pair[1]; o.textContent = pair[0];
+                                input.appendChild(o);
+                            });
+                            input.value = savedBool;
+                            input.name = 'mm-var-' + v.key;
+                            input.id = 'mm-var-' + v.key;
+                            input.style.cssText = 'width:100%;padding:7px 10px;background:#1a1a2e;border:1px solid rgba(255,255,255,0.18);border-radius:5px;color:#e8e8f0;font-size:.85em;font-family:inherit;box-sizing:border-box;appearance:none;-webkit-appearance:none;cursor:pointer;';
+                            input.dataset.varKey = v.key;
+                            row.appendChild(input);
+                        } else if (inputType === 'color') {
+                            var colorWidget = buildColorInput(
+                                saved[v.key] !== undefined ? saved[v.key] : null,
+                                (v.default || "") || '#000000',
+                                (v.allowGradient !== false) !== false
+                            );
+                            colorWidget.querySelector('input[type=hidden]').dataset.varKey = v.key;
+                            row.appendChild(colorWidget);
+                        } else {
+                            input = document.createElement('input');
+                            input.type = inputType === 'number' ? 'number' : 'text';
+                            input.value = saved[v.key] !== undefined ? saved[v.key] : ((v.default || "") || '');
+                            input.placeholder = (v.default || "") || '';
+                            input.name = 'mm-var-' + v.key;
+                            input.id = 'mm-var-' + v.key;
+                            input.style.cssText = 'width:100%;padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:5px;color:inherit;font-size:.85em;font-family:inherit;box-sizing:border-box;';
+                            input.dataset.varKey = v.key;
+                            row.appendChild(input);
+                        }
+                        varContainer.appendChild(row);
+                    });
+                    dialog.appendChild(varContainer);
+
+                    var actions = document.createElement('div');
+                    actions.style.cssText = 'display:flex;gap:8px;margin-top:20px;justify-content:flex-end;';
+
+                    var cancelBtn = document.createElement('button');
+                    cancelBtn.type = 'button';
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.style.cssText = 'padding:7px 18px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;font-size:.88em;';
+                    cancelBtn.addEventListener('click', closeModal);
+
+                    var saveBtn = document.createElement('button');
+                    saveBtn.setAttribute('is', 'emby-button');
+                    saveBtn.className = 'raised button-submit emby-button';
+                    saveBtn.textContent = 'Save';
+                    saveBtn.addEventListener('click', saveModalVars);
+
+                    actions.appendChild(cancelBtn);
+                    actions.appendChild(saveBtn);
+                    dialog.appendChild(actions);
+
+                    overlay.appendChild(dialog);
+                    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+                    document.body.appendChild(overlay);
+                }
+
+                function closeModal() {
+                    var overlay = document.getElementById('mmModalOverlay');
+                    if (overlay) overlay.remove();
+                    modalContext = null;
+                }
+
+                function openPreviewModal(item) {
+                    var existing = document.getElementById('smPreviewOverlay');
+                    if (existing) existing.remove();
+                    var overlay = document.createElement('div');
+                    overlay.id = 'smPreviewOverlay';
+                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100001;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;';
+                    var imgWrap = document.createElement('div');
+                    imgWrap.style.cssText = 'position:relative;max-width:92vw;max-height:82vh;border-radius:10px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.8);';
+                    var img = document.createElement('img');
+                    img.src = item.previewUrl;
+                    img.alt = item.name;
+                    img.style.cssText = 'display:block;max-width:92vw;max-height:82vh;object-fit:contain;border-radius:10px;';
+                    imgWrap.appendChild(img);
+                    var info = document.createElement('div');
+                    info.style.cssText = 'margin-top:14px;text-align:center;';
+                    var title = document.createElement('div');
+                    title.style.cssText = 'font-size:1.1em;font-weight:600;color:#fff;';
+                    title.textContent = item.name;
+                    var author = document.createElement('div');
+                    author.style.cssText = 'font-size:.82em;opacity:.55;margin-top:3px;';
+                    author.textContent = 'by ' + (item.author || '');
+                    info.appendChild(title);
+                    if (item.author) info.appendChild(author);
+                    overlay.appendChild(imgWrap);
+                    overlay.appendChild(info);
+                    overlay.addEventListener('click', function () { overlay.remove(); });
+                    imgWrap.addEventListener('click', function (e) { e.stopPropagation(); });
+                    document.addEventListener('keydown', function onKey(e) {
+                        if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
+                    });
+                    document.body.appendChild(overlay);
+                }
+
+                function saveModalVars() {
+                    if (!modalContext) return closeModal();
+                    var mod = modalContext;
+                    var container = document.getElementById('mmModalVars');
+                    var values = {};
+                    container.querySelectorAll('[data-var-key]').forEach(function (input) {
+                        if (input.type === 'hidden' || !values.hasOwnProperty(input.dataset.varKey)) {
+                            values[input.dataset.varKey] = input.value;
+                        }
+                    });
+
+                    var pv = JSON.parse(JSON.stringify(state.pendingVars || state.modVars));
+                    pv[mod.id] = values;
+                    state.pendingVars = pv;
+
+                    el('mm-btnSave').disabled = false;
+                    updatePending();
+                    closeModal();
+                    render();
+                }
+
+                function toggleMod(mod) {
+                    var ids = currentIds().slice();
+                    var vars = (mod.vars || []) || [];
+                    var i = ids.indexOf(mod.id);
+
+                    if (i !== -1) {
+                        ids.splice(i, 1);
+                        state.pendingIds = ids;
+                        el('mm-btnSave').disabled = false;
+                        updatePending();
+                        updateActiveBar();
+                        render();
+                    } else {
+                        var missing = (mod.requires || []).filter(function (dep) {
+                            return !ids.includes(dep);
+                        });
+                        if (missing.length > 0) {
+                            alert('Cannot enable "' + (mod.name || mod.id) + '".\n\nMissing dependencies (enable these first):\n  • ' + missing.join('\n  • '));
+                            return;
+                        }
+
+                        ids.push(mod.id);
+                        state.pendingIds = ids;
+                        el('mm-btnSave').disabled = false;
+                        updatePending();
+                        updateActiveBar();
+                        render();
+                        if (vars.length > 0) {
+                            openVarsModal(mod);
+                        }
+                    }
+                }
+
+                function currentIds() {
+                    return state.pendingIds !== null ? state.pendingIds : state.enabledIds;
+                }
+
+                function currentVars() {
+                    return state.pendingVars !== null ? state.pendingVars : state.modVars;
+                }
+
+                function updateActiveBar() {
+                    var n = currentIds().length;
+                    el('mm-activeBar').style.display = n > 0 ? 'flex' : 'none';
+                    el('activeCount').textContent = n;
+                }
+
+                function updatePending() {
+                    var p = el('mm-pendingLabel');
+                    var ids = currentIds();
+                    if (state.pendingIds !== null || state.pendingVars !== null) {
+                        p.textContent = ids.length + ' mod(s) pending — unsaved';
+                        p.style.color = '#00a4dc';
+                    } else {
+                        p.textContent = ids.length > 0 ? ids.length + ' mod(s) active' : 'No pending changes';
+                        p.style.color = '';
+                    }
+                }
+
+                function doSave() {
+                    if (state.mods.length === 0) {
+                        Dashboard.alert('Please click Load Mods before saving.');
+                        return;
+                    }
+                    var ids = currentIds();
+                    var vars = currentVars();
+                    var cfg = Object.assign({}, state.config, {
+                        ModsUrl: el('modsUrl').value.trim(),
+                        EnabledMods: ids,
+                        CachedMods: JSON.stringify(state.mods),
+                        ModVars: JSON.stringify(vars)
+                    });
+                    el('mm-btnSave').disabled = true;
+                    ApiClient.updatePluginConfiguration(PLUGIN_ID, cfg).then(function (result) {
+                        Dashboard.processPluginConfigurationUpdateResult(result);
+                        state.config = cfg;
+                        state.enabledIds = ids;
+                        state.modVars = vars;
+                        state.pendingIds = null;
+                        state.pendingVars = null;
+                        updatePending();
+                        updateActiveBar();
+                        render();
+                        var doReload = function () { setTimeout(function () { window.top.location.reload(); }, 300); };
+                        if (window.caches) {
+                            caches.keys().then(function (keys) {
+                                return Promise.all(
+                                    keys.filter(function (k) { return k.startsWith('modmanager-'); })
+                                        .map(function (k) { return caches.delete(k); })
+                                );
+                            }).then(doReload).catch(doReload);
+                        } else {
+                            doReload();
+                        }
+                    }).catch(function (err) {
+                        el('mm-btnSave').disabled = false;
+                        Dashboard.alert('Save failed: ' + err.message);
+                    });
+                }
+
+                var mmPageEl2 = document.querySelector('.jfModsConfigPage');
+                (mmPageEl2 ? mmPageEl2 : document).querySelectorAll('.mmTab').forEach(function (btn) {
+                    btn.addEventListener('click', function () { switchTab(btn.dataset.tab); });
+                });
+
+                var mmPageEl = document.querySelector('.jfModsConfigPage');
+                if (mmPageEl) {
+                    mmPageEl.addEventListener('viewshow', loadConfig);
+                }
+
+                function buildColorInput(savedValue, defaultValue, allowGradient) {
+                    var initial = (savedValue || defaultValue || '#000000').trim();
+
+                    function toHex(n) { return Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0'); }
+                    function toStr(r, g, b, a) { return a >= 1 ? '#' + toHex(r) + toHex(g) + toHex(b) : 'rgba(' + Math.round(r) + ', ' + Math.round(g) + ', ' + Math.round(b) + ', ' + Math.round(a * 100) / 100 + ')'; }
+
+                    function parseColor(str) {
+                        str = (str || '').trim();
+                        var c = { r: 0, g: 0, b: 0, a: 1 }, m;
+                        m = str.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\/\s]+([\d.]+))?\s*\)/i);
+                        if (m) { c.r = parseInt(m[1]); c.g = parseInt(m[2]); c.b = parseInt(m[3]); c.a = m[4] !== undefined ? parseFloat(m[4]) : 1; return c; }
+                        m = str.match(/^#([0-9a-f]{8})$/i);
+                        if (m) { c.r = parseInt(m[1].slice(0, 2), 16); c.g = parseInt(m[1].slice(2, 4), 16); c.b = parseInt(m[1].slice(4, 6), 16); c.a = parseInt(m[1].slice(6, 8), 16) / 255; return c; }
+                        m = str.match(/^#([0-9a-f]{6})$/i);
+                        if (m) { c.r = parseInt(m[1].slice(0, 2), 16); c.g = parseInt(m[1].slice(2, 4), 16); c.b = parseInt(m[1].slice(4, 6), 16); return c; }
+                        m = str.match(/^#([0-9a-f]{3})$/i);
+                        if (m) { c.r = parseInt(m[1][0] + m[1][0], 16); c.g = parseInt(m[1][1] + m[1][1], 16); c.b = parseInt(m[1][2] + m[1][2], 16); return c; }
+                        return c;
+                    }
+
+                    function isGradient(str) { return /^(linear|radial|conic)-gradient\(/.test((str || '').trim()); }
+
+                    function parseGradientStops(str) {
+                        var stops = [];
+                        var inner = str.replace(/^(linear|radial|conic)-gradient\(\s*/, '').replace(/\s*\)$/, '');
+                        var chunks = inner.split(/,(?![^()]*\))/);
+                        var colorChunks = chunks.filter(function (ch) {
+                            return /rgba?\(|#[0-9a-f]/i.test(ch.trim());
+                        });
+                        colorChunks.forEach(function (ch) {
+                            ch = ch.trim();
+                            var posMatch = ch.match(/([\d.]+%)\s*$/);
+                            var pos = posMatch ? parseFloat(posMatch[1]) : null;
+                            var colorPart = posMatch ? ch.slice(0, ch.lastIndexOf(posMatch[1])).trim() : ch;
+                            stops.push({ color: colorPart, pos: pos });
+                        });
+                        if (stops.length < 2) { stops = [{ color: '#000000', pos: 0 }, { color: '#ffffff', pos: 100 }]; }
+                        return stops;
+                    }
+
+                    function parseGradientDir(str) {
+                        var m = str.match(/^linear-gradient\(\s*([^,]+),/);
+                        if (!m) return '180deg';
+                        var d = m[1].trim();
+                        if (/deg/.test(d)) return d;
+                        if (d === 'to bottom') return '180deg';
+                        if (d === 'to top') return '0deg';
+                        if (d === 'to right') return '90deg';
+                        if (d === 'to left') return '270deg';
+                        if (d === 'to bottom right') return '135deg';
+                        if (d === 'to bottom left') return '225deg';
+                        return '180deg';
+                    }
+
+                    function buildGradientStr(type, dir, stops) {
+                        var stopsStr = stops.map(function (s) {
+                            return s.color + (s.pos !== null ? ' ' + s.pos + '%' : '');
+                        }).join(', ');
+                        if (type === 'radial') return 'radial-gradient(circle, ' + stopsStr + ')';
+                        if (type === 'conic') return 'conic-gradient(from ' + dir + ', ' + stopsStr + ')';
+                        return 'linear-gradient(' + dir + ', ' + stopsStr + ')';
+                    }
+
+                    var MODE_SOLID = 'solid', MODE_GRADIENT = 'gradient';
+                    var mode = (isGradient(initial) && allowGradient !== false) ? MODE_GRADIENT : MODE_SOLID;
+
+                    var solidColor = mode === MODE_SOLID ? parseColor(initial) : { r: 0, g: 164, b: 220, a: 1 };
+                    var gradStops = mode === MODE_GRADIENT ? parseGradientStops(initial) : [{ color: '#00a4dc', pos: 0 }, { color: '#0066aa', pos: 100 }];
+                    var gradType = mode === MODE_GRADIENT ? (initial.startsWith('radial') ? 'radial' : initial.startsWith('conic') ? 'conic' : 'linear') : 'linear';
+                    var gradDir = mode === MODE_GRADIENT ? parseGradientDir(initial) : '180deg';
+
+                    var S = 'display:flex;flex-direction:column;gap:8px;';
+                    var wrap = document.createElement('div');
+                    wrap.style.cssText = S;
+
+                    var hidden = document.createElement('input');
+                    hidden.type = 'hidden'; hidden.name = 'var-color-value';
+
+                    var modeRow = document.createElement('div');
+                    modeRow.style.cssText = 'display:flex;gap:4px;';
+                    function modeBtn(label, val) {
+                        var b = document.createElement('button');
+                        b.type = 'button'; b.textContent = label; b.dataset.mode = val;
+                        b.style.cssText = 'flex:1;padding:4px 8px;border-radius:5px;border:1px solid rgba(255,255,255,0.14);font-size:11px;cursor:pointer;transition:all .15s;background:' + (mode === val ? '#00a4dc' : 'rgba(255,255,255,0.06)') + ';color:' + (mode === val ? '#fff' : 'rgba(255,255,255,0.7)') + ';';
+                        b.addEventListener('click', function () {
+                            mode = val;
+                            modeRow.querySelectorAll('button').forEach(function (x) {
+                                var active = x.dataset.mode === val;
+                                x.style.background = active ? '#00a4dc' : 'rgba(255,255,255,0.06)';
+                                x.style.color = active ? '#fff' : 'rgba(255,255,255,0.7)';
+                            });
+                            solidPanel.style.display = val === MODE_SOLID ? 'flex' : 'none';
+                            gradPanel.style.display = val === MODE_GRADIENT ? 'flex' : 'none';
+                            updateValue();
+                        });
+                        return b;
+                    }
+                    modeRow.appendChild(modeBtn('Solid', MODE_SOLID));
+                    if (allowGradient !== false) modeRow.appendChild(modeBtn('Gradient', MODE_GRADIENT));
+
+                    var swatch = document.createElement('div');
+                    swatch.style.cssText = 'height:28px;border-radius:5px;border:1px solid rgba(255,255,255,0.14);background-image:linear-gradient(45deg,#666 25%,transparent 25%),linear-gradient(-45deg,#666 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#666 75%),linear-gradient(-45deg,transparent 75%,#666 75%);background-size:10px 10px;background-position:0 0,0 5px,5px -5px,-5px 0;position:relative;overflow:hidden;';
+                    var swatchInner = document.createElement('div');
+                    swatchInner.style.cssText = 'position:absolute;inset:0;';
+                    swatch.appendChild(swatchInner);
+
+                    var valueDisplay = document.createElement('div');
+                    valueDisplay.style.cssText = 'font-size:10px;opacity:0.4;font-family:monospace;word-break:break-all;';
+
+                    function updateValue() {
+                        var val;
+                        if (mode === MODE_SOLID) {
+                            var hex = solidPicker.value, a = parseFloat(solidAlpha.value);
+                            var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+                            solidAlphaLabel.textContent = 'Opacity ' + Math.round(a * 100) + '%';
+                            val = toStr(r, g, b, a);
+                        } else {
+                            val = buildGradientStr(gradType, gradDir, gradStops);
+                        }
+                        hidden.value = val;
+                        swatchInner.style.background = val;
+                        valueDisplay.textContent = val;
+                    }
+
+                    var solidPanel = document.createElement('div');
+                    solidPanel.style.cssText = 'flex-direction:column;gap:6px;display:' + (mode === MODE_SOLID ? 'flex' : 'none') + ';';
+
+                    var solidRow1 = document.createElement('div'); solidRow1.style.cssText = 'display:flex;gap:8px;align-items:center;';
+                    var solidPicker = document.createElement('input'); solidPicker.type = 'color'; solidPicker.name = 'var-color-hex';
+                    solidPicker.value = '#' + toHex(solidColor.r) + toHex(solidColor.g) + toHex(solidColor.b);
+                    solidPicker.style.cssText = 'width:44px;height:34px;padding:2px 3px;border:1px solid rgba(255,255,255,0.14);border-radius:5px;background:rgba(255,255,255,0.06);cursor:pointer;flex-shrink:0;';
+                    var solidHexInput = document.createElement('input'); solidHexInput.type = 'text'; solidHexInput.name = 'var-color-hex-text';
+                    solidHexInput.style.cssText = 'flex:1;padding:5px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:5px;color:inherit;font-size:12px;font-family:monospace;';
+                    solidHexInput.value = solidPicker.value;
+                    solidPicker.addEventListener('input', function () { solidHexInput.value = solidPicker.value; updateValue(); });
+                    solidHexInput.addEventListener('input', function () {
+                        var v = solidHexInput.value.trim();
+                        if (/^#[0-9a-f]{6}$/i.test(v) || /^#[0-9a-f]{3}$/i.test(v)) solidPicker.value = v;
+                        updateValue();
+                    });
+                    solidRow1.appendChild(solidPicker); solidRow1.appendChild(solidHexInput);
+
+                    var solidRow2 = document.createElement('div'); solidRow2.style.cssText = 'display:flex;gap:8px;align-items:center;';
+                    var solidAlphaLabel = document.createElement('div'); solidAlphaLabel.style.cssText = 'font-size:11px;opacity:0.55;flex-shrink:0;width:72px;';
+                    var solidAlpha = document.createElement('input'); solidAlpha.type = 'range'; solidAlpha.min = '0'; solidAlpha.max = '1'; solidAlpha.step = '0.01';
+                    solidAlpha.name = 'var-color-alpha'; solidAlpha.value = String(solidColor.a);
+                    solidAlpha.style.cssText = 'flex:1;cursor:pointer;accent-color:#00a4dc;';
+                    solidAlpha.addEventListener('input', updateValue);
+                    solidRow2.appendChild(solidAlphaLabel); solidRow2.appendChild(solidAlpha);
+                    solidPanel.appendChild(solidRow1); solidPanel.appendChild(solidRow2);
+
+                    var gradPanel = document.createElement('div');
+                    gradPanel.style.cssText = 'flex-direction:column;gap:8px;display:' + (mode === MODE_GRADIENT ? 'flex' : 'none') + ';';
+
+                    var gradTypeRow = document.createElement('div'); gradTypeRow.style.cssText = 'display:flex;gap:4px;';
+                    ['linear', 'radial', 'conic'].forEach(function (t) {
+                        var b = document.createElement('button'); b.type = 'button'; b.textContent = t.charAt(0).toUpperCase() + t.slice(1); b.dataset.gtype = t;
+                        b.style.cssText = 'flex:1;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.14);font-size:11px;cursor:pointer;background:' + (gradType === t ? 'rgba(0,164,220,0.25)' : 'rgba(255,255,255,0.06)') + ';color:inherit;';
+                        b.addEventListener('click', function () {
+                            gradType = t;
+                            gradTypeRow.querySelectorAll('[data-gtype]').forEach(function (x) { x.style.background = x.dataset.gtype === t ? 'rgba(0,164,220,0.25)' : 'rgba(255,255,255,0.06)'; });
+                            gradDirRow.style.display = t === 'radial' ? 'none' : 'flex';
+                            updateValue();
+                        });
+                        gradTypeRow.appendChild(b);
+                    });
+
+                    var gradDirRow = document.createElement('div'); gradDirRow.style.cssText = 'display:' + (gradType === 'radial' ? 'none' : 'flex') + ';flex-direction:column;gap:4px;';
+                    var gradDirLabel = document.createElement('div'); gradDirLabel.style.cssText = 'font-size:11px;opacity:0.55;'; gradDirLabel.textContent = 'Direction';
+                    var gradDirBtns = document.createElement('div'); gradDirBtns.style.cssText = 'display:flex;flex-wrap:wrap;gap:3px;';
+                    var DIRS = [['↑', '0deg'], ['↗', '45deg'], ['→', '90deg'], ['↘', '135deg'], ['↓', '180deg'], ['↙', '225deg'], ['←', '270deg'], ['↖', '315deg']];
+                    DIRS.forEach(function (d) {
+                        var b = document.createElement('button'); b.type = 'button'; b.textContent = d[0]; b.dataset.deg = d[1];
+                        b.title = d[1];
+                        b.style.cssText = 'width:28px;height:28px;border-radius:4px;border:1px solid rgba(255,255,255,0.14);font-size:14px;cursor:pointer;background:' + (gradDir === d[1] ? 'rgba(0,164,220,0.3)' : 'rgba(255,255,255,0.06)') + ';color:inherit;';
+                        b.addEventListener('click', function () {
+                            gradDir = d[1];
+                            gradDirBtns.querySelectorAll('[data-deg]').forEach(function (x) { x.style.background = x.dataset.deg === d[1] ? 'rgba(0,164,220,0.3)' : 'rgba(255,255,255,0.06)'; });
+                            updateValue();
+                        });
+                        gradDirBtns.appendChild(b);
+                    });
+                    var gradDirCustomRow = document.createElement('div'); gradDirCustomRow.style.cssText = 'display:flex;gap:6px;align-items:center;';
+                    var gradDirCustomLabel = document.createElement('div'); gradDirCustomLabel.style.cssText = 'font-size:11px;opacity:0.55;flex-shrink:0;'; gradDirCustomLabel.textContent = 'Custom:';
+                    var gradDirCustom = document.createElement('input'); gradDirCustom.type = 'range'; gradDirCustom.min = '0'; gradDirCustom.max = '360'; gradDirCustom.step = '1';
+                    gradDirCustom.value = parseInt(gradDir);
+                    gradDirCustom.style.cssText = 'flex:1;cursor:pointer;accent-color:#00a4dc;';
+                    var gradDirCustomVal = document.createElement('div'); gradDirCustomVal.style.cssText = 'font-size:11px;font-family:monospace;width:40px;flex-shrink:0;';
+                    gradDirCustomVal.textContent = gradDir;
+                    gradDirCustom.addEventListener('input', function () {
+                        gradDir = gradDirCustom.value + 'deg';
+                        gradDirCustomVal.textContent = gradDir;
+                        gradDirBtns.querySelectorAll('[data-deg]').forEach(function (x) { x.style.background = 'rgba(255,255,255,0.06)'; });
+                        updateValue();
+                    });
+                    gradDirCustomRow.appendChild(gradDirCustomLabel); gradDirCustomRow.appendChild(gradDirCustom); gradDirCustomRow.appendChild(gradDirCustomVal);
+                    gradDirRow.appendChild(gradDirLabel); gradDirRow.appendChild(gradDirBtns); gradDirRow.appendChild(gradDirCustomRow);
+
+                    var stopsContainer = document.createElement('div'); stopsContainer.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+                    var stopsLabel = document.createElement('div'); stopsLabel.style.cssText = 'display:flex;justify-content:space-between;align-items:center;';
+                    var stopsTitle = document.createElement('div'); stopsTitle.style.cssText = 'font-size:11px;opacity:0.55;'; stopsTitle.textContent = 'Color stops';
+                    var addStopBtn = document.createElement('button'); addStopBtn.type = 'button'; addStopBtn.textContent = '+ Add stop';
+                    addStopBtn.style.cssText = 'font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;';
+                    stopsLabel.appendChild(stopsTitle); stopsLabel.appendChild(addStopBtn);
+                    var stopsList = document.createElement('div'); stopsList.style.cssText = 'display:flex;flex-direction:column;gap:5px;';
+
+                    function renderStop(stop, idx) {
+                        var stopRow = document.createElement('div'); stopRow.style.cssText = 'display:flex;gap:6px;align-items:center;';
+                        var stopPicker = document.createElement('input'); stopPicker.type = 'color'; stopPicker.value = stop.color.startsWith('#') ? stop.color : '#000000';
+                        stopPicker.style.cssText = 'width:34px;height:28px;padding:1px 2px;border:1px solid rgba(255,255,255,0.14);border-radius:4px;background:rgba(255,255,255,0.06);cursor:pointer;flex-shrink:0;';
+                        var stopAlpha = document.createElement('input'); stopAlpha.type = 'range'; stopAlpha.min = '0'; stopAlpha.max = '1'; stopAlpha.step = '0.01';
+                        var sc = parseColor(stop.color); stopAlpha.value = String(sc.a);
+                        stopAlpha.style.cssText = 'flex:1;cursor:pointer;accent-color:#00a4dc;';
+                        var stopPos = document.createElement('input'); stopPos.type = 'number'; stopPos.min = '0'; stopPos.max = '100'; stopPos.step = '1';
+                        stopPos.value = stop.pos !== null ? stop.pos : Math.round(idx / (gradStops.length - 1 || 1) * 100);
+                        stopPos.style.cssText = 'width:44px;padding:3px 5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:4px;color:inherit;font-size:11px;text-align:center;';
+                        var stopDel = document.createElement('button'); stopDel.type = 'button'; stopDel.textContent = '✕';
+                        stopDel.style.cssText = 'width:22px;height:22px;border-radius:4px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);cursor:pointer;font-size:11px;flex-shrink:0;';
+                        if (gradStops.length <= 2) stopDel.disabled = true;
+                        function syncStop() {
+                            var hex = stopPicker.value, a = parseFloat(stopAlpha.value);
+                            var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+                            stop.color = toStr(r, g, b, a);
+                            stop.pos = parseInt(stopPos.value) || 0;
+                            updateValue();
+                        }
+                        stopPicker.addEventListener('input', syncStop);
+                        stopAlpha.addEventListener('input', syncStop);
+                        stopPos.addEventListener('input', syncStop);
+                        stopDel.addEventListener('click', function () {
+                            if (gradStops.length > 2) { gradStops.splice(idx, 1); renderStops(); updateValue(); }
+                        });
+                        stopRow.appendChild(stopPicker); stopRow.appendChild(stopAlpha); stopRow.appendChild(stopPos); stopRow.appendChild(stopDel);
+                        return stopRow;
+                    }
+
+                    function renderStops() {
+                        stopsList.innerHTML = '';
+                        gradStops.forEach(function (stop, idx) { stopsList.appendChild(renderStop(stop, idx)); });
+                    }
+                    renderStops();
+
+                    addStopBtn.addEventListener('click', function () {
+                        gradStops.push({ color: '#888888', pos: 100 });
+                        renderStops(); updateValue();
+                    });
+
+                    stopsContainer.appendChild(stopsLabel); stopsContainer.appendChild(stopsList);
+                    gradPanel.appendChild(gradTypeRow); gradPanel.appendChild(gradDirRow); gradPanel.appendChild(stopsContainer);
+
+                    wrap.appendChild(modeRow);
+                    wrap.appendChild(swatch);
+                    wrap.appendChild(solidPanel);
+                    wrap.appendChild(gradPanel);
+                    wrap.appendChild(valueDisplay);
+                    wrap.appendChild(hidden);
+
+                    updateValue();
+                    return wrap;
+                }
+
+                el('mm-btnLoad').addEventListener('click', function () {
+                    var url = el('modsUrl').value.trim();
+                    if (url) loadMods(url);
+                });
+                el('mm-searchInput').addEventListener('input', function () { state.query = this.value; render(); });
+                el('mm-btnSave').addEventListener('click', doSave);
+                el('btnDisableAll').addEventListener('click', function () {
+                    state.pendingIds = [];
+                    el('mm-btnSave').disabled = false;
+                    updatePending();
+                    updateActiveBar();
+                    render();
+                });
+                el('chkDebug').addEventListener('change', function () {
+                    var cfg = Object.assign({}, state.config, { DebugLogging: this.checked });
+                    ApiClient.updatePluginConfiguration(PLUGIN_ID, cfg).then(function () {
+                        state.config = cfg;
+                    });
+                });
+
+                var TAB_PANELS = { marketplace: 'tabMarketplace', health: 'tabHealth', settings: 'mm-tabSettings' };
+                function switchTab(name) {
+                    Object.keys(TAB_PANELS).forEach(function (k) {
+                        document.getElementById(TAB_PANELS[k]).style.display = k === name ? '' : 'none';
+                    });
+                    var mmRoot = document.querySelector('.jfModsConfigPage') || document;
+                    mmRoot.querySelectorAll('.mmTab').forEach(function (btn) {
+                        var active = btn.dataset.tab === name;
+                        btn.style.borderBottomColor = active ? '#00a4dc' : 'transparent';
+                        btn.style.color = active ? '#00a4dc' : 'rgba(255,255,255,0.5)';
+                    });
+                    if (name === 'health') loadHealth();
+                    if (name === 'settings') {
+                        var vEl = document.getElementById('pluginVersionLabel');
+                        if (vEl) vEl.textContent = 'Plugin ID: ' + PLUGIN_ID;
+                        loadCacheInfo();
+                    }
+                }
+                var selectedCacheModIds = [];
+
+                function loadCacheInfo() {
+                    var infoBar = document.getElementById('cacheInfoBar');
+                    var modList = document.getElementById('cacheModList');
+                    var purgeSel = document.getElementById('btnPurgeSelected');
+                    infoBar.textContent = 'Loading…';
+                    modList.innerHTML = '';
+                    selectedCacheModIds = [];
+                    if (purgeSel) purgeSel.disabled = true;
+
+                    ApiClient.ajax({ url: ApiClient.getUrl('JellyFrame/api/mods/cache'), type: 'GET', dataType: 'json' })
+                        .then(function (data) {
+                            var kb = (data.totalBytes / 1024).toFixed(1);
+                            infoBar.textContent = data.fileCount + ' file(s) · ' + kb + ' KB  —  ' + data.cacheDir;
+
+                            var grouped = {};
+                            (data.entries || []).forEach(function (e) {
+                                if (!grouped[e.modId]) grouped[e.modId] = [];
+                                grouped[e.modId].push(e);
+                            });
+
+                            if (Object.keys(grouped).length === 0) {
+                                modList.innerHTML = '<div style="font-size:.82em;opacity:.45;padding:.4em 0;">Cache is empty.</div>';
+                                return;
+                            }
+
+                            Object.keys(grouped).sort().forEach(function (modId) {
+                                var files = grouped[modId];
+                                var modKb = (files.reduce(function (s, f) { return s + f.sizeBytes; }, 0) / 1024).toFixed(1);
+                                var row = document.createElement('div');
+                                row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:4px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);cursor:pointer;user-select:none;';
+
+                                var chk = document.createElement('input');
+                                chk.type = 'checkbox';
+                                chk.style.cssText = 'flex-shrink:0;accent-color:#00a4dc;cursor:pointer;';
+                                chk.addEventListener('change', function () {
+                                    if (chk.checked) {
+                                        if (!selectedCacheModIds.includes(modId)) selectedCacheModIds.push(modId);
+                                    } else {
+                                        selectedCacheModIds = selectedCacheModIds.filter(function (x) { return x !== modId; });
+                                    }
+                                    if (purgeSel) purgeSel.disabled = selectedCacheModIds.length === 0;
+                                });
+
+                                var label = document.createElement('div');
+                                label.style.cssText = 'flex:1;font-size:.83em;';
+                                var typeList = files.map(function (f) { return f.type; }).join(', ');
+                                label.innerHTML = '<span style="font-weight:600;">' + escHtml(modId) + '</span>'
+                                    + '<span style="opacity:.45;margin-left:.5em;">v' + escHtml(files[0].version) + '</span>'
+                                    + '<span style="opacity:.35;margin-left:.5em;font-size:.9em;">[' + typeList + ']</span>';
+
+                                var size = document.createElement('div');
+                                size.style.cssText = 'font-size:.78em;opacity:.4;flex-shrink:0;font-variant-numeric:tabular-nums;';
+                                size.textContent = modKb + ' KB';
+
+                                row.appendChild(chk);
+                                row.appendChild(label);
+                                row.appendChild(size);
+                                row.addEventListener('click', function (e) {
+                                    if (e.target !== chk) chk.checked = !chk.checked;
+                                    chk.dispatchEvent(new Event('change'));
+                                });
+                                modList.appendChild(row);
+                            });
+                        })
+                        .catch(function () {
+                            infoBar.textContent = 'Failed to load cache info.';
+                        });
+                }
+
+                function doPurge(modIds) {
+                    var resultEl = document.getElementById('cacheActionResult');
+                    var body = modIds && modIds.length > 0 ? JSON.stringify({ modIds: modIds }) : '{}';
+                    ApiClient.ajax({
+                        url: ApiClient.getUrl('JellyFrame/api/mods/cache/purge'),
+                        type: 'POST',
+                        data: body,
+                        contentType: 'application/json',
+                        dataType: 'json'
+                    }).then(function (res) {
+                        if (resultEl) {
+                            resultEl.style.display = '';
+                            resultEl.textContent = '✓ Purged ' + res.deleted + ' file(s). Cache will rebuild on next load.';
+                            setTimeout(function () { resultEl.style.display = 'none'; }, 4000);
+                        }
+                        selectedCacheModIds = [];
+                        loadCacheInfo();
+                    }).catch(function () {
+                        if (resultEl) {
+                            resultEl.style.display = '';
+                            resultEl.style.color = '#e06060';
+                            resultEl.textContent = '✗ Purge failed. Check that you are logged in as admin.';
+                        }
+                    });
+                }
+
+                document.getElementById('btnPurgeAll').addEventListener('click', function () {
+                    if (confirm('Purge the entire cache? All mods will re-download on next page load.'))
+                        doPurge([]);
+                });
+                document.getElementById('btnPurgeSelected').addEventListener('click', function () {
+                    if (selectedCacheModIds.length === 0) return;
+                    if (confirm('Purge cache for: ' + selectedCacheModIds.join(', ') + '?'))
+                        doPurge(selectedCacheModIds);
+                });
+                document.getElementById('btnRefreshCacheInfo').addEventListener('click', loadCacheInfo);
+
+                function loadHealth() {
+                    var grid = document.getElementById('healthGrid');
+                    var summary = document.getElementById('pluginHealthSummary');
+                    grid.innerHTML = '<div class="stateMsg" style="opacity:.4;font-size:.9em">Loading…</div>';
+
+                    ApiClient.ajax({ url: ApiClient.getUrl('JellyFrame/api/health'), type: 'GET', dataType: 'json' })
+                        .then(function (data) {
+                            summary.innerHTML = '';
+                            var chips = [
+                                ['Loaded server mods', data.plugin.loadedServerMods],
+                                ['Enabled mods', data.plugin.enabledMods],
+                                ['Cached mods', data.plugin.totalCachedMods],
+                                ['Hot-reload watcher', data.plugin.watcherActive ? 'active' : 'off']
+                            ];
+                            chips.forEach(function (c) {
+                                var chip = document.createElement('div');
+                                chip.style.cssText = 'padding:6px 14px;border-radius:20px;background:rgba(255,255,255,0.07);font-size:.82em;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:90px;';
+                                chip.innerHTML = '<span style="font-size:1.3em;font-weight:700;line-height:1.1;">' + c[1] + '</span><span style="opacity:.5;font-size:.88em;text-align:center;">' + c[0] + '</span>';
+                                summary.appendChild(chip);
+                            });
+
+                            grid.innerHTML = '';
+                            if (!data.mods || data.mods.length === 0) {
+                                grid.innerHTML = '<div class="stateMsg" style="opacity:.4;font-size:.9em">No server mods loaded.</div>';
+                                return;
+                            }
+                            data.mods.forEach(function (mod) {
+                                var card = document.createElement('div');
+                                card.style.cssText = 'padding:12px 16px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);';
+
+                                var statusDot = mod.loaded
+                                    ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#20c060;margin-right:6px;vertical-align:middle;"></span>'
+                                    : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#c04040;margin-right:6px;vertical-align:middle;"></span>';
+
+                                var loadedAt = mod.loadedAt ? new Date(mod.loadedAt).toLocaleTimeString() : '—';
+
+                                var metrics = [
+                                    ['Routes', mod.routeCount],
+                                    ['Scheduler', mod.schedulerTasks],
+                                    ['Cache entries', mod.cacheEntries],
+                                    ['Store keys', mod.storeKeys],
+                                    ['User store', mod.userStoreUsers + ' user(s)'],
+                                    ['Webhooks', (mod.registeredWebhooks || []).join(', ') || '—'],
+                                    ['RPC methods', (mod.rpcMethods || []).join(', ') || '—'],
+                                    ['Permissions', (mod.permissions || []).join(', ') || 'none'],
+                                    ['Requires', (mod.requires || []).join(', ') || 'none']
+                                ];
+
+                                var metricHtml = metrics.map(function (m) {
+                                    return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:.82em;">'
+                                        + '<span style="opacity:.5;">' + m[0] + '</span>'
+                                        + '<span style="font-variant-numeric:tabular-nums;">' + m[1] + '</span>'
+                                        + '</div>';
+                                }).join('');
+
+                                card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">'
+                                    + '<span style="font-weight:600;font-size:.95em;">' + statusDot + escHtml(mod.name || mod.id) + '</span>'
+                                    + '<span style="font-size:.75em;opacity:.4;">loaded ' + loadedAt + '</span>'
+                                    + '</div>'
+                                    + metricHtml;
+
+                                grid.appendChild(card);
+                            });
+                        })
+                        .catch(function () {
+                            grid.innerHTML = '<div class="stateMsg" style="color:#e06060;font-size:.9em">Failed to load health data. Are you logged in as admin?</div>';
+                        });
+                }
+
+                document.getElementById('btnRefreshHealth').addEventListener('click', loadHealth);
+
+                function escHtml(s) {
+                    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                }
+
+                function checkWhatsNew(mods) {
+                    var STORAGE_KEY = 'mmModVersions_' + PLUGIN_ID;
+                    var stored = {};
+                    try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { }
+
+                    var updated = [];
+                    mods.forEach(function (m) {
+                        if (stored[m.id] && stored[m.id] !== m.version) {
+                            updated.push(m.name + ' (' + stored[m.id] + ' → ' + m.version + ')');
+                        }
+                    });
+
+                    var current = {};
+                    mods.forEach(function (m) { current[m.id] = m.version; });
+                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(current)); } catch (e) { }
+
+                    if (updated.length > 0) {
+                        var bar = document.getElementById('whatsNewBar');
+                        var text = document.getElementById('whatsNewText');
+                        text.textContent = 'Updated: ' + updated.join(' · ');
+                        bar.style.display = 'flex';
+                    }
+                }
+
+                document.getElementById('btnWhatsNewDismiss').addEventListener('click', function () {
+                    document.getElementById('whatsNewBar').style.display = 'none';
+                });
+
+                var _origLoadMods = loadMods;
+                loadMods = function (url) {
+                    _origLoadMods(url);
+                    var attempts = 0;
+                    var poll = setInterval(function () {
+                        if (state.mods && state.mods.length > 0) {
+                            clearInterval(poll);
+                            checkWhatsNew(state.mods);
+                        }
+                        if (++attempts > 20) clearInterval(poll);
+                    }, 300);
+                };
+
+            })();
+        </script>
+
+    </div>
+</body>
+
+</html>
