@@ -1,4 +1,4 @@
-var CACHE_TTL_MS = 5 * 60 * 1000;
+var CACHE_TTL_MS = 1 * 60 * 1000;
 var MAX_ITEMS = 20;
 
 jf.onStart(function () {
@@ -60,6 +60,110 @@ function fetchItems() {
         return item !== null;
     });
 }
+
+function fetchPlaylistItems(playlistId) {
+    var playlist = jf.jellyfin.getItem(playlistId);
+    if (!playlist) {
+        jf.log.warn('media-bar: playlist "' + playlistId + '" not found');
+        return [];
+    }
+    var items = jf.jellyfin.getItems({
+        parentId: playlistId,
+        recursive: 'false'
+    });
+    return items || [];
+}
+
+function fetchByIds(ids) {
+    var results = [];
+    for (var i = 0; i < ids.length; i++) {
+        var id = ids[i].trim();
+        if (!id) continue;
+        var item = jf.jellyfin.getItem(id);
+        if (item) results.push(item);
+    }
+    return results;
+}
+
+function fetchLatest(limit) {
+    var movies = jf.jellyfin.getItems({
+        type: 'Movie',
+        recursive: 'true',
+        sortBy: 'DateCreated',
+        sortOrder: 'Descending',
+        limit: String(Math.ceil(limit / 2))
+    }) || [];
+
+    var shows = jf.jellyfin.getItems({
+        type: 'Series',
+        recursive: 'true',
+        sortBy: 'DateCreated',
+        sortOrder: 'Descending',
+        limit: String(Math.ceil(limit / 2))
+    }) || [];
+
+    var combined = movies.concat(shows);
+    return shuffle(combined);
+}
+
+function mapItem(item) {
+    if (!item || !item.id) return null;
+
+    var serverId = item.serverId || '';
+    var itemId = item.id;
+
+    var backdropTag = (item.backdropImageTags && item.backdropImageTags[0]) || null;
+    var logoTag = (item.imageBlurHashes && item.imageBlurHashes.Logo)
+        ? Object.keys(item.imageBlurHashes.Logo)[0] : null;
+    var primaryTag = (item.imageTags && item.imageTags.Primary) || null;
+
+    var imageBase = '/Items/' + itemId + '/Images/';
+
+    // Removed the isFavorite mapping logic
+    return {
+        id: itemId,
+        name: item.name || '',
+        type: item.type || '',
+        overview: item.overview || '',
+        year: item.productionYear || null,
+        rating: item.officialRating || null,
+        communityRating: item.communityRating || null,
+        runTimeTicks: item.runTimeTicks || null,
+        genres: item.genres || [],
+        playbackUrl: '#/details?id=' + itemId + (serverId ? '&serverId=' + serverId : ''),
+        detailUrl: '#/details?id=' + itemId + (serverId ? '&serverId=' + serverId : ''),
+        backdropUrl: backdropTag
+            ? imageBase + 'Backdrop/0?tag=' + backdropTag + '&quality=90&maxWidth=1920'
+            : (primaryTag ? imageBase + 'Primary?tag=' + primaryTag + '&quality=90&maxWidth=1920' : null),
+        logoUrl: logoTag
+            ? imageBase + 'Logo?tag=' + logoTag + '&quality=90&maxWidth=400'
+            : null,
+        primaryUrl: primaryTag
+            ? imageBase + 'Primary?tag=' + primaryTag + '&quality=90&maxWidth=400'
+            : null
+    };
+}
+
+function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+}
+
+jf.routes.get('/items', function (req, res) {
+    var forceRefresh = req.queryParams && req.queryParams['fresh'] === 'true';
+    var items = forceRefresh ? null : jf.cache.get('mediaBarItems');
+    
+    if (!items) {
+        buildCache();
+        items = jf.cache.get('mediaBarItems') || [];
+    }
+    
+    return res.json({ count: items.length, items: items });
+});
 
 function fetchPlaylistItems(playlistId) {
     var playlist = jf.jellyfin.getItem(playlistId);
