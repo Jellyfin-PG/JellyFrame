@@ -21,8 +21,9 @@
         s.id = STYLE_ID;
         s.textContent = [
             '#' + BAR_ID + ' {',
-            '  position: relative; width: 100%; height: 500px;',
-            '  overflow: hidden; background: #000; margin-bottom: 20px;',
+            '  position: relative; margin: 20px 3.3%; height: 450px;',
+            '  border-radius: 14px; overflow: hidden; background: #000;',
+            '  box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 100;',
             '}',
             '.jfmb-slide {',
             '  position: absolute; inset: 0;',
@@ -60,7 +61,7 @@
             '.jfmb-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.4); cursor: pointer; transition: background .3s, transform .3s; }',
             '.jfmb-dot.active { background: #fff; transform: scale(1.5); }',
             '@media (max-width: 768px) {',
-            '  #' + BAR_ID + ' { height: 320px; }',
+            '  #' + BAR_ID + ' { margin: 10px 2%; height: 300px; }',
             '  .jfmb-overlay { padding: 60px 20px 20px; }',
             '  .jfmb-title { font-size: 1.6em; }',
             '  .jfmb-overview { display: none; }',
