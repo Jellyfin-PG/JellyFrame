@@ -166,10 +166,11 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 switch (el.ValueKind)
                 {
                     case System.Text.Json.JsonValueKind.Object:
-                        var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                        var expando = new System.Dynamic.ExpandoObject()
+                            as IDictionary<string, object>;
                         foreach (var prop in el.EnumerateObject())
-                            dict[prop.Name] = ConvertJsonElement(prop.Value);
-                        return dict;
+                            expando[prop.Name] = ConvertJsonElement(prop.Value);
+                        return expando;
                     case System.Text.Json.JsonValueKind.Array:
                         var list = new List<object>();
                         foreach (var item in el.EnumerateArray())
