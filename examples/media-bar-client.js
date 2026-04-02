@@ -72,7 +72,9 @@
     }
 
     function fetchViaServerMod() {
-        return fetch(API_BASE + '/items')
+        var userId = (typeof ApiClient !== 'undefined') ? ApiClient.getCurrentUserId() : null;
+        var url = API_BASE + '/items' + (userId ? '?userId=' + encodeURIComponent(userId) : '');
+        return fetch(url)
             .then(function (r) {
                 if (!r.ok) throw new Error('server mod ' + r.status);
                 return r.json();

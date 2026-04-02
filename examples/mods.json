@@ -17,6 +17,7 @@
       "store",
       "scheduler"
     ],
+    "preconnect": [],
     "requires": [],
     "vars": [
       {
@@ -67,6 +68,7 @@
       "scheduler"
     ],
     "requires": [],
+    "preconnect": [],
     "vars": [
       {
         "key": "PLAYLIST_ID",
