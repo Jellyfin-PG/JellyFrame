@@ -170,6 +170,127 @@ jf.routes.post('/favourite/:itemId', function (req, res) {
     var itemId = req.pathParams['itemId'];
     var body   = req.body || {};
     var state  = body.favourite !== false;
+    var userId = body.userId ? String(body.userId) : null;
+
+    if (!userId) {
+        var users = jf.jellyfin.getUsers() || [];
+        if (users.length === 0) return res.status(500).json({ error: 'no users' });
+        userId = users[0].id;
+    }
+
+    jf.jellyfin.setFavorite(userId, itemId, state);
+    jf.cache.delete('mediaBarItems');
+    return res.json({ ok: true, itemId: itemId, userId: userId, favourite: state });
+});    return rawItems.map(function (item) {
+        return mapItem(item);
+    }).filter(function (item) {
+        return item !== null;
+    });
+}
+
+function fetchPlaylistItems(playlistId, userId) {
+    var playlist = jf.jellyfin.getItem(playlistId, userId);
+    if (!playlist) {
+        jf.log.warn('media-bar: playlist "' + playlistId + '" not found');
+        return [];
+    }
+    return jf.jellyfin.getItems({
+        parentId:  playlistId,
+        recursive: 'false',
+        userId:    userId || ''
+    }) || [];
+}
+
+function fetchByIds(ids, userId) {
+    var results = [];
+    for (var i = 0; i < ids.length; i++) {
+        var id = ids[i].trim();
+        if (!id) continue;
+        var item = jf.jellyfin.getItem(id, userId);
+        if (item) results.push(item);
+    }
+    return results;
+}
+
+function fetchLatest(limit, userId) {
+    var half = Math.ceil(limit / 2);
+
+    var movies = jf.jellyfin.getItems({
+        type:      'Movie',
+        recursive: 'true',
+        sortBy:    'DateCreated',
+        sortOrder: 'Descending',
+        limit:     String(half),
+        userId:    userId || ''
+    }) || [];
+
+    var shows = jf.jellyfin.getItems({
+        type:      'Series',
+        recursive: 'true',
+        sortBy:    'DateCreated',
+        sortOrder: 'Descending',
+        limit:     String(half),
+        userId:    userId || ''
+    }) || [];
+
+    return shuffle(movies.concat(shows));
+}
+
+function mapItem(item) {
+    if (!item || !item.id) return null;
+
+    var itemId = item.id;
+
+    var backdropTag = (item.backdropImageTags && item.backdropImageTags.length > 0)
+                    ? item.backdropImageTags[0] : null;
+    var logoTag     = (item.imageTags && item.imageTags.Logo)    ? item.imageTags.Logo    : null;
+    var primaryTag  = (item.imageTags && item.imageTags.Primary) ? item.imageTags.Primary : null;
+
+    var imageBase = '/Items/' + itemId + '/Images/';
+
+    return {
+        id:              itemId,
+        name:            item.name            || '',
+        type:            item.type            || '',
+        overview:        item.overview        || '',
+        year:            item.productionYear  || null,
+        rating:          item.officialRating  || null,
+        communityRating: item.communityRating || null,
+        runTimeTicks:    item.runTimeTicks    || null,
+        genres:          item.genres          || [],
+        isFavorite:      item.isFavorite      === true,
+        detailUrl:       '/web/index.html#/details?id=' + itemId,
+        backdropUrl:     backdropTag
+                           ? imageBase + 'Backdrop/0?tag=' + backdropTag + '&quality=90&maxWidth=1920'
+                           : (primaryTag ? imageBase + 'Primary?tag=' + primaryTag + '&quality=90&maxWidth=1920' : null),
+        logoUrl:         logoTag
+                           ? imageBase + 'Logo?tag=' + logoTag + '&quality=90&maxWidth=400'
+                           : null
+    };
+}
+
+function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+}
+
+jf.routes.get('/items', function (req, res) {
+    var items = jf.cache.get('mediaBarItems');
+    if (!items) {
+        buildCache();
+        items = jf.cache.get('mediaBarItems') || [];
+    }
+    return res.json({ count: items.length, items: items });
+});
+
+jf.routes.post('/favourite/:itemId', function (req, res) {
+    var itemId = req.pathParams['itemId'];
+    var body   = req.body || {};
+    var state  = body.favourite !== false;
     var users  = jf.jellyfin.getUsers() || [];
     if (users.length === 0) return res.status(500).json({ error: 'no users' });
     jf.jellyfin.setFavorite(users[0].id, itemId, state);
