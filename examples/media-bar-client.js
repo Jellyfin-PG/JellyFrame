@@ -12,8 +12,6 @@
     var isFetching   = false;
     var lastPath     = '';
 
-    var cachedItems  = null;
-    var cacheTime    = 0;
 
     function injectCSS() {
         if (document.getElementById(STYLE_ID)) return;
@@ -121,18 +119,9 @@
     }
 
     function fetchItems() {
-        if (cachedItems && (Date.now() - cacheTime < 5 * 60 * 1000)) {
-            return Promise.resolve(cachedItems);
-        }
-
         return fetchViaServerMod()
             .then(function (items) { return items.length > 0 ? items : fetchViaApiClient(); })
-            .catch(fetchViaApiClient)
-            .then(function (items) {
-                cachedItems = items;
-                cacheTime = Date.now();
-                return items;
-            });
+            .catch(fetchViaApiClient);
     }
 
     function formatRuntime(ticks) {
@@ -253,13 +242,19 @@
             var infoBtn = document.createElement('button');
             infoBtn.className = 'jfmb-btn jfmb-btn-info';
             infoBtn.textContent = 'More Info';
-            (function (url) {
-                infoBtn.onclick = function (e) { e.stopPropagation(); window.location.hash = url; };
-            })(item.detailUrl);
+            (function (itm) {
+                infoBtn.onclick = function (e) {
+                    e.stopPropagation();
+                    var serverId = itm.serverId || (typeof ApiClient !== 'undefined' ? ApiClient.serverId() : '');
+                    var hash = '/details?id=' + itm.id + (serverId ? '&serverId=' + serverId : '');
+                    window.location.hash = hash;
+                };
+            })(item);
             btns.appendChild(infoBtn);
 
             var favBtn = document.createElement('button');
             favBtn.className = 'jfmb-btn jfmb-btn-fav' + (item.isFavorite ? ' active' : '');
+            favBtn.setAttribute('data-jfmb-item', item.id);
             favBtn.innerHTML = item.isFavorite ? '&#9829;&#xFE0E;' : '&#9825;&#xFE0E;';
             (function (btn, itm) {
                 btn.onclick = function (e) {
@@ -280,9 +275,18 @@
                         headers: { 'Content-Type': 'application/json' },
                         body:    JSON.stringify({ favourite: itm.isFavorite, userId: userId })
                     }).then(function (r) {
-                        if (!r.ok) console.error('[media-bar] Favourite toggle failed:', r.status);
+                        if (!r.ok) {
+                            console.error('[media-bar] Favourite toggle failed:', r.status);
+                            itm.isFavorite = !itm.isFavorite;
+                            btn.classList.toggle('active', itm.isFavorite);
+                            btn.innerHTML = itm.isFavorite ? '&#9829;&#xFE0E;' : '&#9825;&#xFE0E;';
+                        }
+
                     }).catch(function (err) {
                         console.error('[media-bar] Favourite toggle error:', err);
+                        itm.isFavorite = !itm.isFavorite;
+                        btn.classList.toggle('active', itm.isFavorite);
+                        btn.innerHTML = itm.isFavorite ? '&#9829;&#xFE0E;' : '&#9825;&#xFE0E;';
                     });
                 };
             })(favBtn, item);
@@ -291,10 +295,14 @@
             overlay.appendChild(btns);
             slide.appendChild(overlay);
 
-            slide.onclick = function (e) {
-                if (e.target.closest('button')) return;
-                window.location.hash = item.detailUrl;
-            };
+            (function (itm) {
+                slide.onclick = function (e) {
+                    if (e.target.closest('button')) return;
+                    var serverId = itm.serverId || (typeof ApiClient !== 'undefined' ? ApiClient.serverId() : '');
+                    var hash = '/details?id=' + itm.id + (serverId ? '&serverId=' + serverId : '');
+                    window.location.hash = hash;
+                };
+            })(item);
 
             bar.appendChild(slide);
             slideEls.push(slide);
@@ -353,6 +361,32 @@
         bar.appendChild(dotsWrap);
 
         resetTimer();
+
+        var pollTimer = setInterval(function () {
+            if (!document.getElementById(BAR_ID)) {
+                clearInterval(pollTimer);
+                return;
+            }
+            var userId = (typeof ApiClient !== 'undefined') ? ApiClient.getCurrentUserId() : null;
+            var url = API_BASE + '/items' + (userId ? '?userId=' + encodeURIComponent(userId) : '');
+            fetch(url)
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    if (!data || !data.items) { return; }
+                    var bar = document.getElementById(BAR_ID);
+                    if (!bar) { return; }
+                    for (var i = 0; i < data.items.length; i++) {
+                        var itm = data.items[i];
+                        var btn = bar.querySelector('[data-jfmb-item="' + itm.id + '"]');
+                        if (!btn) { continue; }
+                        var isFav = itm.isFavorite === true;
+                        btn.classList.toggle('active', isFav);
+                        btn.innerHTML = isFav ? '&#9829;&#xFE0E;' : '&#9825;&#xFE0E;';
+                    }
+                })
+                .catch(function () {});
+        }, 5000);
+
         return bar;
     }
 
