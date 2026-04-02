@@ -87,7 +87,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            padding: 10px 12px;
+            padding: 10px 14px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 8px;
@@ -101,43 +101,6 @@
             border-color: rgba(255, 255, 255, 0.15);
         }
 
-        .jfAddonToggle input[type=checkbox] {
-            width: 40px;
-            height: 22px;
-            appearance: none;
-            -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 11px;
-            position: relative;
-            cursor: pointer;
-            transition: background .2s, border-color .2s;
-            flex-shrink: 0;
-        }
-
-        .jfAddonToggle input[type=checkbox]:checked {
-            background: #00a4dc;
-            border-color: #00a4dc;
-        }
-
-        .jfAddonToggle input[type=checkbox]::after {
-            content: '';
-            position: absolute;
-            left: 3px;
-            top: 3px;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            transition: left .2s, background .2s;
-        }
-
-        .jfAddonToggle input[type=checkbox]:checked::after {
-            left: 21px;
-            background: #fff;
-        }
-
         .jfAddonToggle-info {
             flex: 1;
             min-width: 0;
@@ -149,15 +112,51 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: inherit;
         }
 
         .jfAddonToggle-desc {
             font-size: .75em;
-            opacity: .45;
-            margin-top: 1px;
+            opacity: .5;
+            margin-top: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        /* Fully custom pill — not a form input, can't be overridden by Jellyfin's CSS */
+        .jfPill {
+            display: inline-block;
+            flex-shrink: 0;
+            width: 42px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.14);
+            border-radius: 12px;
+            position: relative;
+            transition: background .2s;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+        }
+
+        .jfPill::after {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.55);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+            transition: left .2s, background .2s;
+        }
+
+        .jfPill.on {
+            background: #00a4dc;
+        }
+
+        .jfPill.on::after {
+            left: 21px;
+            background: #fff;
         }
     </style>
 </head>
@@ -212,6 +211,17 @@
                     <div id="jft-tagFilters"
                         style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:16px;"></div>
 
+
+                    <div id="jftWhatsNewBar"
+                        style="display:none;gap:10px;padding:.65em 1em;background:rgba(255,200,50,.08);border:1px solid rgba(255,200,50,.25);border-radius:4px;margin-bottom:1em;font-size:.88em;align-items:center;">
+                        <span>&#x1F195;</span>
+                        <span id="jftWhatsNewText" style="flex:1"></span>
+                        <button type="button" id="btnJftWhatsNewUpdate"
+                            style="background:#00a4dc;border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:.82em;font-weight:600;padding:4px 10px;white-space:nowrap;">Update
+                            Now</button>
+                        <button type="button" id="btnJftWhatsNewDismiss"
+                            style="background:none;border:none;cursor:pointer;opacity:.5;font-size:1.1em;line-height:1;padding:0 4px;">&#x2715;</button>
+                    </div>
 
                     <div id="themeGrid" class="itemsContainer vertical-wrap">
                         <div class="stateMsg">Enter a repository URL above and click <strong>Load Themes</strong>.</div>
@@ -285,6 +295,94 @@
                 function el(id) { return document.getElementById(id); }
                 function escHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
                 function safeParseJson(s, fallback) { try { return JSON.parse(s || '{}'); } catch (e) { return fallback; } }
+
+                var _pendingThemeUpdateIds = [];
+
+                function checkThemeWhatsNew(themes) {
+                    var STORAGE_KEY = 'jftThemeVersions_' + PLUGIN_ID;
+                    var stored = {};
+                    try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { }
+
+                    var updatedLabels = [];
+                    var updatedIds = [];
+                    themes.forEach(function (t) {
+                        if (stored[t.id] && stored[t.id] !== t.version) {
+                            updatedLabels.push(t.name + ' (' + stored[t.id] + ' → ' + t.version + ')');
+                            updatedIds.push(t.id);
+                        }
+                    });
+
+                    var current = {};
+                    themes.forEach(function (t) { current[t.id] = t.version; });
+                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(current)); } catch (e) { }
+
+                    if (updatedLabels.length > 0) {
+                        _pendingThemeUpdateIds = updatedIds;
+                        var bar = el('jftWhatsNewBar');
+                        var text = el('jftWhatsNewText');
+                        text.textContent = 'Updated: ' + updatedLabels.join(' · ');
+                        bar.style.display = 'flex';
+                    }
+                }
+
+                document.getElementById('btnJftWhatsNewUpdate').addEventListener('click', function () {
+                    if (!_pendingThemeUpdateIds.length) return;
+                    var btn = document.getElementById('btnJftWhatsNewUpdate');
+                    btn.disabled = true;
+                    btn.textContent = 'Updating…';
+
+                    // Step 1: Re-fetch manifest to get latest version strings
+                    var themesUrl = el('themesUrl').value.trim();
+                    var manifestPromise = themesUrl
+                        ? fetch(themesUrl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+                        : Promise.resolve(null);
+
+                    manifestPromise.then(function (freshThemes) {
+                        // Step 2: Update CachedThemes with new version strings so
+                        // the cache key changes after purge
+                        var configToSave = Object.assign({}, state.config);
+                        if (freshThemes && freshThemes.length > 0) {
+                            var existing = [];
+                            try { existing = JSON.parse(state.config.CachedThemes || '[]'); } catch (e) { existing = []; }
+                            var freshById = {};
+                            freshThemes.forEach(function (t) { freshById[t.id] = t; });
+                            var merged = existing.map(function (t) {
+                                return freshById[t.id] ? freshById[t.id] : t;
+                            });
+                            freshThemes.forEach(function (t) {
+                                if (!merged.some(function (e) { return e.id === t.id; })) {
+                                    merged.push(t);
+                                }
+                            });
+                            configToSave.CachedThemes = JSON.stringify(merged);
+                            state.themes = merged;
+                        }
+
+                        // Step 3: Save config with updated versions first
+                        return ApiClient.updatePluginConfiguration(PLUGIN_ID, configToSave).then(function () {
+                            state.config = configToSave;
+                            // Step 4: Purge old cache files
+                            return ApiClient.ajax({
+                                url: ApiClient.getUrl('JellyFrame/api/themes/cache/purge'),
+                                type: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify({ themeIds: _pendingThemeUpdateIds })
+                            });
+                        });
+                    }).then(function () {
+                        _pendingThemeUpdateIds = [];
+                        el('jftWhatsNewBar').style.display = 'none';
+                        Dashboard.processPluginConfigurationUpdateResult();
+                    }).catch(function () {
+                        btn.disabled = false;
+                        btn.textContent = 'Update Now';
+                        Dashboard.alert('Update failed. Try saving the page manually and restarting Jellyfin.');
+                    });
+                });
+
+                document.getElementById('btnJftWhatsNewDismiss').addEventListener('click', function () {
+                    el('jftWhatsNewBar').style.display = 'none';
+                });
 
                 function initThemesPage() {
                     switchThemeTab('themes');
@@ -597,6 +695,7 @@
                             state.themes = themes || [];
                             buildTagFilters();
                             render();
+                            checkThemeWhatsNew(themes || []);
                         })
                         .catch(function (err) {
                             el('themeGrid').innerHTML = '<div class="stateMsg">Could not load themes: ' + escHtml(err.message) + '</div>';
@@ -967,36 +1066,62 @@
 
                             var row = document.createElement('div');
                             row.className = 'jfAddonToggle';
+                            row.dataset.varKey = addon.triggerVar;
+                            row.dataset.checked = isChecked ? 'true' : 'false';
+                            row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;cursor:pointer;user-select:none;transition:background .15s;margin-bottom:0;';
 
                             var info = document.createElement('div');
-                            info.className = 'jfAddonToggle-info';
+                            info.style.cssText = 'flex:1;min-width:0;';
 
                             var addonName = document.createElement('div');
-                            addonName.className = 'jfAddonToggle-name';
+                            addonName.style.cssText = 'font-size:.88em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit;margin:0;padding:0;';
                             addonName.textContent = addon.name || addon.id;
                             info.appendChild(addonName);
 
                             if (addon.description) {
                                 var addonDesc = document.createElement('div');
-                                addonDesc.className = 'jfAddonToggle-desc';
+                                addonDesc.style.cssText = 'font-size:.75em;opacity:.5;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0;padding:0;';
                                 addonDesc.textContent = addon.description;
                                 info.appendChild(addonDesc);
                             }
 
-                            var chk = document.createElement('input');
-                            chk.type = 'checkbox';
-                            chk.id = 'addon-' + addon.id;
-                            chk.checked = isChecked;
-                            chk.dataset.varKey = addon.triggerVar;
+                            var pill = document.createElement('div');
+                            pill.style.cssText = [
+                                'display:inline-block',
+                                'flex-shrink:0',
+                                'width:42px',
+                                'height:24px',
+                                'border-radius:12px',
+                                'position:relative',
+                                'transition:background .2s',
+                                'cursor:pointer',
+                                isChecked
+                                    ? 'background:#00a4dc'
+                                    : 'background:rgba(255,255,255,0.14)'
+                            ].join(';');
+
+                            var knob = document.createElement('div');
+                            knob.style.cssText = [
+                                'position:absolute',
+                                'top:3px',
+                                'width:18px',
+                                'height:18px',
+                                'border-radius:50%',
+                                'background:#fff',
+                                'box-shadow:0 1px 3px rgba(0,0,0,0.4)',
+                                'transition:left .2s',
+                                isChecked ? 'left:21px' : 'left:3px'
+                            ].join(';');
+                            pill.appendChild(knob);
 
                             row.appendChild(info);
-                            row.appendChild(chk);
+                            row.appendChild(pill);
 
-                            row.addEventListener('click', function (e) {
-                                if (e.target !== chk) {
-                                    chk.checked = !chk.checked;
-                                    chk.dispatchEvent(new Event('change'));
-                                }
+                            row.addEventListener('click', function () {
+                                var nowChecked = row.dataset.checked !== 'true';
+                                row.dataset.checked = nowChecked ? 'true' : 'false';
+                                pill.style.background = nowChecked ? '#00a4dc' : 'rgba(255,255,255,0.14)';
+                                knob.style.left = nowChecked ? '21px' : '3px';
                             });
 
                             addonsSection.appendChild(row);
@@ -1021,16 +1146,23 @@
                     saveBtn.addEventListener('click', function () {
                         var newVars = Object.assign({}, currentVars());
 
+                        // Color inputs (hidden inputs with data-var-key)
                         dialog.querySelectorAll('input[type=hidden][data-var-key]').forEach(function (input) {
                             newVars[input.dataset.varKey] = input.value;
                         });
+
+                        // Text/number inputs
                         dialog.querySelectorAll('[data-var-key]').forEach(function (input) {
                             if (input.type === 'hidden') return;
+                            if (input.tagName === 'DIV') return; // handled separately below
                             if (!newVars.hasOwnProperty(input.dataset.varKey)) {
-                                newVars[input.dataset.varKey] = input.type === 'checkbox'
-                                    ? (input.checked ? 'true' : 'false')
-                                    : input.value;
+                                newVars[input.dataset.varKey] = input.value;
                             }
+                        });
+
+                        // Custom pill toggles (jfAddonToggle rows)
+                        dialog.querySelectorAll('.jfAddonToggle[data-var-key]').forEach(function (row) {
+                            newVars[row.dataset.varKey] = row.dataset.checked === 'true' ? 'true' : 'false';
                         });
 
                         state.pendingVars = newVars;

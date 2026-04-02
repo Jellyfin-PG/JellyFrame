@@ -139,6 +139,9 @@
                         style="display:none;gap:10px;padding:.65em 1em;background:rgba(255,200,50,.08);border:1px solid rgba(255,200,50,.25);border-radius:4px;margin-bottom:1em;font-size:.88em;align-items:center;">
                         <span>🆕</span>
                         <span id="whatsNewText" style="flex:1"></span>
+                        <button type="button" id="btnWhatsNewUpdate"
+                            style="background:#00a4dc;border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:.82em;font-weight:600;padding:4px 10px;white-space:nowrap;">Update
+                            Now</button>
                         <button type="button" id="btnWhatsNewDismiss"
                             style="background:none;border:none;cursor:pointer;opacity:.5;font-size:1.1em;line-height:1;padding:0 4px;">✕</button>
                     </div>
@@ -1411,15 +1414,19 @@
                     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 }
 
+                var _pendingUpdateIds = [];
+
                 function checkWhatsNew(mods) {
                     var STORAGE_KEY = 'mmModVersions_' + PLUGIN_ID;
                     var stored = {};
                     try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { }
 
-                    var updated = [];
+                    var updatedLabels = [];
+                    var updatedIds = [];
                     mods.forEach(function (m) {
                         if (stored[m.id] && stored[m.id] !== m.version) {
-                            updated.push(m.name + ' (' + stored[m.id] + ' → ' + m.version + ')');
+                            updatedLabels.push(m.name + ' (' + stored[m.id] + ' → ' + m.version + ')');
+                            updatedIds.push(m.id);
                         }
                     });
 
@@ -1427,13 +1434,71 @@
                     mods.forEach(function (m) { current[m.id] = m.version; });
                     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(current)); } catch (e) { }
 
-                    if (updated.length > 0) {
+                    if (updatedLabels.length > 0) {
+                        _pendingUpdateIds = updatedIds;
                         var bar = document.getElementById('whatsNewBar');
                         var text = document.getElementById('whatsNewText');
-                        text.textContent = 'Updated: ' + updated.join(' · ');
+                        text.textContent = 'Updated: ' + updatedLabels.join(' · ');
                         bar.style.display = 'flex';
                     }
                 }
+
+                document.getElementById('btnWhatsNewUpdate').addEventListener('click', function () {
+                    if (!_pendingUpdateIds.length) return;
+                    var btn = document.getElementById('btnWhatsNewUpdate');
+                    btn.disabled = true;
+                    btn.textContent = 'Updating…';
+
+                    // Step 1: Re-fetch the manifest to get the latest version strings
+                    var modsUrl = el('modsUrl').value.trim();
+                    var manifestPromise = modsUrl
+                        ? fetch(modsUrl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+                        : Promise.resolve(null);
+
+                    manifestPromise.then(function (freshMods) {
+                        // Step 2: If we got fresh manifest data, update CachedMods so the
+                        // cache key uses the new version string after purge
+                        var configToSave = Object.assign({}, state.config);
+                        if (freshMods && freshMods.length > 0) {
+                            // Merge fresh versions into the existing cached mods list
+                            var existing = [];
+                            try { existing = JSON.parse(state.config.CachedMods || '[]'); } catch (e) { existing = []; }
+                            var freshById = {};
+                            freshMods.forEach(function (m) { freshById[m.id] = m; });
+                            var merged = existing.map(function (m) {
+                                return freshById[m.id] ? freshById[m.id] : m;
+                            });
+                            // Also add any new mods not in existing
+                            freshMods.forEach(function (m) {
+                                if (!merged.some(function (e) { return e.id === m.id; })) {
+                                    merged.push(m);
+                                }
+                            });
+                            configToSave.CachedMods = JSON.stringify(merged);
+                            state.mods = merged;
+                        }
+
+                        // Step 3: Save config with updated versions first
+                        return ApiClient.updatePluginConfiguration(PLUGIN_ID, configToSave).then(function () {
+                            state.config = configToSave;
+                            // Step 4: Now purge the old cache files
+                            return ApiClient.ajax({
+                                url: ApiClient.getUrl('JellyFrame/api/mods/cache/purge'),
+                                type: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify({ modIds: _pendingUpdateIds })
+                            });
+                        });
+                    }).then(function () {
+                        _pendingUpdateIds = [];
+                        document.getElementById('whatsNewBar').style.display = 'none';
+                        Dashboard.processPluginConfigurationUpdateResult();
+                    }).catch(function () {
+                        btn.disabled = false;
+                        btn.textContent = 'Update Now';
+                        Dashboard.alert('Update failed. Try saving the page manually and restarting Jellyfin.');
+                    });
+                });
 
                 document.getElementById('btnWhatsNewDismiss').addEventListener('click', function () {
                     document.getElementById('whatsNewBar').style.display = 'none';
