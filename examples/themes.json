@@ -10,6 +10,9 @@
     "previewUrl": "",
     "sourceUrl": "https://github.com/Jellyfin-PG/JellyFrame",
     "cssUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/jellyslate-theme.css",
+    "preconnect": [
+      "https://fonts.googleapis.com"
+    ],
     "vars": [
       {
         "key": "ACCENT_COLOR",
