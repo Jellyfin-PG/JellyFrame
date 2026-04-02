@@ -48,7 +48,7 @@
     "name": "Media Bar",
     "author": "grimmdev",
     "description": "A featured content slideshow bar on the Jellyfin home page. Showcases backdrop images, logos, ratings, genres, and plot summaries for your media with auto-advancing slides, navigation arrows, and play/detail/favourite buttons. Configure a playlist ID for curated content or let it pick from your latest additions automatically.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "jellyfin": "10.10+",
     "tags": [
       "home",
