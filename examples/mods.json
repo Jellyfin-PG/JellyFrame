@@ -59,7 +59,7 @@
     "previewUrl": "",
     "sourceUrl": "https://github.com/Jellyfin-PG/JellyFrame",
     "cssUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/media-bar-style.css",
-    "jsUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/media-bar-client.js",
+    "jsUrl": "https://raw.githubusercontent.com/Jellyfin-PG/JellyFrame/refs/heads/main/examples/now-playing-browser.js",
     "serverJs": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/media-bar-server.js",
     "permissions": [
       "jellyfin.read",
