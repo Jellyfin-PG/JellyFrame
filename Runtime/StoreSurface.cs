@@ -20,9 +20,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public StoreSurface(string modId, IApplicationPaths paths)
         {
-            var dir = Path.Combine(paths.DataPath, "modmanager", "store");
+            var dir = Path.Combine(paths.DataPath, "JellyFrame", "store");
             Directory.CreateDirectory(dir);
-            _filePath   = Path.Combine(dir, modId + ".json");
+            _filePath = Path.Combine(dir, modId + ".json");
             _flushTimer = new Timer(_ => FlushIfDirty(), null,
                 Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
             Load();
@@ -105,7 +105,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                         JsonSerializer.Serialize(_data,
                             new JsonSerializerOptions { WriteIndented = false }));
                 }
-                catch {  }
+                catch { }
             }
         }
 

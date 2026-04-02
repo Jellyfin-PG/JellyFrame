@@ -18,7 +18,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public UserStoreSurface(string modId, IApplicationPaths paths)
         {
-            _modDir = Path.Combine(paths.DataPath, "modmanager", "userstore", Sanitize(modId));
+            _modDir = Path.Combine(paths.DataPath, "JellyFrame", "userstore", Sanitize(modId));
             Directory.CreateDirectory(_modDir);
         }
 
@@ -92,7 +92,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             public UserBucket(string filePath, TimeSpan flushDelay)
             {
                 _filePath = filePath;
-                _timer    = new Timer(_ => FlushIfDirty(), null,
+                _timer = new Timer(_ => FlushIfDirty(), null,
                     Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
                 Load();
             }

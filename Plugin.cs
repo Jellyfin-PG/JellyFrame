@@ -228,7 +228,7 @@ namespace Jellyfin.Plugin.JellyFrame
             {
                 await LoadServerModsFromConfig(forceReload: false);
 
-                var cacheDir = System.IO.Path.Combine(AppPaths.DataPath, "JellyFrame", "cache");
+                var cacheDir = System.IO.Path.Combine(AppPaths.DataPath, "JellyFrame", "mods");
                 ModLoader.StartWatcher(cacheDir, HotReloadModAsync);
 
                 _eventSurface = new Runtime.JellyfinEventSurface(

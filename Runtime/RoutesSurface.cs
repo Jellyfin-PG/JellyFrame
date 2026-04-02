@@ -128,9 +128,6 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             {
                 try
                 {
-                    // Deserialize to Dictionary<string,object> so Jint receives real
-                    // C# primitives (bool, long, double, string) rather than JsonElement
-                    // wrappers. JsonElement != false in JS even when the value is false.
                     using var doc = JsonDocument.Parse(body);
                     parsedBody = ConvertJsonElement(doc.RootElement);
                 }
