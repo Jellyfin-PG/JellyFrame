@@ -25,7 +25,6 @@ function getFirstUserId() {
     return users.length > 0 ? users[0].id : null;
 }
 
-// Build cache WITHOUT isFavorite -- that is per-user and looked up at request time
 function buildCache() {
     try {
         var userId = getFirstUserId();
@@ -54,7 +53,7 @@ function fetchItems(userId) {
         rawItems = fetchLatest(limit, userId) || [];
     }
 
-    if (rawItems.length === 0) return [];
+    if (rawItems.length === 0) { return []; }
 
     if (jf.vars['SHUFFLE'] === 'true') {
         rawItems = shuffle(rawItems);
@@ -62,11 +61,12 @@ function fetchItems(userId) {
 
     rawItems = rawItems.slice(0, limit);
 
-    return rawItems.map(function (item) {
-        return mapItem(item);
-    }).filter(function (item) {
-        return item !== null;
-    });
+    var result = [];
+    for (var i = 0; i < rawItems.length; i++) {
+        var mapped = mapItem(rawItems[i]);
+        if (mapped !== null) { result.push(mapped); }
+    }
+    return result;
 }
 
 function fetchPlaylistItems(playlistId, userId) {
@@ -86,9 +86,9 @@ function fetchByIds(ids, userId) {
     var results = [];
     for (var i = 0; i < ids.length; i++) {
         var id = ids[i].trim();
-        if (!id) continue;
+        if (!id) { continue; }
         var item = jf.jellyfin.getItem(id, userId);
-        if (item) results.push(item);
+        if (item) { results.push(item); }
     }
     return results;
 }
@@ -117,16 +117,15 @@ function fetchLatest(limit, userId) {
     return shuffle(movies.concat(shows));
 }
 
-// mapItem does NOT include isFavorite -- looked up per-request instead
 function mapItem(item) {
-    if (!item || !item.id) return null;
+    if (!item || !item.id) { return null; }
 
     var itemId = item.id;
 
     var backdropTag = (item.backdropImageTags && item.backdropImageTags.length > 0)
                     ? item.backdropImageTags[0] : null;
-    var logoTag     = (item.imageTags && item.imageTags.Logo)    ? item.imageTags.Logo    : null;
-    var primaryTag  = (item.imageTags && item.imageTags.Primary) ? item.imageTags.Primary : null;
+    var logoTag    = (item.imageTags && item.imageTags.Logo)    ? item.imageTags.Logo    : null;
+    var primaryTag = (item.imageTags && item.imageTags.Primary) ? item.imageTags.Primary : null;
 
     var imageBase = '/Items/' + itemId + '/Images/';
 
@@ -150,15 +149,29 @@ function mapItem(item) {
     };
 }
 
-// Looks up live isFavorite for a specific user + list of items
 function attachFavorites(items, userId) {
-    if (!userId || !items || items.length === 0) return items;
-    return items.map(function (item) {
+    if (!userId || !items || items.length === 0) { return items; }
+    var result = [];
+    for (var i = 0; i < items.length; i++) {
+        var item  = items[i];
         var fresh = jf.jellyfin.getItem(item.id, userId);
-        return Object.assign({}, item, {
-            isFavorite: fresh ? fresh.isFavorite === true : false
+        result.push({
+            id:              item.id,
+            name:            item.name,
+            type:            item.type,
+            overview:        item.overview,
+            year:            item.year,
+            rating:          item.rating,
+            communityRating: item.communityRating,
+            runTimeTicks:    item.runTimeTicks,
+            genres:          item.genres,
+            isFavorite:      fresh ? fresh.isFavorite === true : false,
+            detailUrl:       item.detailUrl,
+            backdropUrl:     item.backdropUrl,
+            logoUrl:         item.logoUrl
         });
-    });
+    }
+    return result;
 }
 
 function shuffle(arr) {
@@ -170,8 +183,6 @@ function shuffle(arr) {
     return a;
 }
 
-// GET /items?userId=<id>
-// userId query param lets the browser tell us who's asking so we return correct isFavorite
 jf.routes.get('/items', function (req, res) {
     var userId = (req.query && req.query['userId']) || getFirstUserId();
 
@@ -181,9 +192,7 @@ jf.routes.get('/items', function (req, res) {
         items = jf.cache.get('mediaBarItems') || [];
     }
 
-    // Attach live isFavorite for the requesting user
     var enriched = attachFavorites(items, userId);
-
     return res.json({ count: enriched.length, items: enriched });
 });
 
@@ -195,7 +204,9 @@ jf.routes.post('/favourite/:itemId', function (req, res) {
 
     if (!userId) {
         var users = jf.jellyfin.getUsers() || [];
-        if (users.length === 0) return res.status(500).json({ error: 'no users' });
+        if (users.length === 0) {
+            return res.status(500).json({ error: 'no users' });
+        }
         userId = users[0].id;
     }
 
