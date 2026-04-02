@@ -2,18 +2,18 @@
     'use strict';
 
     var INTERVAL_MS = parseInt('{{SLIDE_INTERVAL}}', 10) || 8000;
-    var API_BASE = '/JellyFrame/mods/media-bar/api';
-    var STYLE_ID = 'jf-media-bar-style';
-    var BAR_ID = 'jf-media-bar';
+    var API_BASE    = '/JellyFrame/mods/media-bar/api';
+    var STYLE_ID    = 'jf-media-bar-style';
+    var BAR_ID      = 'jf-media-bar';
 
     var currentIndex = 0;
-    var timer = null;
-    var paused = false;
-    var isFetching = false;
-    var lastPath = '';
-
-    var cachedItems = null;
-    var cacheTime = 0;
+    var timer        = null;
+    var paused       = false;
+    var isFetching   = false;
+    var lastPath     = '';
+    
+    var cachedItems  = null;
+    var cacheTime    = 0;
 
 
 
@@ -99,24 +99,24 @@
             ImageTypes: 'Backdrop'
         })).then(function (res) {
             return (res.Items || []).map(function (item) {
-                var bdTag = item.BackdropImageTags && item.BackdropImageTags[0];
+                var bdTag   = item.BackdropImageTags && item.BackdropImageTags[0];
                 var logoTag = item.ImageTags && item.ImageTags.Logo;
                 if (!bdTag) return null;
                 return {
-                    id: item.Id,
-                    serverId: item.ServerId,
-                    type: item.Type || 'Movie',
-                    name: item.Name || '',
-                    overview: item.Overview || '',
-                    year: item.ProductionYear || null,
-                    rating: item.OfficialRating || null,
+                    id:              item.Id,
+                    serverId:        item.ServerId,
+                    type:            item.Type || 'Movie',
+                    name:            item.Name   || '',
+                    overview:        item.Overview || '',
+                    year:            item.ProductionYear || null,
+                    rating:          item.OfficialRating || null,
                     communityRating: item.CommunityRating || null,
-                    runTimeTicks: item.RunTimeTicks || null,
-                    genres: item.Genres || [],
-                    isFavorite: !!(item.UserData && item.UserData.IsFavorite),
-                    backdropUrl: ApiClient.getImageUrl(item.Id, { type: 'Backdrop', maxWidth: 1920, tag: bdTag }),
-                    logoUrl: logoTag ? ApiClient.getImageUrl(item.Id, { type: 'Logo', maxWidth: 400, tag: logoTag }) : null,
-                    detailUrl: '#!/details?id=' + item.Id + (item.ServerId ? '&serverId=' + item.ServerId : '')
+                    runTimeTicks:    item.RunTimeTicks || null,
+                    genres:          item.Genres || [],
+                    isFavorite:      !!(item.UserData && item.UserData.IsFavorite),
+                    backdropUrl:     ApiClient.getImageUrl(item.Id, { type: 'Backdrop', maxWidth: 1920, tag: bdTag }),
+                    logoUrl:         logoTag ? ApiClient.getImageUrl(item.Id, { type: 'Logo', maxWidth: 400, tag: logoTag }) : null,
+                    detailUrl:       '#!/details?id=' + item.Id + (item.ServerId ? '&serverId=' + item.ServerId : '')
                 };
             }).filter(Boolean);
         }).catch(function () { return []; });
@@ -126,7 +126,7 @@
         if (cachedItems && (Date.now() - cacheTime < 5 * 60 * 1000)) {
             return Promise.resolve(cachedItems);
         }
-
+        
         return fetchViaServerMod()
             .then(function (items) { return items.length > 0 ? items : fetchViaApiClient(); })
             .catch(fetchViaApiClient)
@@ -148,10 +148,10 @@
     function buildBar(items) {
         currentIndex = 0;
 
-        var bar = document.createElement('div');
-        bar.id = BAR_ID;
+        var bar      = document.createElement('div');
+        bar.id       = BAR_ID;
         var slideEls = [];
-        var dotEls = [];
+        var dotEls   = [];
 
 
         items.forEach(function (item, i) {
@@ -179,9 +179,9 @@
             meta.className = 'jfmb-meta';
             var parts = [];
             if (item.communityRating) parts.push('<span class="jfmb-rating">&#9733; ' + item.communityRating.toFixed(1) + '</span>');
-            if (item.year) parts.push('<span>' + item.year + '</span>');
-            if (item.rating) parts.push('<span>' + item.rating + '</span>');
-            if (item.runTimeTicks) parts.push('<span>' + formatRuntime(item.runTimeTicks) + '</span>');
+            if (item.year)            parts.push('<span>' + item.year + '</span>');
+            if (item.rating)          parts.push('<span>' + item.rating + '</span>');
+            if (item.runTimeTicks)    parts.push('<span>' + formatRuntime(item.runTimeTicks) + '</span>');
             if (item.genres && item.genres.length) parts.push('<span>' + item.genres.slice(0, 3).join(' . ') + '</span>');
             meta.innerHTML = parts.join('<span class="jfmb-sep"> * </span>');
             overlay.appendChild(meta);
@@ -199,12 +199,12 @@
             var playBtn = document.createElement('button');
             playBtn.className = 'jfmb-btn jfmb-btn-play';
             playBtn.innerHTML = '&#9654; Play Now';
-            (function (itm) {
-                playBtn.onclick = function (e) {
+            (function(itm) {
+                playBtn.onclick = function(e) {
                     e.stopPropagation();
                     if (typeof ApiClient === 'undefined') return;
 
-                    ApiClient.getJSON(ApiClient.getUrl('Sessions')).then(function (sessions) {
+                    ApiClient.getJSON(ApiClient.getUrl('Sessions')).then(function(sessions) {
                         var deviceId = typeof ApiClient.deviceId === 'function' ? ApiClient.deviceId() : null;
                         var sessionId = null;
 
@@ -235,7 +235,7 @@
 
                         var playUrl = ApiClient.getUrl('Sessions/' + sessionId + '/Playing') + '?playCommand=PlayNow&itemIds=' + itm.id;
                         var headers = { 'Accept': 'application/json' };
-
+                        
                         if (typeof ApiClient.getAuthorizationHeader === 'function') {
                             headers['Authorization'] = ApiClient.getAuthorizationHeader();
                         } else if (typeof ApiClient.accessToken === 'function') {
@@ -243,14 +243,14 @@
                         }
 
                         fetch(playUrl, { method: 'POST', headers: headers })
-                            .then(function (res) {
+                            .then(function(res) {
                                 if (!res.ok) console.error('[media-bar] Play command failed:', res.statusText);
                             })
-                            .catch(function (err) {
+                            .catch(function(err) {
                                 console.error('[media-bar] Error sending play command:', err);
                             });
 
-                    }).catch(function (err) {
+                    }).catch(function(err) {
                         console.error('[media-bar] Error fetching sessions:', err);
                     });
                 };
@@ -289,9 +289,9 @@
                         headers['Authorization'] = 'MediaBrowser Token="' + ApiClient.accessToken() + '"';
                     }
 
-                    fetch(url, {
-                        method: method,
-                        headers: headers
+                    fetch(url, { 
+                        method: method, 
+                        headers: headers 
                     }).catch(function (err) {
                         console.error('[media-bar] Favorite toggle failed:', err);
                     });
@@ -301,12 +301,12 @@
 
             overlay.appendChild(btns);
             slide.appendChild(overlay);
-
-            slide.onclick = function (e) {
+            
+            slide.onclick = function (e) { 
                 if (e.target.closest('button')) return;
-                window.location.hash = item.detailUrl;
+                window.location.hash = item.detailUrl; 
             };
-
+            
             bar.appendChild(slide);
             slideEls.push(slide);
         });
@@ -375,7 +375,7 @@
         if (activePage && (activePage.classList.contains('homePage') || activePage.getAttribute('data-type') === 'home' || activePage.id === 'indexPage')) {
             return activePage;
         }
-
+        
         var visibleHome = document.querySelector('.homePage:not(.hide)');
         if (visibleHome && visibleHome.offsetWidth > 0) return visibleHome;
 
@@ -401,7 +401,7 @@
                 return { parent: el.parentNode, element: el, page: page };
             }
         }
-
+        
         return { parent: page, element: page.firstChild, page: page };
     }
 
@@ -425,7 +425,7 @@
             isFetching = false;
             if (!items || items.length === 0) return;
             if (!isHome()) return;
-
+            
             if (document.getElementById(BAR_ID)) return;
 
             var currentTarget = findTarget();
@@ -463,8 +463,8 @@
 
     var observer = new MutationObserver(checkState);
 
-    observer.observe(document.body, {
-        childList: true,
+    observer.observe(document.body, { 
+        childList: true, 
         subtree: true,
         attributes: true,
         attributeFilter: ['class']
@@ -473,7 +473,7 @@
     window.addEventListener('hashchange', checkState);
     window.addEventListener('popstate', checkState);
     document.addEventListener('viewshow', checkState);
-
+    
     setInterval(checkState, 1500);
 
     checkState();
