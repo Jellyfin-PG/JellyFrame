@@ -11,7 +11,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
     public static class ModInjector
     {
         private const string StartMarker = "<!-- JellyFrame-Mods-Start -->";
-        private const string EndMarker   = "<!-- JellyFrame-Mods-End -->";
+        private const string EndMarker = "<!-- JellyFrame-Mods-End -->";
 
         private static readonly JsonSerializerOptions JsonOpts = new JsonSerializerOptions
         {
@@ -66,8 +66,14 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                     Regex.Escape(StartMarker) + @"[\s\S]*?" + Regex.Escape(EndMarker) + @"\n?",
                     string.Empty);
 
+                html = Regex.Replace(
+                    html,
+                    @"<!-- JellyFrame-Mods-Preconnect-Start -->[\s\S]*?<!-- JellyFrame-Mods-Preconnect-End -->\n?",
+                    string.Empty);
+
                 var cssBlocks = new List<string>();
-                var jsBlocks  = new List<string>();
+                var jsBlocks = new List<string>();
+                var preconnects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (string modId in config.EnabledMods)
                 {
@@ -80,6 +86,11 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                         Log(dbg, "Mod '" + trimmedId + "' not found in cache");
                         continue;
                     }
+
+                    // Collect preconnect origins (deduplicated across all mods)
+                    foreach (var origin in mod.Preconnect ?? new List<string>())
+                        if (!string.IsNullOrWhiteSpace(origin))
+                            preconnects.Add(origin.Trim());
 
                     Dictionary<string, string> vars = BuildVarMap(mod, modVars);
                     Log(dbg, "Processing mod: '" + mod.Name + "' version=" + mod.Version + " vars=" + vars.Count);
@@ -107,6 +118,21 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                         else
                             Log(dbg, "  -> JS fetch failed or empty");
                     }
+                }
+
+                if (preconnects.Count > 0)
+                {
+                    var headSb = new StringBuilder();
+                    headSb.Append("\n<!-- JellyFrame-Mods-Preconnect-Start -->\n");
+                    foreach (var origin in preconnects)
+                    {
+                        var safe = origin.Replace("&", "&amp;").Replace("\"", "&quot;");
+                        headSb.Append("<link rel=\"preconnect\" href=\"").Append(safe).Append("\">\n");
+                        headSb.Append("<link rel=\"dns-prefetch\" href=\"").Append(safe).Append("\">\n");
+                    }
+                    headSb.Append("<!-- JellyFrame-Mods-Preconnect-End -->\n");
+                    html = Regex.Replace(html, @"(</head>)", headSb.ToString() + "$1");
+                    Log(dbg, "Injected " + preconnects.Count + " preconnect origin(s)");
                 }
 
                 Log(dbg, "Totals — cssBlocks: " + cssBlocks.Count + ", jsBlocks: " + jsBlocks.Count);
@@ -139,7 +165,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
 
                 if (!string.IsNullOrEmpty(injection.ToString().Trim()))
                 {
-                    string block  = "\n" + StartMarker + "\n" + injection.ToString() + EndMarker + "\n";
+                    string block = "\n" + StartMarker + "\n" + injection.ToString() + EndMarker + "\n";
                     string before = html;
                     html = Regex.Replace(html, @"(</body>)", block + "$1");
                     Log(dbg, html == before
@@ -210,36 +236,38 @@ namespace Jellyfin.Plugin.JellyFrame.Services
 
     public class ModVar
     {
-        public string Key           { get; set; } = string.Empty;
-        public string Name          { get; set; } = string.Empty;
-        public string Description   { get; set; } = string.Empty;
-        public string Default       { get; set; } = string.Empty;
-        public bool?  AllowGradient { get; set; } = null;
-        public string TrueValue     { get; set; } = "true";
-        public string FalseValue    { get; set; } = "false";
+        public string Key { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Default { get; set; } = string.Empty;
+        public bool? AllowGradient { get; set; } = null;
+        public string TrueValue { get; set; } = "true";
+        public string FalseValue { get; set; } = "false";
     }
 
     public class ModEntry
     {
-        public string       Id          { get; set; }
-        public string       Name        { get; set; }
-        public string       Author      { get; set; }
-        public string       Description { get; set; }
-        public string       Version     { get; set; }
-        public string       Jellyfin    { get; set; } = string.Empty;
-        public List<string> Tags        { get; set; } = new List<string>();
-        public string       PreviewUrl  { get; set; } = string.Empty;
-        public string       SourceUrl   { get; set; } = string.Empty;
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Author { get; set; }
+        public string Description { get; set; }
+        public string Version { get; set; }
+        public string Jellyfin { get; set; } = string.Empty;
+        public List<string> Tags { get; set; } = new List<string>();
+        public string PreviewUrl { get; set; } = string.Empty;
+        public string SourceUrl { get; set; } = string.Empty;
 
-        public string CssUrl    { get; set; }
+        public string CssUrl { get; set; }
 
-        public string JsUrl     { get; set; }
+        public string JsUrl { get; set; }
 
-        public string ServerJs  { get; set; } = string.Empty;
+        public string ServerJs { get; set; } = string.Empty;
 
         public List<string> Permissions { get; set; } = new List<string>();
 
-        public List<string> Requires    { get; set; } = new List<string>();
+        public List<string> Requires { get; set; } = new List<string>();
+
+        public List<string> Preconnect { get; set; } = new List<string>();
 
         public List<ModVar> Vars { get; set; } = new List<ModVar>();
     }

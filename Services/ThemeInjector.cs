@@ -85,12 +85,25 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 var linkHref = "/JellyFrame/themes/" + Uri.EscapeDataString(theme.Id)
                              + "/compiled.css?v=" + hash;
 
-                var block = "\n" + StartMarker + "\n"
-                    + "<link rel=\"stylesheet\" data-jellyframe-theme=\"1\""
-                    + " href=\"" + linkHref + "\">\n"
-                    + EndMarker + "\n";
+                var sb = new System.Text.StringBuilder();
+                sb.Append("\n").Append(StartMarker).Append("\n");
 
-                html = Regex.Replace(html, @"(</head>)", block + "$1");
+                if (theme.Preconnect != null)
+                {
+                    foreach (var origin in theme.Preconnect)
+                    {
+                        if (string.IsNullOrWhiteSpace(origin)) continue;
+                        var safe = origin.Trim().Replace("&", "&amp;").Replace("\"", "&quot;");
+                        sb.Append("<link rel=\"preconnect\" href=\"").Append(safe).Append("\">\n");
+                        sb.Append("<link rel=\"dns-prefetch\" href=\"").Append(safe).Append("\">\n");
+                    }
+                }
+
+                sb.Append("<link rel=\"stylesheet\" data-jellyframe-theme=\"1\"")
+                  .Append(" href=\"").Append(linkHref).Append("\">\n");
+                sb.Append(EndMarker).Append("\n");
+
+                html = Regex.Replace(html, @"(</head>)", sb.ToString() + "$1");
                 Log(dbg, "Theme link injected: " + linkHref);
                 return html;
             }
@@ -193,6 +206,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public string PreviewUrl { get; set; } = string.Empty;
         public string SourceUrl { get; set; } = string.Empty;
         public string CssUrl { get; set; }
+        public List<string> Preconnect { get; set; } = new List<string>();
         public List<ThemeVar> Vars { get; set; } = new List<ThemeVar>();
         public List<ThemeAddon> Addons { get; set; } = new List<ThemeAddon>();
     }

@@ -111,7 +111,12 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 string raw;
                 try
                 {
-                    raw = await Http.GetStringAsync(url);
+                    using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                    request.Headers.TryAddWithoutValidation("Cache-Control", "no-cache");
+                    request.Headers.TryAddWithoutValidation("Pragma", "no-cache");
+                    using var response = await Http.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
+                    raw = await response.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
