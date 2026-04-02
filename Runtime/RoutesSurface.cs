@@ -15,8 +15,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public record RouteHandler(string Method, string Path, JsValue Handler);
 
         private readonly List<RouteHandler> _routes = new();
-        private readonly string             _modId;
-        private Engine                      _engine;
+        private readonly string _modId;
+        private Engine _engine;
 
         public RoutesSurface(string modId) => _modId = modId;
 
@@ -49,7 +49,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             if (_engine == null) return false;
 
             var requestPath = context.Request.Path.Value ?? string.Empty;
-            var prefix      = BasePath;
+            var prefix = BasePath;
 
             if (!requestPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 return false;
@@ -69,8 +69,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 var req = await BuildRequest(context, pathParams);
                 var res = new JsResponse(context);
 
-                var jsReq  = JsValue.FromObject(_engine, req);
-                var jsRes  = JsValue.FromObject(_engine, res);
+                var jsReq = JsValue.FromObject(_engine, req);
+                var jsRes = JsValue.FromObject(_engine, res);
                 var result = _engine.Invoke(route.Handler, JsValue.Undefined, new[] { jsReq, jsRes });
 
                 if (result.IsObject())
@@ -92,7 +92,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         {
             pathParams = new Dictionary<string, string>();
             var patternParts = pattern.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            var pathParts    = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            var pathParts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
             if (patternParts.Length != pathParts.Length) return false;
 
@@ -126,38 +126,74 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             object parsedBody = null;
             if (!string.IsNullOrEmpty(body))
             {
-                try { parsedBody = JsonSerializer.Deserialize<object>(body); }
+                try
+                {
+                    // Deserialize to Dictionary<string,object> so Jint receives real
+                    // C# primitives (bool, long, double, string) rather than JsonElement
+                    // wrappers. JsonElement != false in JS even when the value is false.
+                    using var doc = JsonDocument.Parse(body);
+                    parsedBody = ConvertJsonElement(doc.RootElement);
+                }
                 catch { parsedBody = body; }
             }
 
             return new JsRequest
             {
-                Method     = context.Request.Method,
-                Path       = context.Request.Path.Value,
-                Query      = query,
-                Headers    = headers,
+                Method = context.Request.Method,
+                Path = context.Request.Path.Value,
+                Query = query,
+                Headers = headers,
                 PathParams = pathParams,
-                RawBody    = body,
-                Body       = parsedBody
+                RawBody = body,
+                Body = parsedBody
             };
+        }
+
+        private static object ConvertJsonElement(JsonElement el)
+        {
+            switch (el.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var prop in el.EnumerateObject())
+                        dict[prop.Name] = ConvertJsonElement(prop.Value);
+                    return dict;
+                case JsonValueKind.Array:
+                    var list = new List<object>();
+                    foreach (var item in el.EnumerateArray())
+                        list.Add(ConvertJsonElement(item));
+                    return list;
+                case JsonValueKind.String:
+                    return el.GetString();
+                case JsonValueKind.Number:
+                    if (el.TryGetInt64(out var l)) return l;
+                    return el.GetDouble();
+                case JsonValueKind.True:
+                    return true;
+                case JsonValueKind.False:
+                    return false;
+                case JsonValueKind.Null:
+                default:
+                    return null;
+            }
         }
     }
 
     public class JsRequest
     {
-        public string                      Method     { get; set; }
-        public string                      Path       { get; set; }
-        public Dictionary<string, string>  Query      { get; set; }
-        public Dictionary<string, string>  Headers    { get; set; }
-        public Dictionary<string, string>  PathParams { get; set; }
-        public string                      RawBody    { get; set; }
-        public object                      Body       { get; set; }
+        public string Method { get; set; }
+        public string Path { get; set; }
+        public Dictionary<string, string> Query { get; set; }
+        public Dictionary<string, string> Headers { get; set; }
+        public Dictionary<string, string> PathParams { get; set; }
+        public string RawBody { get; set; }
+        public object Body { get; set; }
     }
 
     public class JsResponse
     {
         private readonly HttpContext _context;
-        private Task                 _pendingWrite;
+        private Task _pendingWrite;
 
         public bool Sent { get; private set; }
 

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jint.Native.Object;
+using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -58,42 +60,84 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             _logger = logger;
         }
 
-        public object GetItem(string id)
+        public object GetItem(string id, string userId = null)
         {
             if (!Guid.TryParse(id, out var guid)) return null;
             var item = _library.GetItemById(guid);
-            return item == null ? null : SerializeItem(item);
+            if (item == null) return null;
+            User user = null;
+            if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var ug))
+                user = _users.GetUserById(ug);
+            return SerializeItem(item, user);
         }
 
         public object[] GetItems(object query)
         {
             var q = new InternalItemsQuery();
-            if (query is IDictionary<string, object> d)
+
+            Dictionary<string, string> d = null;
+
+            if (query is IDictionary<string, object> dict)
             {
-                if (d.TryGetValue("parentId", out var pid) && Guid.TryParse(pid?.ToString(), out var pg))
-                    q.ParentId = pg;
-                if (d.TryGetValue("userId", out var uid) && Guid.TryParse(uid?.ToString(), out var ug))
-                    q.User = _users.GetUserById(ug);
-                if (d.TryGetValue("limit", out var lim) && int.TryParse(lim?.ToString(), out var l))
-                    q.Limit = l;
-                if (d.TryGetValue("startIndex", out var si) && int.TryParse(si?.ToString(), out var s))
-                    q.StartIndex = s;
-                if (d.TryGetValue("type", out var type) && !string.IsNullOrEmpty(type?.ToString()))
-                    q.IncludeItemTypes = new[] { Enum.Parse<BaseItemKind>(type.ToString(), true) };
-                if (d.TryGetValue("recursive", out var rec))
-                    q.Recursive = rec?.ToString() == "true";
-                if (d.TryGetValue("searchTerm", out var st))
-                    q.SearchTerm = st?.ToString();
-                if (d.TryGetValue("sortBy", out var sb) && Enum.TryParse<ItemSortBy>(sb?.ToString(), true, out var isb))
-                    q.OrderBy = new[] { (isb, Jellyfin.Database.Implementations.Enums.SortOrder.Ascending) };
-                else if (d.TryGetValue("sortBy", out _))
-                    q.OrderBy = new[] { (ItemSortBy.SortName, Jellyfin.Database.Implementations.Enums.SortOrder.Ascending) };
-                if (d.TryGetValue("isFavorite", out var fav))
-                    q.IsFavoriteOrLiked = fav?.ToString() == "true";
-                if (d.TryGetValue("mediaTypes", out var mt) && mt != null)
-                    q.MediaTypes = new[] { Enum.Parse<MediaType>(mt.ToString(), true) };
+                d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kv in dict)
+                    d[kv.Key] = kv.Value?.ToString();
             }
-            return _library.GetItemsResult(q).Items.Select(SerializeItem).ToArray();
+            else if (query is Jint.Native.Object.ObjectInstance jsObj)
+            {
+                d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var prop in jsObj.GetOwnProperties())
+                {
+                    var strVal = prop.Value.Value?.ToString();
+                    if (strVal != null && strVal != "null" && strVal != "undefined")
+                        d[prop.Key.ToString()] = strVal;
+                }
+            }
+
+            if (d != null)
+            {
+                _logger.LogDebug("[JellyFrame] GetItems query keys: {Keys}", string.Join(", ", d.Keys.Select(k => k + "=" + d[k])));
+
+                if (d.TryGetValue("parentId", out var pid) && Guid.TryParse(pid, out var pg))
+                    q.ParentId = pg;
+                if (d.TryGetValue("userId", out var uid) && !string.IsNullOrEmpty(uid) && Guid.TryParse(uid, out var ug))
+                {
+                    q.User = _users.GetUserById(ug);
+                    _logger.LogDebug("[JellyFrame] GetItems userId={Uid} resolved user={User}", uid, q.User?.Username ?? "null");
+                }
+                else if (d.TryGetValue("userId", out var uidRaw))
+                {
+                    _logger.LogDebug("[JellyFrame] GetItems userId present but failed to resolve: '{Raw}'", uidRaw);
+                }
+                if (d.TryGetValue("limit", out var lim) && int.TryParse(lim, out var l))
+                    q.Limit = l;
+                if (d.TryGetValue("startIndex", out var si) && int.TryParse(si, out var s))
+                    q.StartIndex = s;
+                if (d.TryGetValue("type", out var type) && !string.IsNullOrEmpty(type))
+                    q.IncludeItemTypes = new[] { Enum.Parse<BaseItemKind>(type, true) };
+                if (d.TryGetValue("recursive", out var rec))
+                    q.Recursive = rec == "true";
+                if (d.TryGetValue("searchTerm", out var st))
+                    q.SearchTerm = st;
+                if (d.TryGetValue("sortBy", out var sb) && Enum.TryParse<ItemSortBy>(sb, true, out var isb))
+                {
+                    var order = d.TryGetValue("sortOrder", out var so) && so?.ToLower() == "descending"
+                        ? Jellyfin.Database.Implementations.Enums.SortOrder.Descending
+                        : Jellyfin.Database.Implementations.Enums.SortOrder.Ascending;
+                    q.OrderBy = new[] { (isb, order) };
+                }
+                if (d.TryGetValue("isFavorite", out var fav))
+                    q.IsFavoriteOrLiked = fav == "true";
+                if (d.TryGetValue("mediaTypes", out var mt) && !string.IsNullOrEmpty(mt))
+                    q.MediaTypes = new[] { Enum.Parse<MediaType>(mt, true) };
+            }
+            else
+            {
+                _logger.LogDebug("[JellyFrame] GetItems query was null or unrecognised type: {Type}", query?.GetType().FullName ?? "null");
+            }
+            var user = q.User;
+            _logger.LogDebug("[JellyFrame] GetItems executing with user={User}", user?.Username ?? "null");
+            return _library.GetItemsResult(q).Items.Select(i => SerializeItem(i, user)).ToArray();
         }
 
         public object GetItemByPath(string path)
@@ -108,7 +152,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 SearchTerm = searchTerm,
                 Limit = limit,
                 Recursive = true
-            }).Items.Select(SerializeItem).ToArray();
+            }).Items.Select(i => SerializeItem(i)).ToArray();
 
         public object[] GetLatestItems(string userId, int limit = 20)
         {
@@ -121,7 +165,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 Limit = limit,
                 Recursive = true,
                 OrderBy = new[] { (ItemSortBy.DateCreated, Jellyfin.Database.Implementations.Enums.SortOrder.Descending) }
-            }).Items.Select(SerializeItem).ToArray();
+            }).Items.Select(i => SerializeItem(i, user)).ToArray();
         }
 
         public object[] GetResumeItems(string userId, int limit = 10)
@@ -136,7 +180,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 Recursive = true,
                 IsResumable = true,
                 OrderBy = new[] { (ItemSortBy.DatePlayed, Jellyfin.Database.Implementations.Enums.SortOrder.Descending) }
-            }).Items.Select(SerializeItem).ToArray();
+            }).Items.Select(i => SerializeItem(i, user)).ToArray();
         }
 
         public object[] GetUserLibraries(string userId)
@@ -145,7 +189,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             var user = _users.GetUserById(guid);
             if (user == null) return Array.Empty<object>();
             return _library.GetUserRootFolder().GetChildren(user, true)
-                .Select(SerializeItem).ToArray();
+                .Select(i => SerializeItem(i, user)).ToArray();
         }
 
         public bool SetFavorite(string userId, string itemId, bool isFavorite)
@@ -286,7 +330,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 IncludeItemTypes = new[] { BaseItemKind.Playlist },
                 User = user,
                 Recursive = true
-            }).Items.Select(SerializeItem).ToArray();
+            }).Items.Select(i => SerializeItem(i, user)).ToArray();
         }
 
         public async Task<string> CreatePlaylist(string userId, string name, string[] itemIds)
@@ -374,10 +418,51 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             }
         }
 
-        private static object SerializeItem(BaseItem item)
+        private object SerializeItem(BaseItem item, User user = null)
         {
+            // In Jellyfin 10.11, ItemImageInfo has no Tag property.
+            // The image tag (e.g. "dc191ddea7315e019f31d75443a1f964") is the MD5 of
+            // DateModified.Ticks as a string — exactly how Jellyfin's own GetImageCacheTag
+            // computes it in BaseItem.GetVersionInfo and DtoService.AttachBasicFields.
             static string GetTag(ItemImageInfo info)
-                => info?.BlurHash ?? info?.Path ?? string.Empty;
+            {
+                if (info == null) return null;
+                var ticksBytes = System.Text.Encoding.UTF8.GetBytes(
+                    info.DateModified.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                var hash = System.Security.Cryptography.MD5.HashData(ticksBytes);
+                return Convert.ToHexString(hash).ToLowerInvariant();
+            }
+
+            bool isFavorite = false;
+            if (user != null)
+            {
+                try
+                {
+                    var udm = _userData ?? BaseItem.UserDataManager;
+                    if (udm == null)
+                    {
+                        _logger.LogWarning("[JellyFrame] SerializeItem: IUserDataManager is null for item {Id}", item.Id);
+                    }
+                    else
+                    {
+                        var keys = item.GetUserDataKeys();
+                        _logger.LogDebug("[JellyFrame] SerializeItem item={Id} user={User} udataKeys={Keys}",
+                            item.Id, user.Username, string.Join(",", keys));
+                        var data = udm.GetUserData(user, item);
+                        _logger.LogDebug("[JellyFrame] SerializeItem userData={Data} isFavorite={Fav}",
+                            data == null ? "null" : "found", data?.IsFavorite);
+                        isFavorite = data?.IsFavorite ?? false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[JellyFrame] GetUserData failed for item {Id} user {UserId}", item.Id, user.Id);
+                }
+            }
+            else
+            {
+                _logger.LogDebug("[JellyFrame] SerializeItem item={Id} — no user, isFavorite will be false", item.Id);
+            }
 
             return new
             {
@@ -395,7 +480,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 parentId = item.ParentId.ToString("N"),
                 productionYear = item.ProductionYear,
                 runTimeTicks = item.RunTimeTicks,
-                isFavorite = false,
+                isFavorite = isFavorite,
                 dateCreated = item.DateCreated,
                 dateModified = item.DateModified,
                 seriesName = (item as MediaBrowser.Controller.Entities.TV.Episode)?.SeriesName,
@@ -404,8 +489,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 imageTags = item.ImageInfos == null ? null : new
                 {
                     Primary = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Primary) is var p && p != null ? GetTag(p) : null,
-                    Thumb = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Thumb) is var t && t != null ? GetTag(t) : null,
-                    Banner = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Banner) is var b && b != null ? GetTag(b) : null,
+                    Thumb = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Thumb) is var th && th != null ? GetTag(th) : null,
+                    Banner = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Banner) is var bn && bn != null ? GetTag(bn) : null,
                     Logo = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Logo) is var l && l != null ? GetTag(l) : null,
                     Backdrop = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Backdrop) is var bd && bd != null ? GetTag(bd) : null
                 },

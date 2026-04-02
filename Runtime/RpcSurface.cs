@@ -13,14 +13,14 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, RpcHandler>>
             _registry = new(StringComparer.OrdinalIgnoreCase);
 
-        private readonly string  _modId;
+        private readonly string _modId;
         private readonly ILogger _logger;
-        private Engine           _engine;
-        private bool             _disposed;
+        private Engine _engine;
+        private bool _disposed;
 
         public RpcSurface(string modId, ILogger logger)
         {
-            _modId  = modId;
+            _modId = modId;
             _logger = logger;
         }
 
@@ -53,11 +53,11 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                     $"No handler '{method}' registered on mod '{targetModId}'");
             }
 
-            var timeout  = TimeSpan.FromMilliseconds(Math.Max(timeoutMs, 100));
+            var timeout = TimeSpan.FromMilliseconds(Math.Max(timeoutMs, 100));
             object result = null;
             Exception error = null;
 
-            using var cts  = new CancellationTokenSource(timeout);
+            using var cts = new CancellationTokenSource(timeout);
             using var done = new ManualResetEventSlim(false);
 
             System.Threading.ThreadPool.QueueUserWorkItem(_ =>
@@ -65,9 +65,10 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 try
                 {
                     var jsPayload = JsValue.FromObject(handler.Engine, payload);
-                    var jsResult  = handler.Engine.Invoke(
+                    var jsResult = handler.Engine.Invoke(
                         handler.JsHandler, JsValue.Undefined, new[] { jsPayload });
-                    result = jsResult.IsNull() || jsResult.IsUndefined()
+                    var resultStr = jsResult?.ToString();
+                    result = (resultStr == null || resultStr == "null" || resultStr == "undefined")
                         ? null
                         : jsResult.ToObject();
                 }
@@ -111,28 +112,28 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         private class RpcHandler
         {
-            public string  ModId     { get; }
-            public string  Method    { get; }
+            public string ModId { get; }
+            public string Method { get; }
             public JsValue JsHandler { get; }
-            public Engine  Engine    { get; }
+            public Engine Engine { get; }
 
             public RpcHandler(string modId, string method, JsValue handler, Engine engine)
             {
-                ModId     = modId;
-                Method    = method;
+                ModId = modId;
+                Method = method;
                 JsHandler = handler;
-                Engine    = engine;
+                Engine = engine;
             }
         }
 
         public class RpcResult
         {
-            public bool   Ok    { get; private set; }
+            public bool Ok { get; private set; }
             public object Value { get; private set; }
             public string Error { get; private set; }
 
             public static RpcResult Success(object value)
-                => new RpcResult { Ok = true,  Value = value };
+                => new RpcResult { Ok = true, Value = value };
             public static RpcResult Fail(string error)
                 => new RpcResult { Ok = false, Error = error };
         }

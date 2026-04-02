@@ -15,8 +15,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         private readonly ConcurrentDictionary<string, WebhookHandler> _handlers = new();
 
-        private readonly string  _modId;
-        private Jint.Engine      _engine;
+        private readonly string _modId;
+        private Jint.Engine _engine;
         private readonly ILogger _logger;
 
         private static readonly HttpClient _http = new HttpClient
@@ -30,7 +30,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public WebhookSurface(string modId, ILogger logger)
         {
-            _modId  = modId;
+            _modId = modId;
             _logger = logger;
         }
 
@@ -57,7 +57,18 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             int timeoutMs = 10_000;
             string secret = null;
 
-            if (options is IDictionary<string, object> opts)
+            IDictionary<string, object> opts = null;
+            if (options is IDictionary<string, object> dOpts)
+                opts = dOpts;
+            else if (options is Jint.Native.Object.ObjectInstance jsOpts)
+            {
+                var d = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                foreach (var prop in jsOpts.GetOwnProperties())
+                    d[prop.Key.ToString()] = prop.Value.Value?.ToObject();
+                opts = d;
+            }
+
+            if (opts != null)
             {
                 if (opts.TryGetValue("timeout", out var t) && t != null)
                     timeoutMs = Math.Min(Math.Max(Convert.ToInt32(t), 500), 60_000);
@@ -82,16 +93,16 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 }
 
                 var response = _http.SendAsync(request, cts.Token).GetAwaiter().GetResult();
-                var respBody  = response.Content.ReadAsStringAsync(cts.Token).GetAwaiter().GetResult();
+                var respBody = response.Content.ReadAsStringAsync(cts.Token).GetAwaiter().GetResult();
 
                 _logger.LogDebug("[JellyFrame] Webhook [{Mod}] outbound → {Url} {Status}",
                     _modId, url, (int)response.StatusCode);
 
                 return new WebhookResult
                 {
-                    Ok     = response.IsSuccessStatusCode,
+                    Ok = response.IsSuccessStatusCode,
                     Status = (int)response.StatusCode,
-                    Body   = respBody
+                    Body = respBody
                 };
             }
             catch (OperationCanceledException)
@@ -110,7 +121,11 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             if (!_handlers.TryGetValue(name, out var handler)) return false;
 
             object payload;
-            try   { payload = JsonSerializer.Deserialize<object>(rawBody ?? "{}"); }
+            try
+            {
+                using var doc = JsonDocument.Parse(rawBody ?? "{}");
+                payload = ConvertJsonElement(doc.RootElement);
+            }
             catch { payload = rawBody; }
 
             try
@@ -133,10 +148,34 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             }
         }
 
+        private static object ConvertJsonElement(JsonElement el)
+        {
+            switch (el.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var prop in el.EnumerateObject())
+                        dict[prop.Name] = ConvertJsonElement(prop.Value);
+                    return dict;
+                case JsonValueKind.Array:
+                    var list = new List<object>();
+                    foreach (var item in el.EnumerateArray())
+                        list.Add(ConvertJsonElement(item));
+                    return list;
+                case JsonValueKind.String: return el.GetString();
+                case JsonValueKind.Number:
+                    if (el.TryGetInt64(out var l)) return l;
+                    return el.GetDouble();
+                case JsonValueKind.True: return true;
+                case JsonValueKind.False: return false;
+                default: return null;
+            }
+        }
+
         private static string ComputeHmac(string payload, string secret)
         {
-            var key   = Encoding.UTF8.GetBytes(secret);
-            var data  = Encoding.UTF8.GetBytes(payload);
+            var key = Encoding.UTF8.GetBytes(secret);
+            var data = Encoding.UTF8.GetBytes(payload);
             using var hmac = new System.Security.Cryptography.HMACSHA256(key);
             return BitConverter.ToString(hmac.ComputeHash(data)).Replace("-", "").ToLowerInvariant();
         }
@@ -150,23 +189,23 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         private class WebhookHandler
         {
-            public string              Name      { get; }
+            public string Name { get; }
             public Jint.Native.JsValue JsHandler { get; }
-            public Jint.Engine         Engine    { get; }
+            public Jint.Engine Engine { get; }
 
             public WebhookHandler(string name, Jint.Native.JsValue handler, Jint.Engine engine)
             {
-                Name      = name;
+                Name = name;
                 JsHandler = handler;
-                Engine    = engine;
+                Engine = engine;
             }
         }
 
         public class WebhookResult
         {
-            public bool   Ok     { get; set; }
-            public int    Status { get; set; }
-            public string Body   { get; set; }
+            public bool Ok { get; set; }
+            public int Status { get; set; }
+            public string Body { get; set; }
         }
     }
 }
