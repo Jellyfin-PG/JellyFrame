@@ -11,11 +11,9 @@
     var paused       = false;
     var isFetching   = false;
     var lastPath     = '';
-    
+
     var cachedItems  = null;
     var cacheTime    = 0;
-
-
 
     function injectCSS() {
         if (document.getElementById(STYLE_ID)) return;
@@ -73,8 +71,6 @@
         document.head.appendChild(s);
     }
 
-
-
     function fetchViaServerMod() {
         return fetch(API_BASE + '/items')
             .then(function (r) {
@@ -126,7 +122,7 @@
         if (cachedItems && (Date.now() - cacheTime < 5 * 60 * 1000)) {
             return Promise.resolve(cachedItems);
         }
-        
+
         return fetchViaServerMod()
             .then(function (items) { return items.length > 0 ? items : fetchViaApiClient(); })
             .catch(fetchViaApiClient)
@@ -136,8 +132,6 @@
                 return items;
             });
     }
-
-
 
     function formatRuntime(ticks) {
         if (!ticks) return '';
@@ -152,7 +146,6 @@
         bar.id       = BAR_ID;
         var slideEls = [];
         var dotEls   = [];
-
 
         items.forEach(function (item, i) {
             var slide = document.createElement('div');
@@ -199,13 +192,13 @@
             var playBtn = document.createElement('button');
             playBtn.className = 'jfmb-btn jfmb-btn-play';
             playBtn.innerHTML = '&#9654; Play Now';
-            (function(itm) {
-                playBtn.onclick = function(e) {
+            (function (itm) {
+                playBtn.onclick = function (e) {
                     e.stopPropagation();
                     if (typeof ApiClient === 'undefined') return;
 
-                    ApiClient.getJSON(ApiClient.getUrl('Sessions')).then(function(sessions) {
-                        var deviceId = typeof ApiClient.deviceId === 'function' ? ApiClient.deviceId() : null;
+                    ApiClient.getJSON(ApiClient.getUrl('Sessions')).then(function (sessions) {
+                        var deviceId  = typeof ApiClient.deviceId === 'function' ? ApiClient.deviceId() : null;
                         var sessionId = null;
 
                         for (var i = 0; i < sessions.length; i++) {
@@ -224,9 +217,7 @@
                             }
                         }
 
-                        if (!sessionId && sessions.length > 0) {
-                            sessionId = sessions[0].Id;
-                        }
+                        if (!sessionId && sessions.length > 0) sessionId = sessions[0].Id;
 
                         if (!sessionId) {
                             console.error('[media-bar] Could not determine active Session ID.');
@@ -235,7 +226,7 @@
 
                         var playUrl = ApiClient.getUrl('Sessions/' + sessionId + '/Playing') + '?playCommand=PlayNow&itemIds=' + itm.id;
                         var headers = { 'Accept': 'application/json' };
-                        
+
                         if (typeof ApiClient.getAuthorizationHeader === 'function') {
                             headers['Authorization'] = ApiClient.getAuthorizationHeader();
                         } else if (typeof ApiClient.accessToken === 'function') {
@@ -243,14 +234,14 @@
                         }
 
                         fetch(playUrl, { method: 'POST', headers: headers })
-                            .then(function(res) {
+                            .then(function (res) {
                                 if (!res.ok) console.error('[media-bar] Play command failed:', res.statusText);
                             })
-                            .catch(function(err) {
+                            .catch(function (err) {
                                 console.error('[media-bar] Error sending play command:', err);
                             });
 
-                    }).catch(function(err) {
+                    }).catch(function (err) {
                         console.error('[media-bar] Error fetching sessions:', err);
                     });
                 };
@@ -271,29 +262,25 @@
             (function (btn, itm) {
                 btn.onclick = function (e) {
                     e.stopPropagation();
-                    if (typeof ApiClient === 'undefined') return;
-                    var userId = ApiClient.getCurrentUserId();
-                    if (!userId) return;
+
+                    var userId = (typeof ApiClient !== 'undefined') ? ApiClient.getCurrentUserId() : null;
+                    if (!userId) {
+                        console.warn('[media-bar] Cannot toggle favourite -- no user ID available');
+                        return;
+                    }
 
                     itm.isFavorite = !itm.isFavorite;
                     btn.classList.toggle('active', itm.isFavorite);
                     btn.innerHTML = itm.isFavorite ? '&#9829;&#xFE0E;' : '&#9825;&#xFE0E;';
 
-                    var url = ApiClient.getUrl('Users/' + userId + '/FavoriteItems/' + itm.id);
-                    var method = itm.isFavorite ? 'POST' : 'DELETE';
-                    var headers = { 'Accept': 'application/json' };
-
-                    if (typeof ApiClient.getAuthorizationHeader === 'function') {
-                        headers['Authorization'] = ApiClient.getAuthorizationHeader();
-                    } else if (typeof ApiClient.accessToken === 'function') {
-                        headers['Authorization'] = 'MediaBrowser Token="' + ApiClient.accessToken() + '"';
-                    }
-
-                    fetch(url, { 
-                        method: method, 
-                        headers: headers 
+                    fetch(API_BASE + '/favourite/' + itm.id, {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body:    JSON.stringify({ favourite: itm.isFavorite, userId: userId })
+                    }).then(function (r) {
+                        if (!r.ok) console.error('[media-bar] Favourite toggle failed:', r.status);
                     }).catch(function (err) {
-                        console.error('[media-bar] Favorite toggle failed:', err);
+                        console.error('[media-bar] Favourite toggle error:', err);
                     });
                 };
             })(favBtn, item);
@@ -301,12 +288,12 @@
 
             overlay.appendChild(btns);
             slide.appendChild(overlay);
-            
-            slide.onclick = function (e) { 
+
+            slide.onclick = function (e) {
                 if (e.target.closest('button')) return;
-                window.location.hash = item.detailUrl; 
+                window.location.hash = item.detailUrl;
             };
-            
+
             bar.appendChild(slide);
             slideEls.push(slide);
         });
@@ -329,7 +316,6 @@
             }
         }
 
-
         var leftBtn = document.createElement('button');
         leftBtn.className = 'jfmb-arrow jfmb-arrow-left';
         leftBtn.innerHTML = '&#8249;';
@@ -342,7 +328,6 @@
         rightBtn.onclick = function () { goTo(currentIndex + 1); resetTimer(); };
         bar.appendChild(rightBtn);
 
-
         var pauseBtn = document.createElement('button');
         pauseBtn.className = 'jfmb-pause';
         pauseBtn.title = 'Pause / Resume';
@@ -353,7 +338,6 @@
             paused ? clearInterval(timer) : resetTimer();
         };
         bar.appendChild(pauseBtn);
-
 
         var dotsWrap = document.createElement('div');
         dotsWrap.className = 'jfmb-dots';
@@ -375,7 +359,7 @@
         if (activePage && (activePage.classList.contains('homePage') || activePage.getAttribute('data-type') === 'home' || activePage.id === 'indexPage')) {
             return activePage;
         }
-        
+
         var visibleHome = document.querySelector('.homePage:not(.hide)');
         if (visibleHome && visibleHome.offsetWidth > 0) return visibleHome;
 
@@ -401,7 +385,7 @@
                 return { parent: el.parentNode, element: el, page: page };
             }
         }
-        
+
         return { parent: page, element: page.firstChild, page: page };
     }
 
@@ -425,7 +409,7 @@
             isFetching = false;
             if (!items || items.length === 0) return;
             if (!isHome()) return;
-            
+
             if (document.getElementById(BAR_ID)) return;
 
             var currentTarget = findTarget();
@@ -445,8 +429,6 @@
         });
     }
 
-
-
     function checkState() {
         var path = window.location.hash || window.location.pathname;
         if (path !== lastPath) {
@@ -463,8 +445,8 @@
 
     var observer = new MutationObserver(checkState);
 
-    observer.observe(document.body, { 
-        childList: true, 
+    observer.observe(document.body, {
+        childList: true,
         subtree: true,
         attributes: true,
         attributeFilter: ['class']
@@ -473,7 +455,7 @@
     window.addEventListener('hashchange', checkState);
     window.addEventListener('popstate', checkState);
     document.addEventListener('viewshow', checkState);
-    
+
     setInterval(checkState, 1500);
 
     checkState();
