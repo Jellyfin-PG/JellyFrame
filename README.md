@@ -1,9 +1,8 @@
-![Build Status](https://img.shields.io/github/actions/workflow/status/Jellyfin-PG/JellyFrame/release.yml)
-![License](https://img.shields.io/github/license/Jellyfin-PG/JellyFrame)
-
 <div align="center">
   <img src="assets/jellyframe.png" alt="Jellyframe Logo" width="120" />
   <h1>Jellyframe</h1>
+  <p>![Build Status](https://img.shields.io/github/actions/workflow/status/Jellyfin-PG/JellyFrame/release.yml)
+![License](https://img.shields.io/github/license/Jellyfin-PG/JellyFrame)</p>
   <p>A complete customization and extension framework for Jellyfin. Install community mods and themes from the dashboard, or build your own with a full server-side JavaScript API.</p>
 </div>
 
