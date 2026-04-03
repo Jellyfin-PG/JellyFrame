@@ -576,7 +576,7 @@
                         var reqEl = document.createElement('div');
                         reqEl.style.cssText = 'margin-top:.45em;font-size:.78em;opacity:.6;';
                         var missingDeps = (mod.requires || []).filter(function (dep) {
-                            return !getEnabledIds().includes(dep);
+                            return !currentIds().includes(dep);
                         });
                         if (missingDeps.length > 0) {
                             reqEl.style.color = '#fbbf24';
@@ -1495,7 +1495,6 @@
                             var merged = existing.map(function (m) {
                                 return freshById[m.id] ? freshById[m.id] : m;
                             });
-
                             freshMods.forEach(function (m) {
                                 if (!merged.some(function (e) { return e.id === m.id; })) {
                                     merged.push(m);
