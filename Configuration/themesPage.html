@@ -302,8 +302,6 @@
 
                 var _pendingThemeUpdateIds = [];
 
-                // Compare freshly fetched manifest versions against what is saved
-                // in CachedThemes (the versions Jellyfin currently has on disk).
                 function checkThemeWhatsNew(freshThemes) {
                     var cached = [];
                     try { cached = JSON.parse(state.config.CachedThemes || '[]'); } catch (e) { }
@@ -336,15 +334,12 @@
                     btn.disabled = true;
                     btn.textContent = 'Updating…';
 
-                    // Step 1: Re-fetch manifest to get latest version strings
                     var themesUrl = el('themesUrl').value.trim();
                     var manifestPromise = themesUrl
                         ? fetch(themesUrl).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
                         : Promise.resolve(null);
 
                     manifestPromise.then(function (freshThemes) {
-                        // Step 2: Update CachedThemes with new version strings so
-                        // the cache key changes after purge
                         var configToSave = Object.assign({}, state.config);
                         if (freshThemes && freshThemes.length > 0) {
                             var existing = [];
@@ -363,10 +358,8 @@
                             state.themes = merged;
                         }
 
-                        // Step 3: Save config with updated versions first
                         return ApiClient.updatePluginConfiguration(PLUGIN_ID, configToSave).then(function () {
                             state.config = configToSave;
-                            // Step 4: Purge old cache files
                             return ApiClient.ajax({
                                 url: ApiClient.getUrl('JellyFrame/api/themes/cache/purge'),
                                 type: 'POST',
@@ -1078,8 +1071,6 @@
                         addonsSection.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-bottom:1.2em;';
 
                         (theme.addons || []).forEach(function (addon) {
-                            // Addons with triggerVar: state driven by the var value
-                            // Addons without triggerVar: use synthetic key __addon__{id}, default off
                             var varKey = addon.triggerVar || ('__addon__' + addon.id);
 
                             var isChecked;
@@ -1090,7 +1081,6 @@
                                             return v.key === addon.triggerVar && v.default === 'true';
                                         }));
                             } else {
-                                // No triggerVar — default off, user must opt in
                                 isChecked = saved[varKey] === 'true';
                             }
 
@@ -1176,21 +1166,18 @@
                     saveBtn.addEventListener('click', function () {
                         var newVars = Object.assign({}, currentVars());
 
-                        // Color inputs (hidden inputs with data-var-key)
                         dialog.querySelectorAll('input[type=hidden][data-var-key]').forEach(function (input) {
                             newVars[input.dataset.varKey] = input.value;
                         });
 
-                        // Text/number inputs
                         dialog.querySelectorAll('[data-var-key]').forEach(function (input) {
                             if (input.type === 'hidden') return;
-                            if (input.tagName === 'DIV') return; // handled separately below
+                            if (input.tagName === 'DIV') return;
                             if (!newVars.hasOwnProperty(input.dataset.varKey)) {
                                 newVars[input.dataset.varKey] = input.value;
                             }
                         });
 
-                        // Custom pill toggles (jfAddonToggle rows)
                         dialog.querySelectorAll('.jfAddonToggle[data-var-key]').forEach(function (row) {
                             newVars[row.dataset.varKey] = row.dataset.checked === 'true' ? 'true' : 'false';
                         });
