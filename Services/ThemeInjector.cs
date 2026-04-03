@@ -47,6 +47,11 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                     Regex.Escape(StartMarker) + @"[\s\S]*?" + Regex.Escape(EndMarker) + @"\n?",
                     string.Empty);
 
+                html = Regex.Replace(
+                    html,
+                    @"<!-- JellyFrame-Theme-Preconnect-Start -->[\s\S]*?<!-- JellyFrame-Theme-Preconnect-End -->\n?",
+                    string.Empty);
+
                 if (string.IsNullOrWhiteSpace(config.ActiveTheme) ||
                     string.IsNullOrWhiteSpace(config.CachedThemes))
                 {
@@ -85,25 +90,31 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 var linkHref = "/JellyFrame/themes/" + Uri.EscapeDataString(theme.Id)
                              + "/compiled.css?v=" + hash;
 
-                var sb = new System.Text.StringBuilder();
-                sb.Append("\n").Append(StartMarker).Append("\n");
-
-                if (theme.Preconnect != null)
+                // Preconnect hints go into <head> so the browser acts on them immediately
+                if (theme.Preconnect != null && theme.Preconnect.Count > 0)
                 {
+                    var headSb = new System.Text.StringBuilder();
+                    headSb.Append("\n<!-- JellyFrame-Theme-Preconnect-Start -->\n");
                     foreach (var origin in theme.Preconnect)
                     {
                         if (string.IsNullOrWhiteSpace(origin)) continue;
                         var safe = origin.Trim().Replace("&", "&amp;").Replace("\"", "&quot;");
-                        sb.Append("<link rel=\"preconnect\" href=\"").Append(safe).Append("\">\n");
-                        sb.Append("<link rel=\"dns-prefetch\" href=\"").Append(safe).Append("\">\n");
+                        headSb.Append("<link rel=\"preconnect\" href=\"").Append(safe).Append("\">\n");
+                        headSb.Append("<link rel=\"dns-prefetch\" href=\"").Append(safe).Append("\">\n");
                     }
+                    headSb.Append("<!-- JellyFrame-Theme-Preconnect-End -->\n");
+                    html = Regex.Replace(html, @"(</head>)", headSb.ToString() + "$1");
                 }
 
+                // Stylesheet goes before </body> so it loads AFTER Jellyfin's own dark theme
+                // and can correctly override it via CSS cascade order
+                var sb = new System.Text.StringBuilder();
+                sb.Append("\n").Append(StartMarker).Append("\n");
                 sb.Append("<link rel=\"stylesheet\" data-jellyframe-theme=\"1\"")
                   .Append(" href=\"").Append(linkHref).Append("\">\n");
                 sb.Append(EndMarker).Append("\n");
 
-                html = Regex.Replace(html, @"(</head>)", sb.ToString() + "$1");
+                html = Regex.Replace(html, @"(</body>)", sb.ToString() + "$1");
                 Log(dbg, "Theme link injected: " + linkHref);
                 return html;
             }
@@ -137,9 +148,20 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             {
                 if (string.IsNullOrWhiteSpace(addon.CssUrl)) continue;
 
-                bool active = string.IsNullOrEmpty(addon.TriggerVar) ||
-                              (vars.TryGetValue(addon.TriggerVar, out var tv) &&
-                               string.Equals(tv, "true", StringComparison.OrdinalIgnoreCase));
+                bool active;
+                if (!string.IsNullOrEmpty(addon.TriggerVar))
+                {
+                    // Driven by a named var — on when that var is "true"
+                    active = vars.TryGetValue(addon.TriggerVar, out var tv) &&
+                             string.Equals(tv, "true", StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    // No triggerVar — driven by synthetic key __addon__{id}, default off
+                    var syntheticKey = "__addon__" + addon.Id;
+                    active = vars.TryGetValue(syntheticKey, out var sv) &&
+                             string.Equals(sv, "true", StringComparison.OrdinalIgnoreCase);
+                }
 
                 if (!active)
                 {

@@ -136,7 +136,7 @@
 
 
                     <div id="whatsNewBar"
-                        style="display:none;gap:10px;padding:.65em 1em;background:rgba(255,200,50,.08);border:1px solid rgba(255,200,50,.25);border-radius:4px;margin-bottom:1em;font-size:.88em;align-items:center;">
+                        style="display:none;gap:10px;padding:.65em 1em;background:rgba(255,200,50,.08);border:1px solid rgba(255,200,50,.25);border-radius:4px;margin-top:1em;margin-bottom:1em;font-size:.88em;align-items:center;">
                         <span>🆕</span>
                         <span id="whatsNewText" style="flex:1"></span>
                         <button type="button" id="btnWhatsNewUpdate"
@@ -149,7 +149,10 @@
                     <div class="inputContainer">
                         <label class="inputLabel inputLabelUnfocused" for="modsUrl">Mod Repository URL</label>
                         <input type="url" id="modsUrl" class="emby-input"
-                            placeholder="https://raw.githubusercontent.com/…/mods.json" />
+                            placeholder="https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/mods.json" />
+                    </div>
+                    <div id="mm-sourceStatus"
+                        style="display:none;margin:6px 0 14px;font-size:.82em;padding:5px 10px;border-radius:4px;">
                     </div>
                     <div style="margin-bottom:1.5em">
                         <button is="emby-button" type="button" id="mm-btnLoad" class="raised emby-button">Load
@@ -287,7 +290,8 @@
                         state.pendingIds = null;
                         state.modVars = safeParseJson(cfg.ModVars, {});
                         state.pendingVars = null;
-                        el('modsUrl').value = cfg.ModsUrl || '';
+                        el('modsUrl').value = cfg.ModsUrl || OFFICIAL_MODS_URL;
+                        updateModSourceStatus();
                         el('chkDebug').checked = cfg.DebugLogging || false;
 
                         var cached = safeParseJson(cfg.CachedMods, []);
@@ -310,6 +314,21 @@
                 function safeParseJson(str, fallback) {
                     try { return JSON.parse(str || '{}') || fallback; }
                     catch (e) { return fallback; }
+                }
+
+                var OFFICIAL_MODS_URL = 'https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/mods.json';
+
+                function updateModSourceStatus() {
+                    var url = (el('modsUrl').value || '').trim();
+                    var statusEl = document.getElementById('mm-sourceStatus');
+                    if (!statusEl) { return; }
+                    if (!url) { statusEl.style.display = 'none'; return; }
+                    statusEl.style.display = 'block';
+                    if (url === OFFICIAL_MODS_URL) {
+                        statusEl.innerHTML = '<span style="color:#4ade80;font-weight:600;">Official JellyFrame repository</span>';
+                    } else {
+                        statusEl.innerHTML = '<span style="color:#fbbf24;font-weight:600;">Unofficial source</span><span style="opacity:.55;"> - only load repositories you trust</span>';
+                    }
                 }
 
                 function loadMods(url) {
@@ -1197,6 +1216,7 @@
                     var url = el('modsUrl').value.trim();
                     if (url) loadMods(url);
                 });
+                el('modsUrl').addEventListener('input', updateModSourceStatus);
                 el('mm-searchInput').addEventListener('input', function () { state.query = this.value; render(); });
                 el('mm-btnSave').addEventListener('click', doSave);
                 el('btnDisableAll').addEventListener('click', function () {
@@ -1416,23 +1436,25 @@
 
                 var _pendingUpdateIds = [];
 
-                function checkWhatsNew(mods) {
-                    var STORAGE_KEY = 'mmModVersions_' + PLUGIN_ID;
-                    var stored = {};
-                    try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { }
+                // Compare freshly fetched manifest versions against what is saved
+                // in CachedMods (the versions Jellyfin currently has on disk).
+                // When the manifest has a newer version -> show the update notification.
+                function checkWhatsNew(freshMods) {
+                    var cached = [];
+                    try { cached = JSON.parse(state.config.CachedMods || '[]'); } catch (e) { }
+
+                    var cachedById = {};
+                    cached.forEach(function (m) { cachedById[m.id] = m.version; });
 
                     var updatedLabels = [];
                     var updatedIds = [];
-                    mods.forEach(function (m) {
-                        if (stored[m.id] && stored[m.id] !== m.version) {
-                            updatedLabels.push(m.name + ' (' + stored[m.id] + ' → ' + m.version + ')');
+                    freshMods.forEach(function (m) {
+                        var prev = cachedById[m.id];
+                        if (prev && prev !== m.version) {
+                            updatedLabels.push(m.name + ' (' + prev + ' → ' + m.version + ')');
                             updatedIds.push(m.id);
                         }
                     });
-
-                    var current = {};
-                    mods.forEach(function (m) { current[m.id] = m.version; });
-                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(current)); } catch (e) { }
 
                     if (updatedLabels.length > 0) {
                         _pendingUpdateIds = updatedIds;
