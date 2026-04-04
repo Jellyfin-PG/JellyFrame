@@ -74,8 +74,6 @@ jobs:
           body: |
             ## JellyFrame v${{ steps.version.outputs.VERSION }}
 
-            ${{ steps.changelog.outputs.LOG }}
-
             ### Installation
             Download `JellyFrame_${{ steps.version.outputs.VERSION }}.zip`, extract, and copy the DLLs to your Jellyfin plugins folder.
 
