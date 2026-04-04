@@ -19,7 +19,7 @@
                 "reveal": "always",
                 "panel": "shared"
             },
-            "detail": "Compiles the WatchPartySync plugin into a Release DLL ready for Jellyfin."
+            "detail": "Compiles the Jellyframe plugin into a Release DLL ready for Jellyfin."
         }
     ]
 }
