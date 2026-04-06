@@ -35,7 +35,7 @@ JellyFrame depends on the **File Transformation** plugin to inject CSS and JavaS
 3. Click **Add** and enter the following URL:
 
 ```
-https://raw.githubusercontent.com/Jellyfin-PG/JellyFrame/main/manifest.json
+https://raw.githubusercontent.com/Jellyfin-PG/Repository/refs/heads/main/manifest.json
 ```
 
 4. Click **Save**
