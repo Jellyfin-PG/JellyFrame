@@ -20,6 +20,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
+using Jellyfin.Database.Implementations.Enums;
 
 namespace Jellyfin.Plugin.JellyFrame.Runtime
 {
@@ -222,16 +223,29 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public void RefreshLibrary()
             => _library.QueueLibraryScan();
 
+        private static bool GetPermission(User u, PermissionKind kind)
+        {
+            try
+            {
+                var perm = u.Permissions?.FirstOrDefault(p => p.Kind == kind);
+                return perm != null && perm.Value;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public object[] GetUsers()
             => _users.Users.Select(u => (object)new
             {
                 id = u.Id.ToString("N"),
                 name = u.Username,
-                isAdmin = false,
-                isDisabled = false,
+                isAdmin = GetPermission(u, PermissionKind.IsAdministrator),
+                isDisabled = GetPermission(u, PermissionKind.IsDisabled),
                 lastLoginDate = u.LastLoginDate,
                 lastActivityDate = u.LastActivityDate,
-                hasPassword = false
+                hasPassword = !string.IsNullOrEmpty(u.Password)
             }).ToArray();
 
         public object GetUser(string id)
@@ -243,11 +257,11 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             {
                 id = u.Id.ToString("N"),
                 name = u.Username,
-                isAdmin = false,
-                isDisabled = false,
+                isAdmin = GetPermission(u, PermissionKind.IsAdministrator),
+                isDisabled = GetPermission(u, PermissionKind.IsDisabled),
                 lastLoginDate = u.LastLoginDate,
                 lastActivityDate = u.LastActivityDate,
-                hasPassword = false
+                hasPassword = !string.IsNullOrEmpty(u.Password)
             };
         }
 
