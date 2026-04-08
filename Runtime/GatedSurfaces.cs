@@ -173,6 +173,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public string GetEncoderVersion() { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetEncoderVersion(); }
         public object GetEncoderInfo() { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetEncoderInfo(); }
 
+        public bool UpdateMetadata(string itemId, object fields) { _perms.Require(PermissionSurface.JellyfinWrite); return _inner.UpdateMetadata(itemId, fields); }
         public bool SetFavorite(string uid, string iid, bool fav) { _perms.Require(PermissionSurface.JellyfinWrite); return _inner.SetFavorite(uid, iid, fav); }
         public bool SetWatched(string uid, string iid, bool w) { _perms.Require(PermissionSurface.JellyfinWrite); return _inner.SetWatched(uid, iid, w); }
         public void RefreshLibrary() { _perms.Require(PermissionSurface.JellyfinWrite); _inner.RefreshLibrary(); }

@@ -223,6 +223,108 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public void RefreshLibrary()
             => _library.QueueLibraryScan();
 
+        /// <summary>
+        /// Update writable metadata fields on a library item.
+        /// Supported fields: name, overview, officialRating, communityRating,
+        /// productionYear, genres (string[]), tags (string[]),
+        /// providerIds (object/dictionary), premiereDate (ISO string).
+        /// Returns true on success, false if item not found or fields dict is empty.
+        /// </summary>
+        public bool UpdateMetadata(string itemId, object fields)
+        {
+            if (!Guid.TryParse(itemId, out var guid)) return false;
+            var item = _library.GetItemById(guid);
+            if (item == null) return false;
+
+            Dictionary<string, string> d = null;
+            if (fields is IDictionary<string, object> dictObj)
+            {
+                d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kv in dictObj)
+                    if (kv.Value != null) d[kv.Key] = kv.Value.ToString();
+            }
+            else if (fields is Jint.Native.Object.ObjectInstance jsObj)
+            {
+                d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var prop in jsObj.GetOwnProperties())
+                {
+                    var v = prop.Value.Value?.ToString();
+                    if (v != null && v != "null" && v != "undefined")
+                        d[prop.Key.ToString()] = v;
+                }
+            }
+
+            if (d == null || d.Count == 0) return false;
+
+            bool changed = false;
+
+            if (d.TryGetValue("name", out var name) && !string.IsNullOrWhiteSpace(name))
+            { item.Name = name; changed = true; }
+
+            if (d.TryGetValue("overview", out var overview))
+            { item.Overview = overview; changed = true; }
+
+            if (d.TryGetValue("officialRating", out var rating))
+            { item.OfficialRating = rating; changed = true; }
+
+            if (d.TryGetValue("communityRating", out var commRating)
+                && float.TryParse(commRating, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var cr))
+            { item.CommunityRating = cr; changed = true; }
+
+            if (d.TryGetValue("productionYear", out var year)
+                && int.TryParse(year, out var yr))
+            { item.ProductionYear = yr; changed = true; }
+
+            if (d.TryGetValue("premiereDate", out var premiere)
+                && DateTime.TryParse(premiere, null,
+                    System.Globalization.DateTimeStyles.RoundtripKind, out var pd))
+            { item.PremiereDate = pd; changed = true; }
+
+            if (d.TryGetValue("genres", out var genresJson) && !string.IsNullOrWhiteSpace(genresJson))
+            {
+                try
+                {
+                    var arr = System.Text.Json.JsonSerializer.Deserialize<string[]>(genresJson);
+                    if (arr != null) { item.Genres = arr; changed = true; }
+                }
+                catch { }
+            }
+
+            if (d.TryGetValue("tags", out var tagsJson) && !string.IsNullOrWhiteSpace(tagsJson))
+            {
+                try
+                {
+                    var arr = System.Text.Json.JsonSerializer.Deserialize<string[]>(tagsJson);
+                    if (arr != null) { item.Tags = arr; changed = true; }
+                }
+                catch { }
+            }
+
+            if (d.TryGetValue("providerIds", out var pidsJson) && !string.IsNullOrWhiteSpace(pidsJson))
+            {
+                try
+                {
+                    var pids = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(pidsJson);
+                    if (pids != null)
+                    {
+                        foreach (var kv in pids)
+                            item.ProviderIds[kv.Key] = kv.Value;
+                        changed = true;
+                    }
+                }
+                catch { }
+            }
+
+            if (!changed) return false;
+
+            item.DateModified = DateTime.UtcNow;
+            _library.UpdateItemAsync(item, item.GetParent(), ItemUpdateType.MetadataEdit,
+                System.Threading.CancellationToken.None).GetAwaiter().GetResult();
+            _logger.LogInformation("[JellyFrame] UpdateMetadata: saved changes to item {Id}", item.Id);
+            return true;
+        }
+
         private static bool GetPermission(User u, PermissionKind kind)
         {
             try
