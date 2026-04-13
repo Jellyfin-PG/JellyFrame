@@ -52,6 +52,28 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             }
         }
 
+        /// <summary>
+        /// Invalidate only cache files of a specific type ("css", "js", "serverjs")
+        /// for a given mod. Used by the CSS hot-reload watcher.
+        /// </summary>
+        public static void InvalidateType(string modId, string type, IApplicationPaths paths)
+        {
+            var cacheDir = GetCacheDir(paths);
+            if (!Directory.Exists(cacheDir)) return;
+
+            var prefix = SafeId(modId) + "__";
+            foreach (var file in Directory.GetFiles(cacheDir, prefix + "*"))
+            {
+                var name = Path.GetFileNameWithoutExtension(file);
+                var parts = name.Split(new[] { "__" }, StringSplitOptions.None);
+                if (parts.Length >= 3 &&
+                    string.Equals(parts[2], type, StringComparison.OrdinalIgnoreCase))
+                {
+                    try { File.Delete(file); } catch { }
+                }
+            }
+        }
+
         public static void ClearAll(IApplicationPaths paths)
         {
             var cacheDir = GetCacheDir(paths);
