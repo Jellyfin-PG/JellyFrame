@@ -265,6 +265,36 @@
                 var CHIP_OFF = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;';
                 var CHIP_ON = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid #00a4dc;background:#00a4dc;color:#fff;font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;font-weight:700;';
 
+                /**
+                 * Returns the best localised description for a mod.
+                 *
+                 * Supports two formats in mods.json:
+                 *   1. Plain string (legacy):  "description": "English only text"
+                 *   2. Locale map:             "description": { "en": "Hello", "fr": "Bonjour", "de": "Hallo" }
+                 *
+                 * Resolution order: exact match → language-only match → "en" fallback → first available → ""
+                 * The locale is derived from the browser's navigator.language (e.g. "fr-CA" → try "fr-CA" then "fr").
+                 */
+                function getLocalized(raw) {
+                    if (!raw) return '';
+                    if (typeof raw === 'string') return raw;
+                    if (typeof raw !== 'object') return '';
+                    var lang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+                    var langBase = lang.split('-')[0];
+                    var keys = Object.keys(raw);
+                    function pick(target) {
+                        for (var i = 0; i < keys.length; i++) {
+                            if (keys[i].toLowerCase() === target) return raw[keys[i]];
+                        }
+                        return null;
+                    }
+                    return pick(lang) || pick(langBase) || pick('en') || raw[keys[0]] || '';
+                }
+
+                function getLocalizedTitle(item) { return getLocalized(item.title || item.name) || ''; }
+
+                function getLocalizedDescription(item) { return getLocalized(item.description) || ''; }
+
                 var state = {
                     mods: [],
                     enabledIds: [],
@@ -406,9 +436,9 @@
                     var ids = currentIds();
                     var list = state.mods.filter(function (m) {
                         var mq = !q ||
-                            (m.name || '').toLowerCase().includes(q) ||
+                            getLocalizedTitle(m).toLowerCase().includes(q) ||
                             (m.author || '').toLowerCase().includes(q) ||
-                            (m.description || '').toLowerCase().includes(q);
+                            getLocalizedDescription(m).toLowerCase().includes(q);
                         var mt = state.activeTags.length === 0 ||
                             state.activeTags.every(function (t) { return (m.tags || []).includes(t); });
                         var mtype = state.typeFilter === 'all' ||
@@ -438,7 +468,7 @@
 
                     var card = document.createElement('div');
                     card.className = 'card overflowBackdropCard' + (isOn ? ' enabledCard' : '');
-                    card.style.cssText = 'min-width:200px;max-width:260px;';
+                    card.style.cssText = 'min-width:200px;max-width:260px;pointer-events:none;';
 
                     var cardBox = document.createElement('div');
                     cardBox.className = 'cardBox';
@@ -455,6 +485,7 @@
                     var imgContainer = document.createElement('div');
                     imgContainer.className = 'cardImageContainer coveredImage';
                     imgContainer.style.cursor = 'zoom-in';
+                    imgContainer.style.pointerEvents = 'auto';
                     imgContainer.title = 'Click to preview';
                     imgContainer.addEventListener('click', function (e) {
                         e.stopPropagation();
@@ -518,7 +549,7 @@
                     var nameEl = document.createElement('div');
                     nameEl.className = 'cardText';
                     nameEl.style.fontWeight = 'bold';
-                    nameEl.textContent = (mod.name || "");
+                    nameEl.textContent = getLocalizedTitle(mod);
                     footer.appendChild(nameEl);
 
                     if ((mod.author || "")) {
@@ -528,11 +559,27 @@
                         footer.appendChild(authEl);
                     }
 
-                    if ((mod.description || "")) {
+                    var _modDesc = getLocalizedDescription(mod);
+                    if (_modDesc) {
                         var descEl = document.createElement('div');
                         descEl.className = 'cardText cardText-secondary';
-                        descEl.style.cssText = 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.8em;opacity:.7;margin-top:.2em';
-                        descEl.textContent = (mod.description || "");
+                        descEl.style.cssText = 'font-size:.8em;opacity:.7;margin-top:.2em;white-space:normal;word-break:break-word;overflow-wrap:break-word;';
+                        var TRUNCATE_LEN = 100;
+                        if (_modDesc.length <= TRUNCATE_LEN) {
+                            descEl.textContent = _modDesc;
+                        } else {
+                            var shortText = document.createTextNode(_modDesc.slice(0, TRUNCATE_LEN) + '… ');
+                            var readMoreBtn = document.createElement('button');
+                            readMoreBtn.type = 'button';
+                            readMoreBtn.textContent = 'more';
+                            readMoreBtn.style.cssText = 'background:none;border:none;padding:0;color:#00a4dc;cursor:pointer;font-size:inherit;font-family:inherit;pointer-events:auto;text-decoration:underline;';
+                            readMoreBtn.addEventListener('click', function (e) {
+                                e.stopPropagation();
+                                openDescriptionModal(getLocalizedTitle(mod), _modDesc);
+                            });
+                            descEl.appendChild(shortText);
+                            descEl.appendChild(readMoreBtn);
+                        }
                         footer.appendChild(descEl);
                     }
 
@@ -555,7 +602,13 @@
                             'http': '#e08020',
                             'jellyfin.read': '#2080e0',
                             'jellyfin.write': '#c04040',
+                            'jellyfin.delete': '#8b0000',
+                            'jellyfin.tasks': '#b05000',
+                            'jellyfin.refresh': '#6b3fa0',
+                            'jellyfin.livetv': '#1a7a5e',
+                            'jellyfin.admin': '#7a1a1a',
                             'store': '#20a060',
+                            'shared-store': '#0e7a5e',
                             'scheduler': '#8040c0',
                             'webhooks': '#20a0a0',
                             'rpc': '#a06020',
@@ -593,7 +646,7 @@
                     var toggleBtn = document.createElement('button');
                     toggleBtn.setAttribute('is', 'emby-button');
                     toggleBtn.className = 'raised emby-button' + (isOn ? ' button-submit' : '');
-                    toggleBtn.style.cssText = 'flex:1;padding:.35em .5em;font-size:.78em';
+                    toggleBtn.style.cssText = 'flex:1;padding:.35em .5em;font-size:.78em;pointer-events:auto;';
                     toggleBtn.textContent = isOn ? '✓ Enabled' : 'Enable';
                     toggleBtn.addEventListener('click', function (e) {
                         e.stopPropagation();
@@ -604,7 +657,7 @@
                     if (isOn && hasVars) {
                         var cfgBtn = document.createElement('button');
                         cfgBtn.type = 'button';
-                        cfgBtn.style.cssText = 'padding:.35em .6em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;';
+                        cfgBtn.style.cssText = 'padding:.35em .6em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;pointer-events:auto;';
                         cfgBtn.textContent = '⚙';
                         cfgBtn.title = 'Configure variables';
                         cfgBtn.addEventListener('click', function (e) {
@@ -616,7 +669,7 @@
 
                     if ((mod.sourceUrl || "")) {
                         var srcBtn = document.createElement('a');
-                        srcBtn.style.cssText = 'padding:.35em .6em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;';
+                        srcBtn.style.cssText = 'padding:.35em .6em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;pointer-events:auto;';
                         srcBtn.textContent = '↗';
                         srcBtn.title = 'View source';
                         srcBtn.href = (mod.sourceUrl || "");
@@ -761,6 +814,42 @@
                     document.body.appendChild(overlay);
                 }
 
+                function openDescriptionModal(title, description) {
+                    var existing = document.getElementById('mmDescModalOverlay');
+                    if (existing) existing.remove();
+
+                    var overlay = document.createElement('div');
+                    overlay.id = 'mmDescModalOverlay';
+                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:100002;display:flex;align-items:center;justify-content:center;padding:24px;';
+
+                    var dialog = document.createElement('div');
+                    dialog.style.cssText = 'background:#1a1d21;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:28px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.7);position:relative;';
+
+                    var titleEl = document.createElement('div');
+                    titleEl.style.cssText = 'font-size:1em;font-weight:700;margin-bottom:14px;color:#fff;padding-right:28px;';
+                    titleEl.textContent = title;
+                    dialog.appendChild(titleEl);
+
+                    var closeBtn = document.createElement('button');
+                    closeBtn.type = 'button';
+                    closeBtn.textContent = '✕';
+                    closeBtn.style.cssText = 'position:absolute;top:14px;right:14px;background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:1.1em;line-height:1;padding:4px;';
+                    closeBtn.addEventListener('click', function () { overlay.remove(); });
+                    dialog.appendChild(closeBtn);
+
+                    var body = document.createElement('div');
+                    body.style.cssText = 'font-size:.88em;line-height:1.7;opacity:.75;white-space:pre-wrap;word-break:break-word;';
+                    body.textContent = description;
+                    dialog.appendChild(body);
+
+                    overlay.appendChild(dialog);
+                    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
+                    document.addEventListener('keydown', function onKey(e) {
+                        if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
+                    });
+                    document.body.appendChild(overlay);
+                }
+
                 function closeModal() {
                     var overlay = document.getElementById('mmModalOverlay');
                     if (overlay) overlay.remove();
@@ -798,12 +887,19 @@
                     info.style.cssText = 'margin-top:14px;text-align:center;';
                     var title = document.createElement('div');
                     title.style.cssText = 'font-size:1.1em;font-weight:600;color:#fff;';
-                    title.textContent = item.name;
+                    title.textContent = getLocalizedTitle(item);
                     var author = document.createElement('div');
                     author.style.cssText = 'font-size:.82em;opacity:.55;margin-top:3px;';
                     author.textContent = 'by ' + (item.author || '');
                     info.appendChild(title);
                     if (item.author) info.appendChild(author);
+                    var previewDesc = getLocalizedDescription(item);
+                    if (previewDesc) {
+                        var descNode = document.createElement('div');
+                        descNode.style.cssText = 'font-size:.78em;opacity:.55;margin-top:8px;max-width:520px;line-height:1.6;white-space:pre-wrap;word-break:break-word;text-align:left;';
+                        descNode.textContent = previewDesc;
+                        info.appendChild(descNode);
+                    }
                     overlay.appendChild(imgWrap);
                     overlay.appendChild(info);
                     overlay.addEventListener('click', function () { overlay.remove(); });
@@ -936,7 +1032,7 @@
                         updatePending();
                         updateActiveBar();
                         render();
-                        var doReload = function () { setTimeout(function () { window.top.location.reload(); }, 300); };
+                        var doReload = function () { setTimeout(function () { window.top.location.reload(true); }, 300); };
                         if (window.caches) {
                             caches.keys().then(function (keys) {
                                 return Promise.all(

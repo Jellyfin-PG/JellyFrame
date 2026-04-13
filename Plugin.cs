@@ -7,12 +7,19 @@ using Jellyfin.Plugin.JellyFrame.Runtime;
 using Jellyfin.Plugin.JellyFrame.Services;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -36,7 +43,9 @@ namespace Jellyfin.Plugin.JellyFrame
         private readonly JsonSerializerOptions _jsonOpts = new() { PropertyNameCaseInsensitive = true };
         private readonly MediaBrowser.Controller.Library.ILibraryManager _libraryManager;
         private readonly MediaBrowser.Controller.Session.ISessionManager _sessionManager;
+        private readonly MediaBrowser.Controller.Library.IUserDataManager _userDataManager;
         private Runtime.JellyfinEventSurface _eventSurface;
+        private Services.ThemeFileWatcher _themeWatcher;
         private bool _disposed;
 
         public Plugin(
@@ -52,6 +61,15 @@ namespace Jellyfin.Plugin.JellyFrame
             IMediaEncoder mediaEncoder,
             IPlaylistManager playlistManager,
             IDtoService dtoService,
+            ICollectionManager collectionManager,
+            IProviderManager providerManager,
+            IActivityManager activityManager,
+            ITaskManager taskManager,
+            IDeviceManager deviceManager,
+            ITVSeriesManager tvSeriesManager,
+            ILiveTvManager liveTvManager,
+            IMediaSourceManager mediaSourceManager,
+            MediaBrowser.Model.IO.IFileSystem fileSystem,
             ILoggerFactory loggerFactory)
             : base(applicationPaths, xmlSerializer)
         {
@@ -61,6 +79,7 @@ namespace Jellyfin.Plugin.JellyFrame
             _logger = logger;
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
+            _userDataManager = userDataManager;
 
             ModLoader = new ServerModLoader(
                 libraryManager,
@@ -71,6 +90,15 @@ namespace Jellyfin.Plugin.JellyFrame
                 mediaEncoder,
                 playlistManager,
                 dtoService,
+                collectionManager,
+                providerManager,
+                activityManager,
+                taskManager,
+                deviceManager,
+                tvSeriesManager,
+                liveTvManager,
+                mediaSourceManager,
+                fileSystem,
                 applicationPaths,
                 loggerFactory.CreateLogger<ServerModLoader>());
 
@@ -231,9 +259,14 @@ namespace Jellyfin.Plugin.JellyFrame
                 var cacheDir = System.IO.Path.Combine(AppPaths.DataPath, "JellyFrame", "mods");
                 ModLoader.StartWatcher(cacheDir, HotReloadModAsync);
 
+                var themeCacheDir = System.IO.Path.Combine(AppPaths.DataPath, "JellyFrame", "themes");
+                _themeWatcher?.Dispose();
+                _themeWatcher = new Services.ThemeFileWatcher(themeCacheDir, AppPaths, _logger);
+
                 _eventSurface = new Runtime.JellyfinEventSurface(
                     _libraryManager,
                     _sessionManager,
+                    _userDataManager,
                     _logger,
                     (eventName, data) => ModLoader.FireEventAsync(eventName, data));
             }
@@ -387,6 +420,7 @@ namespace Jellyfin.Plugin.JellyFrame
             ConfigurationChanged -= OnConfigurationChanged;
             _eventSurface?.Dispose();
             ModLoader?.StopWatcher();
+            _themeWatcher?.Dispose();
             ModLoader?.Dispose();
             _logger.LogInformation("[JellyFrame] Plugin disposed");
         }

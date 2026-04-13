@@ -124,7 +124,6 @@
             text-overflow: ellipsis;
         }
 
-        /* Fully custom pill — not a form input, can't be overridden by Jellyfin's CSS */
         .jfPill {
             display: inline-block;
             flex-shrink: 0;
@@ -295,6 +294,68 @@
 
                 var CHIP_OFF = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;';
                 var CHIP_ON = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid #00a4dc;background:#00a4dc;color:#fff;font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;font-weight:700;';
+
+                /**
+                 * Resolve a localised string field.
+                 * Accepts either a plain string (legacy) or a locale-keyed object:
+                 *   { "en": "Hello", "fr": "Bonjour", "de": "Hallo" }
+                 * Resolution: exact browser locale → language base → "en" fallback → first value → ""
+                 */
+                function getLocalized(raw) {
+                    if (!raw) return '';
+                    if (typeof raw === 'string') return raw;
+                    if (typeof raw !== 'object') return '';
+                    var lang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+                    var langBase = lang.split('-')[0];
+                    var keys = Object.keys(raw);
+                    function pick(target) {
+                        for (var i = 0; i < keys.length; i++) {
+                            if (keys[i].toLowerCase() === target) return raw[keys[i]];
+                        }
+                        return null;
+                    }
+                    return pick(lang) || pick(langBase) || pick('en') || raw[keys[0]] || '';
+                }
+
+                function getLocalizedTitle(item) { return getLocalized(item.title || item.name) || ''; }
+
+                function getLocalizedDescription(item) { return getLocalized(item.description) || ''; }
+
+                function openDescriptionModal(titleText, description) {
+                    var existing = document.getElementById('jftDescModalOverlay');
+                    if (existing) existing.remove();
+
+                    var overlay = document.createElement('div');
+                    overlay.id = 'jftDescModalOverlay';
+                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:100002;display:flex;align-items:center;justify-content:center;padding:24px;';
+
+                    var dialog = document.createElement('div');
+                    dialog.style.cssText = 'background:#1a1d21;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:28px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.7);position:relative;';
+
+                    var titleEl = document.createElement('div');
+                    titleEl.style.cssText = 'font-size:1em;font-weight:700;margin-bottom:14px;color:#fff;padding-right:28px;';
+                    titleEl.textContent = titleText;
+                    dialog.appendChild(titleEl);
+
+                    var closeBtn = document.createElement('button');
+                    closeBtn.type = 'button';
+                    closeBtn.textContent = '✕';
+                    closeBtn.style.cssText = 'position:absolute;top:14px;right:14px;background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:1.1em;line-height:1;padding:4px;';
+                    closeBtn.addEventListener('click', function () { overlay.remove(); });
+                    dialog.appendChild(closeBtn);
+
+                    var body = document.createElement('div');
+                    body.style.cssText = 'font-size:.88em;line-height:1.7;opacity:.75;white-space:pre-wrap;word-break:break-word;';
+                    body.textContent = description;
+                    dialog.appendChild(body);
+
+                    overlay.appendChild(dialog);
+                    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
+                    document.addEventListener('keydown', function onKey(e) {
+                        if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
+                    });
+                    document.body.appendChild(overlay);
+                }
 
                 function el(id) { return document.getElementById(id); }
                 function escHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -741,9 +802,9 @@
                     var q = (state.query || '').toLowerCase();
                     var list = state.themes.filter(function (t) {
                         var match = !q ||
-                            (t.name || '').toLowerCase().includes(q) ||
+                            getLocalizedTitle(t).toLowerCase().includes(q) ||
                             (t.author || '').toLowerCase().includes(q) ||
-                            (t.description || '').toLowerCase().includes(q);
+                            getLocalizedDescription(t).toLowerCase().includes(q);
                         var tagMatch = state.activeTags.length === 0 ||
                             state.activeTags.every(function (tag) { return (t.tags || []).includes(tag); });
                         return match && tagMatch;
@@ -768,7 +829,7 @@
 
                     var card = document.createElement('div');
                     card.className = 'card overflowBackdropCard' + (isActive ? ' activeRing' : '');
-                    card.style.cssText = 'min-width:200px;max-width:260px;cursor:pointer;';
+                    card.style.cssText = 'min-width:200px;max-width:260px;pointer-events:none;';
 
                     var cardBox = document.createElement('div');
                     cardBox.className = 'cardBox';
@@ -786,6 +847,7 @@
                     imgContainer.className = 'cardImageContainer coveredImage';
 
                     imgContainer.style.cursor = 'zoom-in';
+                    imgContainer.style.pointerEvents = 'auto';
                     imgContainer.title = 'Click to preview';
                     imgContainer.addEventListener('click', function (e) {
                         e.stopPropagation();
@@ -834,7 +896,7 @@
 
                     var nameEl = document.createElement('div');
                     nameEl.className = 'cardText';
-                    nameEl.textContent = theme.name || '';
+                    nameEl.textContent = getLocalizedTitle(theme);
                     footer.appendChild(nameEl);
 
                     if (theme.author) {
@@ -844,11 +906,27 @@
                         footer.appendChild(authEl);
                     }
 
-                    if (theme.description) {
+                    var _themeDesc = getLocalizedDescription(theme);
+                    if (_themeDesc) {
                         var descEl = document.createElement('div');
                         descEl.className = 'cardText cardText-secondary';
-                        descEl.style.cssText = 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.8em;opacity:.7;margin-top:.2em';
-                        descEl.textContent = theme.description;
+                        descEl.style.cssText = 'font-size:.8em;opacity:.7;margin-top:.2em;white-space:normal;word-break:break-word;overflow-wrap:break-word;';
+                        var TRUNCATE_LEN = 100;
+                        if (_themeDesc.length <= TRUNCATE_LEN) {
+                            descEl.textContent = _themeDesc;
+                        } else {
+                            var shortText = document.createTextNode(_themeDesc.slice(0, TRUNCATE_LEN) + '… ');
+                            var readMoreBtn = document.createElement('button');
+                            readMoreBtn.type = 'button';
+                            readMoreBtn.textContent = 'more';
+                            readMoreBtn.style.cssText = 'background:none;border:none;padding:0;color:#00a4dc;cursor:pointer;font-size:inherit;font-family:inherit;pointer-events:auto;text-decoration:underline;';
+                            readMoreBtn.addEventListener('click', function (e) {
+                                e.stopPropagation();
+                                openDescriptionModal(getLocalizedTitle(theme), _themeDesc);
+                            });
+                            descEl.appendChild(shortText);
+                            descEl.appendChild(readMoreBtn);
+                        }
                         footer.appendChild(descEl);
                     }
 
@@ -881,6 +959,7 @@
                             ? 'background:#00a4dc;color:#fff;'
                             : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);');
                     activateBtn.textContent = isActive ? '✓ Active' : 'Apply';
+                    activateBtn.style.pointerEvents = 'auto';
                     activateBtn.addEventListener('click', function (e) {
                         e.stopPropagation();
                         selectTheme(theme);
@@ -890,7 +969,7 @@
                     if (isActive && hasVars) {
                         var cfgBtn = document.createElement('button');
                         cfgBtn.type = 'button';
-                        cfgBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;';
+                        cfgBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;pointer-events:auto;';
                         cfgBtn.textContent = '⚙';
                         cfgBtn.title = 'Configure theme';
                         cfgBtn.addEventListener('click', function (e) {
@@ -902,7 +981,7 @@
 
                     if (theme.sourceUrl) {
                         var srcBtn = document.createElement('a');
-                        srcBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;';
+                        srcBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;pointer-events:auto;';
                         srcBtn.textContent = '↗';
                         srcBtn.title = 'View source';
                         srcBtn.href = theme.sourceUrl;
@@ -966,6 +1045,17 @@
                         updatePending();
                         updateActiveBar();
                         render();
+                        var doReload = function () { setTimeout(function () { window.top.location.reload(true); }, 300); };
+                        if (window.caches) {
+                            caches.keys().then(function (keys) {
+                                return Promise.all(
+                                    keys.filter(function (k) { return k.startsWith('modmanager-'); })
+                                        .map(function (k) { return caches.delete(k); })
+                                );
+                            }).then(doReload).catch(doReload);
+                        } else {
+                            doReload();
+                        }
                     }).catch(function () {
                         el('jft-btnSave').disabled = false;
                     });
@@ -979,7 +1069,7 @@
                     var name = '';
                     if (id) {
                         var t = state.themes.find(function (x) { return x.id === id; });
-                        name = t ? t.name : id;
+                        name = t ? getLocalizedTitle(t) : id;
                     }
                     el('jft-activeBar').style.display = id ? 'flex' : 'none';
                     el('activeThemeName').textContent = name || '';
@@ -1007,7 +1097,7 @@
 
                     var title = document.createElement('h3');
                     title.style.cssText = 'margin:0 0 4px;font-size:1.05em;';
-                    title.textContent = theme.name + ' — Configuration';
+                    title.textContent = getLocalizedTitle(theme) + ' — Configuration';
                     dialog.appendChild(title);
 
                     var subtitle = document.createElement('p');
@@ -1237,13 +1327,20 @@
                     info.style.cssText = 'margin-top:14px;text-align:center;';
                     var titleEl = document.createElement('div');
                     titleEl.style.cssText = 'font-size:1.1em;font-weight:600;color:#fff;';
-                    titleEl.textContent = theme.name || '';
+                    titleEl.textContent = getLocalizedTitle(theme);
                     info.appendChild(titleEl);
                     if (theme.author) {
                         var authorEl = document.createElement('div');
                         authorEl.style.cssText = 'font-size:.82em;opacity:.55;margin-top:3px;';
                         authorEl.textContent = 'by ' + theme.author;
                         info.appendChild(authorEl);
+                    }
+                    var _previewDesc = getLocalizedDescription(theme);
+                    if (_previewDesc) {
+                        var previewDescEl = document.createElement('div');
+                        previewDescEl.style.cssText = 'font-size:.78em;opacity:.55;margin-top:8px;max-width:520px;line-height:1.6;white-space:pre-wrap;word-break:break-word;text-align:left;';
+                        previewDescEl.textContent = _previewDesc;
+                        info.appendChild(previewDescEl);
                     }
 
                     overlay.appendChild(imgWrap);

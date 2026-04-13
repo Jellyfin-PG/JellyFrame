@@ -7,13 +7,21 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.JellyFrame.Services;
-using Jellyfin.Plugin.JellyFrame.Configuration;using MediaBrowser.Common.Configuration;
+using Jellyfin.Plugin.JellyFrame.Configuration;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -24,20 +32,29 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         private readonly ConcurrentDictionary<string, JsRuntime> _runtimes
             = new(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ILibraryManager        _library;
-        private readonly IUserDataManager       _userData;
-        private readonly IUserManager           _users;
-        private readonly ISessionManager        _sessions;
-        private readonly ISubtitleManager       _subtitles;
-        private readonly IMediaEncoder          _encoder;
-        private readonly IPlaylistManager       _playlists;
-        private readonly IDtoService            _dto;
-        private readonly IApplicationPaths      _paths;
+        private readonly ILibraryManager _library;
+        private readonly IUserDataManager _userData;
+        private readonly IUserManager _users;
+        private readonly ISessionManager _sessions;
+        private readonly ISubtitleManager _subtitles;
+        private readonly IMediaEncoder _encoder;
+        private readonly IPlaylistManager _playlists;
+        private readonly IDtoService _dto;
+        private readonly ICollectionManager _collections;
+        private readonly IProviderManager _providers;
+        private readonly IActivityManager _activity;
+        private readonly ITaskManager _tasks;
+        private readonly IDeviceManager _devices;
+        private readonly ITVSeriesManager _tvSeries;
+        private readonly ILiveTvManager _liveTv;
+        private readonly IMediaSourceManager _mediaSources;
+        private readonly MediaBrowser.Model.IO.IFileSystem _fileSystem;
+        private readonly IApplicationPaths _paths;
         private readonly ILogger<ServerModLoader> _logger;
 
-        private readonly SemaphoreSlim  _loadLock = new(1, 1);
-        private readonly Timer          _gcTimer;
-        private ModFileWatcher          _watcher;
+        private readonly SemaphoreSlim _loadLock = new(1, 1);
+        private readonly Timer _gcTimer;
+        private ModFileWatcher _watcher;
 
         private static readonly JsonSerializerOptions _jsonOpts = new() { PropertyNameCaseInsensitive = true };
         private bool _disposed;
@@ -45,37 +62,55 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         private static readonly TimeSpan GcInterval = TimeSpan.FromMinutes(10);
 
         public ServerModLoader(
-            ILibraryManager        library,
-            IUserDataManager       userData,
-            IUserManager           users,
-            ISessionManager        sessions,
-            ISubtitleManager       subtitles,
-            IMediaEncoder          encoder,
-            IPlaylistManager       playlists,
-            IDtoService            dto,
-            IApplicationPaths      paths,
+            ILibraryManager library,
+            IUserDataManager userData,
+            IUserManager users,
+            ISessionManager sessions,
+            ISubtitleManager subtitles,
+            IMediaEncoder encoder,
+            IPlaylistManager playlists,
+            IDtoService dto,
+            ICollectionManager collections,
+            IProviderManager providers,
+            IActivityManager activity,
+            ITaskManager tasks,
+            IDeviceManager devices,
+            ITVSeriesManager tvSeries,
+            ILiveTvManager liveTv,
+            IMediaSourceManager mediaSources,
+            MediaBrowser.Model.IO.IFileSystem fileSystem,
+            IApplicationPaths paths,
             ILogger<ServerModLoader> logger)
         {
-            _library       = library;
-            _userData      = userData;
-            _users         = users;
-            _sessions      = sessions;
-            _subtitles     = subtitles;
-            _encoder       = encoder;
-            _playlists     = playlists;
-            _dto           = dto;
-            _paths         = paths;
-            _logger        = logger;
+            _library = library;
+            _userData = userData;
+            _users = users;
+            _sessions = sessions;
+            _subtitles = subtitles;
+            _encoder = encoder;
+            _playlists = playlists;
+            _dto = dto;
+            _collections = collections;
+            _providers = providers;
+            _activity = activity;
+            _tasks = tasks;
+            _devices = devices;
+            _tvSeries = tvSeries;
+            _liveTv = liveTv;
+            _mediaSources = mediaSources;
+            _fileSystem = fileSystem;
+            _paths = paths;
+            _logger = logger;
 
             _gcTimer = new Timer(_ => RunPeriodicGc(), null, GcInterval, GcInterval);
         }
 
         public async Task LoadModsAsync(
-            IEnumerable<ModEntry>                             mods,
-            IEnumerable<string>                               enabledIds,
-            Dictionary<string, Dictionary<string, string>>   modVars,
-            bool                                              forceReload       = false,
-            CancellationToken                                 cancellationToken = default)
+            IEnumerable<ModEntry> mods,
+            IEnumerable<string> enabledIds,
+            Dictionary<string, Dictionary<string, string>> modVars,
+            bool forceReload = false,
+            CancellationToken cancellationToken = default)
         {
             await _loadLock.WaitAsync(cancellationToken);
             try
@@ -91,7 +126,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                     if (enabledSet.Contains(m.Id) && !string.IsNullOrWhiteSpace(m.ServerJs))
                         serverMods.Add(m);
 
-                var modIndex  = new Dictionary<string, ModEntry>(StringComparer.OrdinalIgnoreCase);
+                var modIndex = new Dictionary<string, ModEntry>(StringComparer.OrdinalIgnoreCase);
                 foreach (var m in serverMods) modIndex[m.Id] = m;
 
                 var loadOrder = TopologicalSort(serverMods, modIndex, enabledSet);
@@ -114,9 +149,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         }
 
         private async Task LoadModCoreAsync(
-            ModEntry                                        mod,
+            ModEntry mod,
             Dictionary<string, Dictionary<string, string>> modVars,
-            CancellationToken                               ct)
+            CancellationToken ct)
         {
             if (_runtimes.TryRemove(mod.Id, out var old))
                 old.Dispose();
@@ -139,28 +174,31 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 return;
             }
 
-            var vars      = BuildVarMap(mod, modVars);
-            var log       = new LogSurface(_logger, mod.Id);
-            var cache     = new CacheSurface();
-            var store     = new StoreSurface(mod.Id, _paths);
+            var vars = BuildVarMap(mod, modVars);
+            var log = new LogSurface(_logger, mod.Id);
+            var cache = new CacheSurface();
+            var store = new StoreSurface(mod.Id, _paths);
             var userStore = new UserStoreSurface(mod.Id, _paths);
-            var http      = new HttpSurface();
-            var routes    = new RoutesSurface(mod.Id);
+            var kv = new KvSurface(mod.Id, _paths);
+            var http = new HttpSurface();
+            var routes = new RoutesSurface(mod.Id);
             var scheduler = new SchedulerSurface(mod.Id, _logger);
-            var bus       = new EventBusSurface(mod.Id, _logger);
-            var webhooks  = new WebhookSurface(mod.Id, _logger);
-            var rpc       = new RpcSurface(mod.Id, _logger);
-            var perms     = new PermissionSurface(mod.Id, mod.Permissions);
-            var jellyfin  = new JellyfinSurface(
+            var bus = new EventBusSurface(mod.Id, _logger);
+            var webhooks = new WebhookSurface(mod.Id, _logger);
+            var rpc = new RpcSurface(mod.Id, _logger);
+            var perms = new PermissionSurface(mod.Id, mod.Permissions);
+            var jellyfin = new JellyfinSurface(
                 _library, _userData, _users, _sessions,
-                _subtitles, _encoder, _playlists, _dto, _logger);
+                _subtitles, _encoder, _playlists, _dto,
+                _collections, _providers, _activity, _tasks, _devices,
+                _tvSeries, _liveTv, _mediaSources, _fileSystem, _logger);
 
             foreach (var u in PermissionSurface.UnknownPermissions(mod.Permissions))
                 _logger.LogWarning("[JellyFrame] Mod '{Id}' declared unknown permission '{P}'", mod.Id, u);
 
             var context = new JellyFrameContext(
                 mod.Id, vars, jellyfin, routes, store, userStore,
-                cache, http, log, scheduler, bus, webhooks, rpc, perms);
+                kv, cache, http, log, scheduler, bus, webhooks, rpc, perms);
             var runtime = new JsRuntime(context, _logger);
 
             runtime.LoadScript(script);
@@ -252,8 +290,17 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             Func<string, Task> getModEntryAndVars)
         {
             _watcher?.Dispose();
-            _watcher = new ModFileWatcher(cacheDir, getModEntryAndVars, _logger);
-            _logger.LogInformation("[JellyFrame] Hot-reload watcher started on '{Dir}'", cacheDir);
+
+            Func<string, Task> onCssChanged = modId =>
+            {
+                _logger.LogInformation(
+                    "[JellyFrame] CSS hot-reload: invalidating CSS cache for '{Id}'", modId);
+                ModResourceCache.InvalidateType(modId, "css", _paths);
+                return Task.CompletedTask;
+            };
+
+            _watcher = new ModFileWatcher(cacheDir, getModEntryAndVars, _logger, onCssChanged);
+            _logger.LogInformation("[JellyFrame] Hot-reload watcher started on '{Dir}' (JS + CSS)", cacheDir);
         }
 
         public void StopWatcher()
@@ -264,7 +311,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public IEnumerable<string> LoadedModIds => _runtimes.Keys;
         public bool IsModLoaded(string modId) => _runtimes.TryGetValue(modId, out var r) && r.IsLoaded;
-        public int  LoadedCount => _runtimes.Count;
+        public int LoadedCount => _runtimes.Count;
         public bool WatcherActive => _watcher != null;
 
         public IEnumerable<ModHealthSnapshot> GetHealthSnapshots()
@@ -293,7 +340,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         }
 
         private static Dictionary<string, string> BuildVarMap(
-            ModEntry                                        mod,
+            ModEntry mod,
             Dictionary<string, Dictionary<string, string>> modVars)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -307,14 +354,14 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         }
 
         private List<ModEntry> TopologicalSort(
-            List<ModEntry>             mods,
+            List<ModEntry> mods,
             Dictionary<string, ModEntry> index,
-            HashSet<string>            enabledSet)
+            HashSet<string> enabledSet)
         {
-            var sorted  = new List<ModEntry>();
+            var sorted = new List<ModEntry>();
             var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var inStack = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var skip    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var skip = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             void Visit(ModEntry mod)
             {
@@ -367,15 +414,15 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
     public class ModHealthSnapshot
     {
-        public string   ModId              { get; set; }
-        public bool     IsLoaded           { get; set; }
-        public int      RouteCount         { get; set; }
-        public int      SchedulerTasks     { get; set; }
-        public int      CacheEntries       { get; set; }
-        public int      StoreKeys          { get; set; }
-        public int      UserStoreUsers     { get; set; }
+        public string ModId { get; set; }
+        public bool IsLoaded { get; set; }
+        public int RouteCount { get; set; }
+        public int SchedulerTasks { get; set; }
+        public int CacheEntries { get; set; }
+        public int StoreKeys { get; set; }
+        public int UserStoreUsers { get; set; }
         public string[] RegisteredWebhooks { get; set; }
-        public string[] RpcMethods         { get; set; }
-        public DateTime? LoadedAt          { get; set; }
+        public string[] RpcMethods { get; set; }
+        public DateTime? LoadedAt { get; set; }
     }
 }

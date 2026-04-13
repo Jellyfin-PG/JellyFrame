@@ -60,6 +60,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 "  jellyfin:  __jfCtx.Jellyfin," +
                 "  store:     __jfCtx.Store," +
                 "  userStore: __jfCtx.UserStore," +
+                "  kv:        __jfCtx.Kv," +
                 "  scheduler: __jfCtx.Scheduler," +
                 "  bus:       __jfCtx.Bus," +
                 "  webhooks:  __jfCtx.Webhooks," +
