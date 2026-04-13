@@ -12,6 +12,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public const string JellyfinWrite = "jellyfin.write";
         public const string JellyfinDelete = "jellyfin.delete";
         public const string JellyfinTasks = "jellyfin.tasks";
+        public const string JellyfinRefresh = "jellyfin.refresh";
+        public const string JellyfinLiveTv = "jellyfin.livetv";
+        public const string JellyfinAdmin = "jellyfin.admin";
         public const string Store = "store";
         public const string SharedStore = "shared-store";
         public const string Scheduler = "scheduler";
@@ -22,6 +25,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public static readonly IReadOnlyList<string> All = new[]
         {
             Http, JellyfinRead, JellyfinWrite, JellyfinDelete, JellyfinTasks,
+            JellyfinRefresh, JellyfinLiveTv, JellyfinAdmin,
             Store, SharedStore, Scheduler, Webhooks, Rpc, Bus
         };
 
@@ -51,6 +55,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 case JellyfinWrite: return "jf.jellyfin (write methods)";
                 case JellyfinDelete: return "jf.jellyfin (delete methods)";
                 case JellyfinTasks: return "jf.jellyfin (scheduled task execution)";
+                case JellyfinRefresh: return "jf.jellyfin (metadata refresh)";
+                case JellyfinLiveTv:  return "jf.jellyfin (live TV recording management)";
+                case JellyfinAdmin:   return "jf.jellyfin (admin: users, sessions, server management)";
                 case Store: return "jf.store / jf.userStore";
                 case SharedStore: return "jf.kv (shared cross-mod key-value store)";
                 case Scheduler: return "jf.scheduler";
