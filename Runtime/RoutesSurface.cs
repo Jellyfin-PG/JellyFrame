@@ -17,6 +17,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         private readonly List<RouteHandler> _routes = new();
         private readonly string _modId;
         private Engine _engine;
+        private readonly object _engineLock = new();
 
         public RoutesSurface(string modId) => _modId = modId;
 
@@ -71,13 +72,17 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
                 var jsReq = JsValue.FromObject(_engine, req);
                 var jsRes = JsValue.FromObject(_engine, res);
-                var result = _engine.Invoke(route.Handler, JsValue.Undefined, new[] { jsReq, jsRes });
 
-                if (result.IsObject())
+                lock (_engineLock)
                 {
-                    var raw = result.ToObject();
-                    if (raw is Task t)
-                        await t;
+                    var result = _engine.Invoke(route.Handler, JsValue.Undefined, new[] { jsReq, jsRes });
+
+                    if (result.IsObject())
+                    {
+                        var raw = result.ToObject();
+                        if (raw is Task t)
+                            t.GetAwaiter().GetResult();
+                    }
                 }
 
                 await res.FlushAsync();
