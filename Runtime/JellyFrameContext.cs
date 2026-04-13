@@ -10,6 +10,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         internal readonly StoreSurface     _rawStore;
         internal readonly UserStoreSurface _rawUserStore;
+        internal readonly KvSurface        _rawKv;
         internal readonly SchedulerSurface _rawScheduler;
         internal readonly EventBusSurface  _rawBus;
         internal readonly WebhookSurface   _rawWebhooks;
@@ -24,6 +25,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             RoutesSurface      routes,
             StoreSurface       store,
             UserStoreSurface   userStore,
+            KvSurface          kv,
             CacheSurface       cache,
             HttpSurface        http,
             LogSurface         log,
@@ -41,6 +43,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
             _rawStore     = store;
             _rawUserStore = userStore;
+            _rawKv        = kv;
             _rawScheduler = scheduler;
             _rawBus       = bus;
             _rawWebhooks  = webhooks;
@@ -53,6 +56,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             Http      = new GatedHttpSurface(http, permissions);
             Store     = new GatedStoreSurface(store, permissions);
             UserStore = new GatedUserStoreSurface(userStore, permissions);
+            Kv        = new GatedKvSurface(kv, permissions);
             Scheduler = new GatedSchedulerSurface(scheduler, permissions);
             Bus       = new GatedEventBusSurface(bus, permissions);
             Webhooks  = new GatedWebhookSurface(webhooks, permissions);
@@ -70,6 +74,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public GatedHttpSurface           Http      { get; }
         public GatedStoreSurface          Store     { get; }
         public GatedUserStoreSurface      UserStore { get; }
+        public GatedKvSurface             Kv        { get; }
         public GatedSchedulerSurface      Scheduler { get; }
         public GatedEventBusSurface       Bus       { get; }
         public GatedWebhookSurface        Webhooks  { get; }
@@ -94,6 +99,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         {
             _rawStore?.Dispose();
             _rawUserStore?.Dispose();
+            _rawKv?.Dispose();
             _rawScheduler?.Dispose();
             _rawBus?.Dispose();
             _rawWebhooks?.Dispose();

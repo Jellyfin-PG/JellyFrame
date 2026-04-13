@@ -10,7 +10,10 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public const string Http = "http";
         public const string JellyfinRead = "jellyfin.read";
         public const string JellyfinWrite = "jellyfin.write";
+        public const string JellyfinDelete = "jellyfin.delete";
+        public const string JellyfinTasks = "jellyfin.tasks";
         public const string Store = "store";
+        public const string SharedStore = "shared-store";
         public const string Scheduler = "scheduler";
         public const string Webhooks = "webhooks";
         public const string Rpc = "rpc";
@@ -18,7 +21,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public static readonly IReadOnlyList<string> All = new[]
         {
-            Http, JellyfinRead, JellyfinWrite, Store, Scheduler, Webhooks, Rpc, Bus
+            Http, JellyfinRead, JellyfinWrite, JellyfinDelete, JellyfinTasks,
+            Store, SharedStore, Scheduler, Webhooks, Rpc, Bus
         };
 
         private readonly string _modId;
@@ -45,7 +49,10 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 case Http: return "jf.http";
                 case JellyfinRead: return "jf.jellyfin (read methods)";
                 case JellyfinWrite: return "jf.jellyfin (write methods)";
+                case JellyfinDelete: return "jf.jellyfin (delete methods)";
+                case JellyfinTasks: return "jf.jellyfin (scheduled task execution)";
                 case Store: return "jf.store / jf.userStore";
+                case SharedStore: return "jf.kv (shared cross-mod key-value store)";
                 case Scheduler: return "jf.scheduler";
                 case Webhooks: return "jf.webhooks";
                 case Rpc: return "jf.rpc";
