@@ -1296,60 +1296,174 @@
                 function openPreviewModal(theme) {
                     var existing = document.getElementById('jftPreviewOverlay');
                     if (existing) existing.remove();
+
+                    var shots = (theme.screenshots && theme.screenshots.length > 0)
+                        ? theme.screenshots
+                        : (theme.previewUrl ? [theme.previewUrl] : []);
+                    var isGallery = shots.length > 1;
+                    var idx = 0;
+
                     var overlay = document.createElement('div');
                     overlay.id = 'jftPreviewOverlay';
-                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:100001;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;';
+                    overlay.style.cssText = [
+                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.88)',
+                        'z-index:100001', 'display:flex', 'flex-direction:column',
+                        'align-items:center', 'justify-content:center', 'padding:20px',
+                        isGallery ? 'cursor:default' : 'cursor:zoom-out'
+                    ].join(';');
 
                     var imgWrap = document.createElement('div');
-                    imgWrap.style.cssText = 'position:relative;max-width:92vw;max-height:82vh;border-radius:10px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.8);';
+                    imgWrap.style.cssText = [
+                        'position:relative', 'max-width:92vw', 'max-height:82vh',
+                        'border-radius:10px', 'overflow:hidden',
+                        'box-shadow:0 32px 80px rgba(0,0,0,0.8)',
+                        'display:flex', 'align-items:center', 'justify-content:center'
+                    ].join(';');
 
-                    if (theme.previewUrl) {
-                        var img = document.createElement('img');
-                        img.src = theme.previewUrl;
-                        img.alt = theme.name || '';
-                        img.style.cssText = 'display:block;max-width:92vw;max-height:82vh;object-fit:contain;border-radius:10px;pointer-events:none;';
-                        imgWrap.appendChild(img);
+                    var imgEl;
+                    if (shots.length > 0) {
+                        imgEl = document.createElement('img');
+                        imgEl.style.cssText = 'display:block;max-width:92vw;max-height:82vh;object-fit:contain;border-radius:10px;pointer-events:none;';
+                        imgEl.alt = theme.name || '';
+                        imgEl.src = shots[0];
                     } else {
-                        var placeholder = document.createElement('div');
-                        placeholder.style.cssText = 'width:480px;max-width:92vw;height:270px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;';
-                        var placeholderIcon = document.createElement('div');
-                        placeholderIcon.style.cssText = 'font-size:3em;opacity:.3;';
-                        placeholderIcon.textContent = '🎨';
-                        var placeholderText = document.createElement('div');
-                        placeholderText.style.cssText = 'font-size:.82em;opacity:.35;letter-spacing:.05em;';
-                        placeholderText.textContent = 'No preview available';
-                        placeholder.appendChild(placeholderIcon);
-                        placeholder.appendChild(placeholderText);
-                        imgWrap.appendChild(placeholder);
+                        imgEl = document.createElement('div');
+                        imgEl.style.cssText = 'width:480px;max-width:92vw;height:270px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;';
+                        var noIcon = document.createElement('div');
+                        noIcon.style.cssText = 'font-size:3em;opacity:.3;';
+                        noIcon.textContent = '0001F3A8';
+                        var noText = document.createElement('div');
+                        noText.style.cssText = 'font-size:.82em;opacity:.35;letter-spacing:.05em;';
+                        noText.textContent = 'No preview available';
+                        imgEl.appendChild(noIcon);
+                        imgEl.appendChild(noText);
                     }
+                    imgWrap.appendChild(imgEl);
+
+                    var dotContainer = null;
+                    if (isGallery) {
+                        var ARROW_BASE = [
+                            'position:absolute', 'top:50%', 'transform:translateY(-50%)',
+                            'background:rgba(0,0,0,0.55)', 'border:none', 'color:#fff',
+                            'font-size:1.6em', 'line-height:1', 'width:40px', 'height:60px',
+                            'border-radius:6px', 'cursor:pointer', 'z-index:2',
+                            'display:flex', 'align-items:center', 'justify-content:center',
+                            'transition:opacity .15s'
+                        ].join(';');
+
+                        var prevBtn = document.createElement('button');
+                        prevBtn.type = 'button';
+                        prevBtn.style.cssText = ARROW_BASE + ';left:8px;';
+                        prevBtn.innerHTML = '&#8249;';
+                        prevBtn.title = 'Previous (left arrow key)';
+
+                        var nextBtn = document.createElement('button');
+                        nextBtn.type = 'button';
+                        nextBtn.style.cssText = ARROW_BASE + ';right:8px;';
+                        nextBtn.innerHTML = '&#8250;';
+                        nextBtn.title = 'Next (right arrow key)';
+
+                        dotContainer = document.createElement('div');
+                        dotContainer.style.cssText = 'display:flex;gap:6px;justify-content:center;margin-top:10px;';
+
+                        function renderDots() {
+                            dotContainer.innerHTML = '';
+                            for (var di = 0; di < shots.length; di++) {
+                                (function (i) {
+                                    var dot = document.createElement('button');
+                                    dot.type = 'button';
+                                    var active = i === idx;
+                                    dot.style.cssText = [
+                                        'width:' + (active ? '20px' : '8px'),
+                                        'height:8px', 'border-radius:4px', 'border:none',
+                                        'background:' + (active ? '#00a4dc' : 'rgba(255,255,255,0.3)'),
+                                        'cursor:pointer', 'padding:0', 'transition:all .2s'
+                                    ].join(';');
+                                    dot.addEventListener('click', function (e) {
+                                        e.stopPropagation();
+                                        idx = i;
+                                        updateGallery();
+                                    });
+                                    dotContainer.appendChild(dot);
+                                })(di);
+                            }
+                        }
+
+                        function updateGallery() {
+                            imgEl.src = shots[idx];
+                            prevBtn.style.opacity = idx === 0 ? '0.25' : '0.8';
+                            nextBtn.style.opacity = idx === shots.length - 1 ? '0.25' : '0.8';
+                            renderDots();
+                        }
+
+                        prevBtn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            if (idx > 0) { idx--; updateGallery(); }
+                        });
+                        nextBtn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            if (idx < shots.length - 1) { idx++; updateGallery(); }
+                        });
+                        [prevBtn, nextBtn].forEach(function (btn) {
+                            btn.addEventListener('mouseenter', function () { this.style.opacity = '1'; });
+                            btn.addEventListener('mouseleave', function () { updateGallery(); });
+                        });
+
+                        document.addEventListener('keydown', function onGalleryKey(e) {
+                            if (!document.getElementById('jftPreviewOverlay')) {
+                                document.removeEventListener('keydown', onGalleryKey);
+                                return;
+                            }
+                            if (e.key === 'ArrowLeft' && idx > 0) { idx--; updateGallery(); }
+                            if (e.key === 'ArrowRight' && idx < shots.length - 1) { idx++; updateGallery(); }
+                        });
+
+                        imgWrap.appendChild(prevBtn);
+                        imgWrap.appendChild(nextBtn);
+                        updateGallery();
+                    }
+
+                    overlay.appendChild(imgWrap);
+                    if (dotContainer) overlay.appendChild(dotContainer);
 
                     var info = document.createElement('div');
                     info.style.cssText = 'margin-top:14px;text-align:center;';
+
                     var titleEl = document.createElement('div');
                     titleEl.style.cssText = 'font-size:1.1em;font-weight:600;color:#fff;';
                     titleEl.textContent = getLocalizedTitle(theme);
                     info.appendChild(titleEl);
+
                     if (theme.author) {
                         var authorEl = document.createElement('div');
                         authorEl.style.cssText = 'font-size:.82em;opacity:.55;margin-top:3px;';
                         authorEl.textContent = 'by ' + theme.author;
                         info.appendChild(authorEl);
                     }
-                    var _previewDesc = getLocalizedDescription(theme);
-                    if (_previewDesc) {
-                        var previewDescEl = document.createElement('div');
-                        previewDescEl.style.cssText = 'font-size:.78em;opacity:.55;margin-top:8px;max-width:520px;line-height:1.6;white-space:pre-wrap;word-break:break-word;text-align:left;';
-                        previewDescEl.textContent = _previewDesc;
-                        info.appendChild(previewDescEl);
+
+                    if (isGallery) {
+                        var counterEl = document.createElement('div');
+                        counterEl.style.cssText = 'font-size:.75em;opacity:.4;margin-top:4px;';
+                        counterEl.textContent = shots.length + ' screenshots';
+                        info.appendChild(counterEl);
                     }
 
-                    overlay.appendChild(imgWrap);
+                    var _previewDesc = getLocalizedDescription(theme);
+                    if (_previewDesc) {
+                        var descEl = document.createElement('div');
+                        descEl.style.cssText = 'font-size:.78em;opacity:.55;margin-top:8px;max-width:520px;line-height:1.6;white-space:pre-wrap;word-break:break-word;text-align:left;';
+                        descEl.textContent = _previewDesc;
+                        info.appendChild(descEl);
+                    }
+
                     overlay.appendChild(info);
+
                     overlay.addEventListener('click', function () { overlay.remove(); });
                     imgWrap.addEventListener('click', function (e) { e.stopPropagation(); });
                     document.addEventListener('keydown', function onKey(e) {
                         if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
                     });
+
                     document.body.appendChild(overlay);
                 }
 

@@ -186,6 +186,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             var bus = new EventBusSurface(mod.Id, _logger);
             var webhooks = new WebhookSurface(mod.Id, _logger);
             var rpc = new RpcSurface(mod.Id, _logger);
+            var filesystem = new FileSystemSurface(mod.Id, _logger);
+            var os    = new OsSurface(mod.Id, _logger);
             var perms = new PermissionSurface(mod.Id, mod.Permissions);
             var jellyfin = new JellyfinSurface(
                 _library, _userData, _users, _sessions,
@@ -198,7 +200,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
             var context = new JellyFrameContext(
                 mod.Id, vars, jellyfin, routes, store, userStore,
-                kv, cache, http, log, scheduler, bus, webhooks, rpc, perms);
+                kv, cache, http, log, scheduler, bus, webhooks, rpc,
+                filesystem, os, perms);
             var runtime = new JsRuntime(context, _logger);
 
             runtime.LoadScript(script);

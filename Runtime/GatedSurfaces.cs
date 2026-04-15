@@ -264,4 +264,56 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public string[] Keys() { _perms.Require(PermissionSurface.SharedStore); return _inner.Keys(); }
         public string[] AllKeys() { _perms.Require(PermissionSurface.SharedStore); return _inner.AllKeys(); }
     }
+
+    public class GatedFileSystemSurface
+    {
+        private readonly FileSystemSurface _inner;
+        private readonly PermissionSurface _perms;
+
+        public GatedFileSystemSurface(FileSystemSurface inner, PermissionSurface perms)
+        {
+            _inner = inner;
+            _perms = perms;
+        }
+
+        public string   ReadFile(string path)                           { _perms.Require(PermissionSurface.Filesystem); return _inner.ReadFile(path); }
+        public string   ReadFileBase64(string path)                     { _perms.Require(PermissionSurface.Filesystem); return _inner.ReadFileBase64(path); }
+        public void     WriteFile(string path, string content)          { _perms.Require(PermissionSurface.Filesystem); _inner.WriteFile(path, content); }
+        public void     AppendFile(string path, string content)         { _perms.Require(PermissionSurface.Filesystem); _inner.AppendFile(path, content); }
+        public void     WriteFileBase64(string path, string base64)     { _perms.Require(PermissionSurface.Filesystem); _inner.WriteFileBase64(path, base64); }
+        public bool     DeleteFile(string path)                         { _perms.Require(PermissionSurface.Filesystem); return _inner.DeleteFile(path); }
+        public void     MoveFile(string source, string dest)            { _perms.Require(PermissionSurface.Filesystem); _inner.MoveFile(source, dest); }
+        public void     CopyFile(string source, string dest)            { _perms.Require(PermissionSurface.Filesystem); _inner.CopyFile(source, dest); }
+        public object[] ListDir(string path)                            { _perms.Require(PermissionSurface.Filesystem); return _inner.ListDir(path); }
+        public void     MakeDir(string path)                            { _perms.Require(PermissionSurface.Filesystem); _inner.MakeDir(path); }
+        public bool     DeleteDir(string path, bool recursive = false)  { _perms.Require(PermissionSurface.Filesystem); return _inner.DeleteDir(path, recursive); }
+        public bool     Exists(string path)                             { _perms.Require(PermissionSurface.Filesystem); return _inner.Exists(path); }
+        public bool     IsFile(string path)                             { _perms.Require(PermissionSurface.Filesystem); return _inner.IsFile(path); }
+        public bool     IsDir(string path)                              { _perms.Require(PermissionSurface.Filesystem); return _inner.IsDir(path); }
+        public object   Stat(string path)                               { _perms.Require(PermissionSurface.Filesystem); return _inner.Stat(path); }
+        public string   ResolvePath(string path)                        { _perms.Require(PermissionSurface.Filesystem); return _inner.ResolvePath(path); }
+        public string   JoinPath(string a, string b)                    { _perms.Require(PermissionSurface.Filesystem); return _inner.JoinPath(a, b); }
+    }
+
+    public class GatedOsSurface
+    {
+        private readonly OsSurface _inner;
+        private readonly PermissionSurface _perms;
+
+        public GatedOsSurface(OsSurface inner, PermissionSurface perms)
+        {
+            _inner = inner;
+            _perms = perms;
+        }
+
+        public OsSurface.ExecResult Exec(string command, object options = null) { _perms.Require(PermissionSurface.Os); return _inner.Exec(command, options); }
+        public string Env(string name)    { _perms.Require(PermissionSurface.Os); return _inner.Env(name); }
+        public object EnvAll()            { _perms.Require(PermissionSurface.Os); return _inner.EnvAll(); }
+        public string Platform()          { _perms.Require(PermissionSurface.Os); return _inner.Platform(); }
+        public string OsDescription()     { _perms.Require(PermissionSurface.Os); return _inner.OsDescription(); }
+        public string Hostname()          { _perms.Require(PermissionSurface.Os); return _inner.Hostname(); }
+        public int    CpuCount()          { _perms.Require(PermissionSurface.Os); return _inner.CpuCount(); }
+        public object MemoryInfo()        { _perms.Require(PermissionSurface.Os); return _inner.MemoryInfo(); }
+    }
+
 }

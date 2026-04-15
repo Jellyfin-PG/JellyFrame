@@ -65,6 +65,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 "  bus:       __jfCtx.Bus," +
                 "  webhooks:  __jfCtx.Webhooks," +
                 "  rpc:       __jfCtx.Rpc," +
+                "  fs:        __jfCtx.Fs," +
+                "  os:        __jfCtx.Os," +
                 "  onStart:   function(fn) { __jfCtx.OnStart(fn); }," +
                 "  onStop:    function(fn)  { __jfCtx.OnStop(fn); }" +
                 "};"
