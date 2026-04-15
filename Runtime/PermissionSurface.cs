@@ -21,12 +21,15 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public const string Webhooks = "webhooks";
         public const string Rpc = "rpc";
         public const string Bus = "bus";
+        public const string Filesystem = "filesystem";
+        public const string Os = "os";
 
         public static readonly IReadOnlyList<string> All = new[]
         {
             Http, JellyfinRead, JellyfinWrite, JellyfinDelete, JellyfinTasks,
             JellyfinRefresh, JellyfinLiveTv, JellyfinAdmin,
-            Store, SharedStore, Scheduler, Webhooks, Rpc, Bus
+            Store, SharedStore, Scheduler, Webhooks, Rpc, Bus,
+            Filesystem, Os
         };
 
         private readonly string _modId;
@@ -64,6 +67,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 case Webhooks: return "jf.webhooks";
                 case Rpc: return "jf.rpc";
                 case Bus: return "jf.bus";
+                case Filesystem: return "jf.fs (local filesystem access)";
+                case Os: return "jf.os (native OS commands)";
                 default: return "jf." + permission;
             }
         }

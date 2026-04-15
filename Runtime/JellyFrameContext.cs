@@ -15,6 +15,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         internal readonly EventBusSurface  _rawBus;
         internal readonly WebhookSurface   _rawWebhooks;
         internal readonly RpcSurface       _rawRpc;
+        internal readonly FileSystemSurface _rawFilesystem;
+        internal readonly OsSurface         _rawOs;
         internal readonly JellyfinSurface  _rawJellyfin;
         internal readonly RoutesSurface    _rawRoutes;
 
@@ -33,6 +35,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             EventBusSurface    bus,
             WebhookSurface     webhooks,
             RpcSurface         rpc,
+            FileSystemSurface  filesystem,
+            OsSurface           os,
             PermissionSurface  permissions)
         {
             ModId    = modId;
@@ -47,7 +51,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             _rawScheduler = scheduler;
             _rawBus       = bus;
             _rawWebhooks  = webhooks;
-            _rawRpc       = rpc;
+_rawRpc       = rpc;
+            _rawFilesystem = filesystem;
+            _rawOs         = os;
             _rawJellyfin  = jellyfin;
             _rawRoutes    = routes;
 
@@ -60,7 +66,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             Scheduler = new GatedSchedulerSurface(scheduler, permissions);
             Bus       = new GatedEventBusSurface(bus, permissions);
             Webhooks  = new GatedWebhookSurface(webhooks, permissions);
-            Rpc       = new GatedRpcSurface(rpc, permissions);
+Rpc        = new GatedRpcSurface(rpc, permissions);
+            Fs         = new GatedFileSystemSurface(filesystem, permissions);
+            Os         = new GatedOsSurface(os, permissions);
         }
 
         public string                     ModId     { get; }
@@ -78,7 +86,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public GatedSchedulerSurface      Scheduler { get; }
         public GatedEventBusSurface       Bus       { get; }
         public GatedWebhookSurface        Webhooks  { get; }
-        public GatedRpcSurface            Rpc       { get; }
+public GatedRpcSurface            Rpc        { get; }
+        public GatedFileSystemSurface     Fs         { get; }
+        public GatedOsSurface             Os         { get; }
 
         public void OnStart(Action handler) => _startHandler = handler;
         public void OnStop(Action handler)  => _stopHandler  = handler;

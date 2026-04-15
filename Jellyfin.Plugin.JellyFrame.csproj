@@ -9,9 +9,9 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>Jellyfin.Plugin.JellyFrame</AssemblyName>
     <RootNamespace>Jellyfin.Plugin.JellyFrame</RootNamespace>
-    <Version>1.1.2.0</Version>
-    <AssemblyVersion>1.1.2.0</AssemblyVersion>
-    <FileVersion>1.1.2.0</FileVersion>
+    <Version>1.2.0.0</Version>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
     <Authors>Jellyfin-PG</Authors>
     <RepositoryUrl>https://github.com/Jellyfin-PG/JellyFrame</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
