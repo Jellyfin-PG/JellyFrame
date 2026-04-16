@@ -40,12 +40,15 @@ namespace Jellyfin.Plugin.JellyFrame
         public IApplicationPaths AppPaths { get; private set; }
 
         private readonly ILogger<Plugin> _logger;
-        private readonly JsonSerializerOptions _jsonOpts = new() { PropertyNameCaseInsensitive = true };
+        private readonly JsonSerializerOptions _jsonOpts = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
         private readonly MediaBrowser.Controller.Library.ILibraryManager _libraryManager;
         private readonly MediaBrowser.Controller.Session.ISessionManager _sessionManager;
         private readonly MediaBrowser.Controller.Library.IUserDataManager _userDataManager;
         private Runtime.JellyfinEventSurface _eventSurface;
-        private Services.ThemeFileWatcher _themeWatcher;
         private bool _disposed;
 
         public Plugin(
@@ -112,6 +115,7 @@ namespace Jellyfin.Plugin.JellyFrame
         private List<string> _prevEnabledMods = new List<string>();
         private string _prevActiveTheme = string.Empty;
         private string _prevThemeVars = "{}";
+        private string _prevCachedThemes = string.Empty;
 
         private void OnConfigurationChanged(object sender, BasePluginConfiguration baseConfig)
         {
@@ -177,28 +181,65 @@ namespace Jellyfin.Plugin.JellyFrame
 
             var prevActiveTheme = _prevActiveTheme;
             var prevThemeVars = _prevThemeVars;
+            var prevCachedThemes = _prevCachedThemes;
             _prevActiveTheme = config.ActiveTheme ?? string.Empty;
             _prevThemeVars = config.ThemeVars ?? "{}";
+            _prevCachedThemes = config.CachedThemes ?? string.Empty;
 
             if (!string.Equals(prevActiveTheme, config.ActiveTheme, StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(prevActiveTheme))
                 {
-                    _logger.LogInformation(
-                        "[JellyFrame] Active theme changed — invalidating previous theme cache '{Id}'",
-                        prevActiveTheme);
+                    _logger.LogInformation("[JellyFrame] Active theme changed — invalidating previous theme cache '{Id}'", prevActiveTheme);
                     Services.ThemeResourceCache.InvalidateTheme(prevActiveTheme, paths);
                 }
                 if (!string.IsNullOrWhiteSpace(config.ActiveTheme))
+                {
+                    _logger.LogInformation("[JellyFrame] Active theme set to '{Id}' — invalidating theme cache", config.ActiveTheme);
                     Services.ThemeResourceCache.InvalidateTheme(config.ActiveTheme, paths);
+                }
             }
-            else if (!string.Equals(prevThemeVars, config.ThemeVars, StringComparison.Ordinal)
-                     && !string.IsNullOrWhiteSpace(config.ActiveTheme))
+            else if (!string.IsNullOrWhiteSpace(config.ActiveTheme))
             {
-                _logger.LogInformation(
-                    "[JellyFrame] Theme vars changed — invalidating compiled cache for '{Id}'",
-                    config.ActiveTheme);
-                Services.ThemeResourceCache.InvalidateCompiled(config.ActiveTheme, paths);
+                bool themeVersionChanged = false;
+                if (!string.IsNullOrWhiteSpace(config.CachedThemes) &&
+                    !string.Equals(prevCachedThemes, config.CachedThemes, StringComparison.Ordinal))
+                {
+                    try
+                    {
+                        var prevThemes = string.IsNullOrWhiteSpace(prevCachedThemes)
+                            ? new System.Collections.Generic.List<Services.ThemeEntry>()
+                            : System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.List<Services.ThemeEntry>>(prevCachedThemes, _jsonOpts)
+                              ?? new System.Collections.Generic.List<Services.ThemeEntry>();
+                        var currThemes = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.List<Services.ThemeEntry>>(config.CachedThemes, _jsonOpts)
+                            ?? new System.Collections.Generic.List<Services.ThemeEntry>();
+
+                        var prevVersionMap = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var t in prevThemes)
+                            if (!string.IsNullOrEmpty(t.Id)) prevVersionMap[t.Id] = t.Version ?? string.Empty;
+
+                        foreach (var t in currThemes)
+                        {
+                            if (!string.Equals(t.Id, config.ActiveTheme, StringComparison.OrdinalIgnoreCase)) continue;
+                            prevVersionMap.TryGetValue(t.Id, out var prevVer);
+                            if (!string.Equals(prevVer, t.Version, StringComparison.Ordinal))
+                            {
+                                _logger.LogInformation("[JellyFrame] Active theme '{Id}' version changed ({Prev} -> {Curr}) — invalidating all theme cache", t.Id, prevVer ?? "new", t.Version);
+                                Services.ThemeResourceCache.InvalidateTheme(t.Id, paths);
+                                themeVersionChanged = true;
+                            }
+                            break;
+                        }
+                    }
+                    catch { }
+                }
+
+                if (!themeVersionChanged &&
+                    !string.Equals(prevThemeVars, config.ThemeVars, StringComparison.Ordinal))
+                {
+                    _logger.LogInformation("[JellyFrame] Theme vars/addons changed — invalidating compiled cache for '{Id}'", config.ActiveTheme);
+                    Services.ThemeResourceCache.InvalidateCompiled(config.ActiveTheme, paths);
+                }
             }
 
             _ = ReloadServerModsAsync();
@@ -259,9 +300,6 @@ namespace Jellyfin.Plugin.JellyFrame
                 var cacheDir = System.IO.Path.Combine(AppPaths.DataPath, "JellyFrame", "mods");
                 ModLoader.StartWatcher(cacheDir, HotReloadModAsync);
 
-                var themeCacheDir = System.IO.Path.Combine(AppPaths.DataPath, "JellyFrame", "themes");
-                _themeWatcher?.Dispose();
-                _themeWatcher = new Services.ThemeFileWatcher(themeCacheDir, AppPaths, _logger);
 
                 _eventSurface = new Runtime.JellyfinEventSurface(
                     _libraryManager,
@@ -420,7 +458,6 @@ namespace Jellyfin.Plugin.JellyFrame
             ConfigurationChanged -= OnConfigurationChanged;
             _eventSurface?.Dispose();
             ModLoader?.StopWatcher();
-            _themeWatcher?.Dispose();
             ModLoader?.Dispose();
             _logger.LogInformation("[JellyFrame] Plugin disposed");
         }
