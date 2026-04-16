@@ -26,7 +26,7 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
     public class ThemeCompiledCssController : ControllerBase
     {
         private static readonly JsonSerializerOptions JsonOpts =
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
         [HttpGet]
         [Produces("text/css")]

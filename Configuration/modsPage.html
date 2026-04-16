@@ -94,6 +94,51 @@
             text-align: center;
             opacity: .45;
         }
+
+        .jfModsPage .card.editorsChoiceCard {
+            position: relative;
+            outline: 2px solid rgba(255, 200, 50, 0.8);
+            outline-offset: -2px;
+            border-radius: 4px;
+        }
+
+        .jfModsPage .card.editorsChoiceCard.enabledCard {
+            outline: 3px solid #00a4dc;
+            outline-offset: -3px;
+        }
+
+        .jfModsPage .editorsBadge {
+            position: absolute;
+            top: 100px;
+            right: 8px;
+            z-index: 10;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(255, 185, 0, 0.95), rgba(200, 130, 0, 0.95));
+            border: 1px solid rgba(255, 215, 80, 0.65);
+            border-radius: 50%;
+            font-size: 12px;
+            color: #1a1100;
+            pointer-events: auto;
+            cursor: default;
+            box-shadow: 0 1px 6px rgba(180, 120, 0, 0.55), 0 0 0 0 rgba(255, 185, 0, 0);
+            animation: jfEcShimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes jfEcShimmer {
+
+            0%,
+            100% {
+                box-shadow: 0 1px 6px rgba(180, 120, 0, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 1px 14px rgba(255, 190, 0, 0.85);
+            }
+        }
     </style>
 </head>
 
@@ -139,6 +184,9 @@
                         style="display:none;gap:10px;padding:.65em 1em;background:rgba(255,200,50,.08);border:1px solid rgba(255,200,50,.25);border-radius:4px;margin-top:1em;margin-bottom:1em;font-size:.88em;align-items:center;">
                         <span>🆕</span>
                         <span id="whatsNewText" style="flex:1"></span>
+                        <button type="button" id="btnWhatsNewChangelog"
+                            style="display:none;background:rgba(255,200,50,.18);border:1px solid rgba(255,200,50,.4);border-radius:4px;color:#ffd966;cursor:pointer;font-size:.82em;font-weight:600;padding:4px 10px;white-space:nowrap;">What's
+                            New</button>
                         <button type="button" id="btnWhatsNewUpdate"
                             style="background:#00a4dc;border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:.82em;font-weight:600;padding:4px 10px;white-space:nowrap;">Update
                             Now</button>
@@ -467,8 +515,8 @@
                     var hasSrv = !!(mod.serverJs || "");
 
                     var card = document.createElement('div');
-                    card.className = 'card overflowBackdropCard' + (isOn ? ' enabledCard' : '');
-                    card.style.cssText = 'min-width:200px;max-width:260px;pointer-events:none;';
+                    card.className = 'card overflowBackdropCard' + (isOn ? ' enabledCard' : '') + (mod.editorsChoice ? ' editorsChoiceCard' : '');
+                    card.style.cssText = 'min-width:200px;max-width:260px;pointer-events:none;position:relative;';
 
                     var cardBox = document.createElement('div');
                     cardBox.className = 'cardBox';
@@ -486,7 +534,9 @@
                     imgContainer.className = 'cardImageContainer coveredImage';
                     imgContainer.style.cursor = 'zoom-in';
                     imgContainer.style.pointerEvents = 'auto';
-                    imgContainer.title = 'Click to preview';
+                    var _shotCount = (mod.previewUrl ? 1 : 0)
+                        + (mod.screenshots ? mod.screenshots.length : 0);
+                    imgContainer.title = _shotCount > 1 ? 'Click to view gallery (' + _shotCount + ' images)' : 'Click to preview';
                     imgContainer.addEventListener('click', function (e) {
                         e.stopPropagation();
                         openPreviewModal(mod);
@@ -538,10 +588,32 @@
                         imgContainer.appendChild(varsBadge);
                     }
 
+                    if (_shotCount > 1) {
+                        var shotsBadge = document.createElement('div');
+                        shotsBadge.style.cssText = 'position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:3px;font-size:9px;padding:1px 6px;z-index:1;letter-spacing:.04em;pointer-events:none;';
+                        shotsBadge.textContent = '\uD83D\uDCF7 ' + _shotCount;
+                        imgContainer.appendChild(shotsBadge);
+                    }
+
+                    if (mod.editorsChoice) {
+                        var ecBadge = document.createElement('div');
+                        ecBadge.textContent = '\u2605 Editor\'s Choice';
+                        ecBadge.style.cssText = 'position:absolute;top:8px;right:8px;z-index:3;background:linear-gradient(135deg,rgba(255,185,0,0.92),rgba(200,128,0,0.92));border:1px solid rgba(255,215,80,0.6);border-radius:4px;padding:2px 8px;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#1a1100;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 1px 5px rgba(160,100,0,0.5);pointer-events:none;';
+                        imgContainer.appendChild(ecBadge);
+                    }
+
                     cardContent.appendChild(imgContainer);
                     cardPadder.appendChild(cardContent);
                     cardScalable.appendChild(cardPadder);
                     cardBox.appendChild(cardScalable);
+
+                    if (mod.editorsChoice) {
+                        cardBox.style.outline = '2px solid rgba(255,185,0,0.7)';
+                        cardBox.style.outlineOffset = '-2px';
+                        cardBox.style.borderRadius = '4px';
+                    }
+
+
 
                     var footer = document.createElement('div');
                     footer.className = 'cardFooter';
@@ -575,7 +647,7 @@
                             readMoreBtn.style.cssText = 'background:none;border:none;padding:0;color:#00a4dc;cursor:pointer;font-size:inherit;font-family:inherit;pointer-events:auto;text-decoration:underline;';
                             readMoreBtn.addEventListener('click', function (e) {
                                 e.stopPropagation();
-                                openDescriptionModal(getLocalizedTitle(mod), _modDesc);
+                                openPreviewModal(mod);
                             });
                             descEl.appendChild(shortText);
                             descEl.appendChild(readMoreBtn);
@@ -646,9 +718,9 @@
                     btnRow.style.cssText = 'display:flex;gap:.4em;margin-top:.6em;padding-bottom:.4em';
 
                     var toggleBtn = document.createElement('button');
-                    toggleBtn.setAttribute('is', 'emby-button');
-                    toggleBtn.className = 'raised emby-button' + (isOn ? ' button-submit' : '');
-                    toggleBtn.style.cssText = 'flex:1;padding:.35em .5em;font-size:.78em;pointer-events:auto;';
+                    toggleBtn.type = 'button';
+                    toggleBtn.style.cssText = 'flex:1;padding:.4em .5em;font-size:.78em;border-radius:4px;border:none;cursor:pointer;font-weight:600;pointer-events:auto;'
+                        + (isOn ? 'background:#00a4dc;color:#fff;' : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);');
                     toggleBtn.textContent = isOn ? '✓ Enabled' : 'Enable';
                     toggleBtn.addEventListener('click', function (e) {
                         e.stopPropagation();
@@ -659,7 +731,7 @@
                     if (isOn && hasVars) {
                         var cfgBtn = document.createElement('button');
                         cfgBtn.type = 'button';
-                        cfgBtn.style.cssText = 'padding:.35em .6em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;pointer-events:auto;';
+                        cfgBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;pointer-events:auto;';
                         cfgBtn.textContent = '⚙';
                         cfgBtn.title = 'Configure variables';
                         cfgBtn.addEventListener('click', function (e) {
@@ -669,10 +741,25 @@
                         btnRow.appendChild(cfgBtn);
                     }
 
+                    if (isOn) {
+                        (function (m) {
+                            var editBtn = document.createElement('button');
+                            editBtn.type = 'button';
+                            editBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;pointer-events:auto;';
+                            editBtn.textContent = '\u270E';
+                            editBtn.title = 'Edit cached files';
+                            editBtn.addEventListener('click', function (e) {
+                                e.stopPropagation();
+                                openCacheEditor(m.id, m.name || m.id, 'mod');
+                            });
+                            btnRow.appendChild(editBtn);
+                        })(mod);
+                    }
+
                     if ((mod.sourceUrl || "")) {
                         var srcBtn = document.createElement('a');
-                        srcBtn.style.cssText = 'padding:.35em .6em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;pointer-events:auto;';
-                        srcBtn.textContent = '↗';
+                        srcBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;pointer-events:auto;';
+                        srcBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
                         srcBtn.title = 'View source';
                         srcBtn.href = (mod.sourceUrl || "");
                         srcBtn.target = '_blank';
@@ -816,41 +903,6 @@
                     document.body.appendChild(overlay);
                 }
 
-                function openDescriptionModal(title, description) {
-                    var existing = document.getElementById('mmDescModalOverlay');
-                    if (existing) existing.remove();
-
-                    var overlay = document.createElement('div');
-                    overlay.id = 'mmDescModalOverlay';
-                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:100002;display:flex;align-items:center;justify-content:center;padding:24px;';
-
-                    var dialog = document.createElement('div');
-                    dialog.style.cssText = 'background:#1a1d21;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:28px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.7);position:relative;';
-
-                    var titleEl = document.createElement('div');
-                    titleEl.style.cssText = 'font-size:1em;font-weight:700;margin-bottom:14px;color:#fff;padding-right:28px;';
-                    titleEl.textContent = title;
-                    dialog.appendChild(titleEl);
-
-                    var closeBtn = document.createElement('button');
-                    closeBtn.type = 'button';
-                    closeBtn.textContent = '✕';
-                    closeBtn.style.cssText = 'position:absolute;top:14px;right:14px;background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:1.1em;line-height:1;padding:4px;';
-                    closeBtn.addEventListener('click', function () { overlay.remove(); });
-                    dialog.appendChild(closeBtn);
-
-                    var body = document.createElement('div');
-                    body.style.cssText = 'font-size:.88em;line-height:1.7;opacity:.75;white-space:pre-wrap;word-break:break-word;';
-                    body.textContent = description;
-                    dialog.appendChild(body);
-
-                    overlay.appendChild(dialog);
-                    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
-                    document.addEventListener('keydown', function onKey(e) {
-                        if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
-                    });
-                    document.body.appendChild(overlay);
-                }
 
                 function closeModal() {
                     var overlay = document.getElementById('mmModalOverlay');
@@ -862,48 +914,88 @@
                     var existing = document.getElementById('smPreviewOverlay');
                     if (existing) existing.remove();
 
-                    var shots = (item.screenshots && item.screenshots.length > 0)
-                        ? item.screenshots
-                        : (item.previewUrl ? [item.previewUrl] : []);
+                    var shots = [];
+                    if (item.previewUrl) shots.push(item.previewUrl);
+                    if (item.screenshots && item.screenshots.length > 0) {
+                        for (var si = 0; si < item.screenshots.length; si++) {
+                            shots.push(item.screenshots[si]);
+                        }
+                    }
                     var isGallery = shots.length > 1;
                     var idx = 0;
+                    var desc = getLocalizedDescription(item);
 
                     var overlay = document.createElement('div');
                     overlay.id = 'smPreviewOverlay';
                     overlay.style.cssText = [
-                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.88)',
-                        'z-index:100001', 'display:flex', 'flex-direction:column',
-                        'align-items:center', 'justify-content:center', 'padding:20px',
-                        isGallery ? 'cursor:default' : 'cursor:zoom-out'
+                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.82)',
+                        'z-index:100001', 'display:flex', 'align-items:center',
+                        'justify-content:center', 'padding:20px', 'cursor:pointer'
                     ].join(';');
 
-                    var imgWrap = document.createElement('div');
-                    imgWrap.style.cssText = [
-                        'position:relative', 'max-width:92vw', 'max-height:82vh',
-                        'border-radius:10px', 'overflow:hidden',
+                    var dialog = document.createElement('div');
+                    dialog.style.cssText = [
+                        'background:#1a1d21',
+                        'border:1px solid rgba(255,255,255,0.1)',
+                        'border-radius:12px',
+                        'width:100%',
+                        'max-width:640px',
+                        'max-height:88vh',
+                        'display:flex',
+                        'flex-direction:column',
+                        'overflow:hidden',
                         'box-shadow:0 32px 80px rgba(0,0,0,0.8)',
+                        'cursor:default',
+                        'position:relative'
+                    ].join(';');
+
+                    var closeBtn = document.createElement('button');
+                    closeBtn.type = 'button';
+                    closeBtn.textContent = '\u2715';
+                    closeBtn.style.cssText = [
+                        'position:absolute', 'top:12px', 'right:12px',
+                        'z-index:10', 'background:rgba(0,0,0,0.5)',
+                        'border:none', 'border-radius:50%',
+                        'width:28px', 'height:28px',
+                        'color:rgba(255,255,255,0.7)', 'cursor:pointer',
+                        'font-size:.9em', 'line-height:1',
                         'display:flex', 'align-items:center', 'justify-content:center'
+                    ].join(';');
+                    closeBtn.addEventListener('click', function (e) { e.stopPropagation(); overlay.remove(); });
+                    dialog.appendChild(closeBtn);
+
+                    var imgArea = document.createElement('div');
+                    imgArea.style.cssText = [
+                        'position:relative',
+                        'background:#111',
+                        'flex-shrink:0',
+                        'overflow:hidden',
+                        'border-radius:12px 12px 0 0',
+                        'max-height:52vh',
+                        'display:flex',
+                        'align-items:center',
+                        'justify-content:center'
                     ].join(';');
 
                     var imgEl;
                     if (shots.length > 0) {
                         imgEl = document.createElement('img');
-                        imgEl.style.cssText = 'display:block;max-width:92vw;max-height:82vh;object-fit:contain;border-radius:10px;pointer-events:none;';
+                        imgEl.style.cssText = 'display:block;width:100%;max-height:52vh;object-fit:contain;pointer-events:none;';
                         imgEl.alt = item.name || '';
                         imgEl.src = shots[0];
                     } else {
                         imgEl = document.createElement('div');
-                        imgEl.style.cssText = 'width:480px;max-width:92vw;height:270px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;';
+                        imgEl.style.cssText = 'width:100%;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:.4;';
                         var noIcon = document.createElement('div');
-                        noIcon.style.cssText = 'font-size:3em;opacity:.3;';
+                        noIcon.style.cssText = 'font-size:3em;';
                         noIcon.textContent = '\uD83D\uDDBC';
                         var noText = document.createElement('div');
-                        noText.style.cssText = 'font-size:.82em;opacity:.35;letter-spacing:.05em;';
+                        noText.style.cssText = 'font-size:.82em;letter-spacing:.05em;';
                         noText.textContent = 'No preview available';
                         imgEl.appendChild(noIcon);
                         imgEl.appendChild(noText);
                     }
-                    imgWrap.appendChild(imgEl);
+                    imgArea.appendChild(imgEl);
 
                     var dotContainer = null;
                     if (isGallery) {
@@ -929,7 +1021,7 @@
                         nextBtn.title = 'Next (right arrow key)';
 
                         dotContainer = document.createElement('div');
-                        dotContainer.style.cssText = 'display:flex;gap:6px;justify-content:center;margin-top:10px;';
+                        dotContainer.style.cssText = 'display:flex;gap:6px;justify-content:center;padding:10px 0 2px;flex-shrink:0;background:#1a1d21;';
 
                         function renderDots() {
                             dotContainer.innerHTML = '';
@@ -961,76 +1053,77 @@
                             renderDots();
                         }
 
-                        prevBtn.addEventListener('click', function (e) {
-                            e.stopPropagation();
-                            if (idx > 0) { idx--; updateGallery(); }
-                        });
-                        nextBtn.addEventListener('click', function (e) {
-                            e.stopPropagation();
-                            if (idx < shots.length - 1) { idx++; updateGallery(); }
-                        });
+                        prevBtn.addEventListener('click', function (e) { e.stopPropagation(); if (idx > 0) { idx--; updateGallery(); } });
+                        nextBtn.addEventListener('click', function (e) { e.stopPropagation(); if (idx < shots.length - 1) { idx++; updateGallery(); } });
                         [prevBtn, nextBtn].forEach(function (btn) {
                             btn.addEventListener('mouseenter', function () { this.style.opacity = '1'; });
                             btn.addEventListener('mouseleave', function () { updateGallery(); });
                         });
 
                         document.addEventListener('keydown', function onGalleryKey(e) {
-                            if (!document.getElementById('smPreviewOverlay')) {
-                                document.removeEventListener('keydown', onGalleryKey);
-                                return;
-                            }
+                            if (!document.getElementById('smPreviewOverlay')) { document.removeEventListener('keydown', onGalleryKey); return; }
                             if (e.key === 'ArrowLeft' && idx > 0) { idx--; updateGallery(); }
                             if (e.key === 'ArrowRight' && idx < shots.length - 1) { idx++; updateGallery(); }
                         });
 
-                        imgWrap.appendChild(prevBtn);
-                        imgWrap.appendChild(nextBtn);
+                        imgArea.appendChild(prevBtn);
+                        imgArea.appendChild(nextBtn);
                         updateGallery();
                     }
 
-                    overlay.appendChild(imgWrap);
-                    if (dotContainer) overlay.appendChild(dotContainer);
+                    dialog.appendChild(imgArea);
+                    if (dotContainer) dialog.appendChild(dotContainer);
 
-                    var info = document.createElement('div');
-                    info.style.cssText = 'margin-top:14px;text-align:center;';
+                    var infoPanel = document.createElement('div');
+                    infoPanel.style.cssText = [
+                        'overflow-y:auto',
+                        'padding:18px 20px 20px',
+                        'flex:1',
+                        'min-height:0'
+                    ].join(';');
 
                     var titleEl = document.createElement('div');
-                    titleEl.style.cssText = 'font-size:1.1em;font-weight:600;color:#fff;';
+                    titleEl.style.cssText = 'font-size:1.1em;font-weight:700;color:#fff;margin-bottom:4px;';
                     titleEl.textContent = getLocalizedTitle(item);
-                    info.appendChild(titleEl);
+                    infoPanel.appendChild(titleEl);
 
                     if (item.author) {
                         var authorEl = document.createElement('div');
-                        authorEl.style.cssText = 'font-size:.82em;opacity:.55;margin-top:3px;';
+                        authorEl.style.cssText = 'font-size:.8em;opacity:.5;margin-bottom:10px;';
                         authorEl.textContent = 'by ' + item.author;
-                        info.appendChild(authorEl);
+                        infoPanel.appendChild(authorEl);
                     }
 
                     if (isGallery) {
                         var counterEl = document.createElement('div');
-                        counterEl.style.cssText = 'font-size:.75em;opacity:.4;margin-top:4px;';
+                        counterEl.style.cssText = 'font-size:.72em;opacity:.35;margin-bottom:10px;';
                         counterEl.textContent = shots.length + ' screenshots';
-                        info.appendChild(counterEl);
+                        infoPanel.appendChild(counterEl);
                     }
 
-                    var _previewDesc = getLocalizedDescription(item);
-                    if (_previewDesc) {
+                    if (desc) {
+                        var divider = document.createElement('div');
+                        divider.style.cssText = 'border-top:1px solid rgba(255,255,255,0.07);margin-bottom:12px;';
+                        infoPanel.appendChild(divider);
+
                         var descEl = document.createElement('div');
-                        descEl.style.cssText = 'font-size:.78em;opacity:.55;margin-top:8px;max-width:520px;line-height:1.6;white-space:pre-wrap;word-break:break-word;text-align:left;';
-                        descEl.textContent = _previewDesc;
-                        info.appendChild(descEl);
+                        descEl.style.cssText = 'font-size:.85em;line-height:1.7;color:rgba(255,255,255,0.72);white-space:pre-wrap;word-break:break-word;';
+                        descEl.textContent = desc;
+                        infoPanel.appendChild(descEl);
                     }
 
-                    overlay.appendChild(info);
+                    dialog.appendChild(infoPanel);
+                    overlay.appendChild(dialog);
 
                     overlay.addEventListener('click', function () { overlay.remove(); });
-                    imgWrap.addEventListener('click', function (e) { e.stopPropagation(); });
+                    dialog.addEventListener('click', function (e) { e.stopPropagation(); });
                     document.addEventListener('keydown', function onKey(e) {
                         if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
                     });
 
                     document.body.appendChild(overlay);
                 }
+
 
                 function saveModalVars() {
                     if (!modalContext) return closeModal();
@@ -1665,6 +1758,7 @@
                 }
 
                 var _pendingUpdateIds = [];
+                var _pendingChangelogs = [];
 
                 function checkWhatsNew(freshMods) {
                     var cached = [];
@@ -1675,22 +1769,35 @@
 
                     var updatedLabels = [];
                     var updatedIds = [];
+                    var changelogs = [];
                     freshMods.forEach(function (m) {
                         var prev = cachedById[m.id];
                         if (prev && prev !== m.version) {
                             updatedLabels.push(m.name + ' (' + prev + ' → ' + m.version + ')');
                             updatedIds.push(m.id);
+                            if (m.changelog && m.changelog.length > 0) {
+                                changelogs.push({ id: m.id, name: m.name || m.id, prevVersion: prev, newVersion: m.version, entries: m.changelog });
+                            }
                         }
                     });
 
                     if (updatedLabels.length > 0) {
                         _pendingUpdateIds = updatedIds;
+                        _pendingChangelogs = changelogs;
                         var bar = document.getElementById('whatsNewBar');
                         var text = document.getElementById('whatsNewText');
                         text.textContent = 'Updated: ' + updatedLabels.join(' · ');
                         bar.style.display = 'flex';
+                        var clBtn = document.getElementById('btnWhatsNewChangelog');
+                        if (clBtn) clBtn.style.display = changelogs.length > 0 ? '' : 'none';
                     }
                 }
+
+                document.getElementById('btnWhatsNewChangelog').addEventListener('click', function () {
+                    if (_pendingChangelogs && _pendingChangelogs.length > 0) {
+                        openChangelogModal(_pendingChangelogs, 'mod');
+                    }
+                });
 
                 document.getElementById('btnWhatsNewUpdate').addEventListener('click', function () {
                     if (!_pendingUpdateIds.length) return;
@@ -1758,6 +1865,458 @@
                         if (++attempts > 20) clearInterval(poll);
                     }, 300);
                 };
+
+                function openChangelogModal(changelogs, kind) {
+                    var existing = document.getElementById('jfChangelogOverlay');
+                    if (existing) existing.remove();
+
+                    var overlay = document.createElement('div');
+                    overlay.id = 'jfChangelogOverlay';
+                    overlay.style.cssText = [
+                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.82)',
+                        'z-index:100020', 'display:flex', 'align-items:center',
+                        'justify-content:center', 'padding:20px'
+                    ].join(';');
+
+                    var dialog = document.createElement('div');
+                    dialog.style.cssText = [
+                        'background:#1a1d21',
+                        'border:1px solid rgba(255,200,50,0.25)',
+                        'border-radius:10px',
+                        'width:100%',
+                        'max-width:540px',
+                        'max-height:82vh',
+                        'display:flex',
+                        'flex-direction:column',
+                        'box-shadow:0 24px 60px rgba(0,0,0,0.75)',
+                        'overflow:hidden'
+                    ].join(';');
+
+                    var header = document.createElement('div');
+                    header.style.cssText = [
+                        'display:flex', 'align-items:center', 'gap:10px',
+                        'padding:18px 20px 14px',
+                        'border-bottom:1px solid rgba(255,255,255,0.07)',
+                        'flex-shrink:0'
+                    ].join(';');
+
+                    var headerTitle = document.createElement('div');
+                    headerTitle.style.cssText = 'font-size:1em;font-weight:700;color:#fff;flex:1;';
+                    headerTitle.textContent = "What's New";
+
+                    var headerSub = document.createElement('div');
+                    headerSub.style.cssText = 'font-size:.75em;opacity:.45;';
+                    headerSub.textContent = changelogs.length + ' ' + kind + (changelogs.length === 1 ? '' : 's') + ' updated';
+
+                    var closeBtn = document.createElement('button');
+                    closeBtn.type = 'button';
+                    closeBtn.textContent = '\u2715';
+                    closeBtn.style.cssText = [
+                        'background:none', 'border:none', 'color:rgba(255,255,255,0.45)',
+                        'cursor:pointer', 'font-size:1.1em', 'padding:4px 6px', 'line-height:1'
+                    ].join(';');
+                    closeBtn.addEventListener('click', function () { overlay.remove(); });
+
+                    header.appendChild(headerTitle);
+                    header.appendChild(headerSub);
+                    header.appendChild(closeBtn);
+
+                    var body = document.createElement('div');
+                    body.style.cssText = 'overflow-y:auto;padding:16px 20px 20px;flex:1;';
+
+                    changelogs.forEach(function (item, i) {
+                        if (i > 0) {
+                            var divider = document.createElement('div');
+                            divider.style.cssText = 'border-top:1px solid rgba(255,255,255,0.06);margin:18px 0;';
+                            body.appendChild(divider);
+                        }
+
+                        var nameRow = document.createElement('div');
+                        nameRow.style.cssText = 'display:flex;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap;';
+
+                        var nameEl = document.createElement('div');
+                        nameEl.style.cssText = 'font-size:.95em;font-weight:700;color:#fff;';
+                        nameEl.textContent = item.name;
+
+                        var pill = document.createElement('div');
+                        pill.style.cssText = [
+                            'font-size:.72em', 'font-family:monospace',
+                            'background:rgba(255,200,50,0.12)',
+                            'border:1px solid rgba(255,200,50,0.3)',
+                            'color:#ffd966', 'border-radius:4px',
+                            'padding:1px 7px', 'white-space:nowrap'
+                        ].join(';');
+                        pill.textContent = item.prevVersion + ' \u2192 ' + item.newVersion;
+
+                        nameRow.appendChild(nameEl);
+                        nameRow.appendChild(pill);
+                        body.appendChild(nameRow);
+
+                        var entries = item.entries || [];
+                        var matched = null;
+                        var unversioned = [];
+                        entries.forEach(function (e) {
+                            if (typeof e === 'string') {
+                                unversioned.push({ version: null, changes: [e] });
+                            } else if (e && typeof e === 'object') {
+                                if (e.version === item.newVersion) {
+                                    matched = e;
+                                } else if (!e.version) {
+                                    unversioned.push(e);
+                                }
+                            }
+                        });
+
+                        var toShow = matched ? [matched] : entries.map(function (e) {
+                            return typeof e === 'string' ? { version: null, changes: [e] } : e;
+                        });
+
+                        if (toShow.length === 0) {
+                            var noChanges = document.createElement('div');
+                            noChanges.style.cssText = 'font-size:.82em;opacity:.4;font-style:italic;';
+                            noChanges.textContent = 'No changelog entries for this version.';
+                            body.appendChild(noChanges);
+                            return;
+                        }
+
+                        toShow.forEach(function (entry) {
+                            if (!entry) return;
+                            var changes = Array.isArray(entry.changes) ? entry.changes
+                                : (typeof entry.changes === 'string' ? [entry.changes] : []);
+                            if (changes.length === 0) return;
+
+                            if (entry.version && toShow.length > 1) {
+                                var vLabel = document.createElement('div');
+                                vLabel.style.cssText = 'font-size:.72em;font-family:monospace;opacity:.4;margin-bottom:4px;margin-top:6px;';
+                                vLabel.textContent = 'v' + entry.version;
+                                body.appendChild(vLabel);
+                            }
+
+                            var list = document.createElement('ul');
+                            list.style.cssText = 'margin:0 0 4px 4px;padding-left:16px;list-style:disc;';
+
+                            changes.forEach(function (change) {
+                                var li = document.createElement('li');
+                                li.style.cssText = 'font-size:.85em;line-height:1.65;color:rgba(255,255,255,0.75);margin-bottom:2px;';
+                                li.textContent = change;
+                                list.appendChild(li);
+                            });
+
+                            body.appendChild(list);
+                        });
+                    });
+
+                    var footer = document.createElement('div');
+                    footer.style.cssText = [
+                        'display:flex', 'justify-content:flex-end',
+                        'padding:12px 20px',
+                        'border-top:1px solid rgba(255,255,255,0.07)',
+                        'flex-shrink:0'
+                    ].join(';');
+
+                    var dismissBtn = document.createElement('button');
+                    dismissBtn.type = 'button';
+                    dismissBtn.textContent = 'Close';
+                    dismissBtn.style.cssText = [
+                        'padding:7px 18px', 'border-radius:4px',
+                        'border:1px solid rgba(255,255,255,0.15)',
+                        'background:rgba(255,255,255,0.06)',
+                        'color:rgba(255,255,255,0.75)', 'cursor:pointer', 'font-size:.85em'
+                    ].join(';');
+                    dismissBtn.addEventListener('click', function () { overlay.remove(); });
+
+                    footer.appendChild(dismissBtn);
+                    dialog.appendChild(header);
+                    dialog.appendChild(body);
+                    dialog.appendChild(footer);
+                    overlay.appendChild(dialog);
+
+                    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
+                    document.addEventListener('keydown', function onKey(e) {
+                        if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
+                    });
+
+                    document.body.appendChild(overlay);
+                }
+
+                function openCacheEditor(itemId, itemName, kind) {
+                    var existing = document.getElementById('jfCacheEditorOverlay');
+                    if (existing) existing.remove();
+
+                    var overlay = document.createElement('div');
+                    overlay.id = 'jfCacheEditorOverlay';
+                    overlay.style.cssText = [
+                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.88)',
+                        'z-index:100010', 'display:flex', 'flex-direction:column',
+                        'align-items:center', 'justify-content:center', 'padding:20px'
+                    ].join(';');
+
+                    var dialog = document.createElement('div');
+                    dialog.style.cssText = [
+                        'background:#1e1e1e', 'border:1px solid rgba(255,255,255,0.12)',
+                        'border-radius:10px', 'width:100%', 'max-width:900px',
+                        'height:88vh', 'display:flex', 'flex-direction:column',
+                        'box-shadow:0 32px 80px rgba(0,0,0,0.8)', 'overflow:hidden'
+                    ].join(';');
+
+                    var header = document.createElement('div');
+                    header.style.cssText = [
+                        'display:flex', 'align-items:center', 'gap:10px',
+                        'padding:12px 16px', 'background:#252526',
+                        'border-bottom:1px solid rgba(255,255,255,0.08)', 'flex-shrink:0'
+                    ].join(';');
+
+                    var titleEl = document.createElement('div');
+                    titleEl.style.cssText = 'font-size:.9em;font-weight:600;color:#fff;flex:1;';
+                    titleEl.textContent = 'Cache Editor: ' + itemName;
+
+                    var saveBtn = document.createElement('button');
+                    saveBtn.type = 'button';
+                    saveBtn.style.cssText = [
+                        'padding:5px 16px', 'border-radius:4px', 'border:none',
+                        'background:#0e639c', 'color:#fff', 'cursor:pointer',
+                        'font-size:.82em', 'font-weight:600'
+                    ].join(';');
+                    saveBtn.textContent = 'Save';
+
+                    var saveStatus = document.createElement('span');
+                    saveStatus.style.cssText = 'font-size:.78em;opacity:.55;min-width:80px;text-align:right;';
+
+                    var closeBtn = document.createElement('button');
+                    closeBtn.type = 'button';
+                    closeBtn.textContent = '\u2715';
+                    closeBtn.style.cssText = [
+                        'background:none', 'border:none', 'color:rgba(255,255,255,0.5)',
+                        'cursor:pointer', 'font-size:1.1em', 'line-height:1', 'padding:4px 6px'
+                    ].join(';');
+                    closeBtn.addEventListener('click', function () { overlay.remove(); });
+
+                    header.appendChild(titleEl);
+                    header.appendChild(saveStatus);
+                    header.appendChild(saveBtn);
+                    header.appendChild(closeBtn);
+
+                    var tabStrip = document.createElement('div');
+                    tabStrip.style.cssText = [
+                        'display:flex', 'background:#2d2d2d',
+                        'border-bottom:1px solid rgba(255,255,255,0.08)',
+                        'flex-shrink:0', 'overflow-x:auto', 'min-height:36px'
+                    ].join(';');
+
+                    var editorWrap = document.createElement('div');
+                    editorWrap.style.cssText = 'flex:1;overflow:hidden;position:relative;';
+
+                    var textarea = document.createElement('textarea');
+                    textarea.style.cssText = [
+                        'width:100%', 'height:100%', 'background:#1e1e1e',
+                        'color:#d4d4d4', 'border:none', 'outline:none',
+                        'font-family:\'Consolas\',\'Monaco\',\'Courier New\',monospace',
+                        'font-size:13px', 'line-height:1.5', 'padding:16px',
+                        'resize:none', 'box-sizing:border-box', 'tab-size:2'
+                    ].join(';');
+                    textarea.spellcheck = false;
+
+                    textarea.addEventListener('keydown', function (e) {
+                        if (e.key === 'Tab') {
+                            e.preventDefault();
+                            var start = textarea.selectionStart;
+                            var end = textarea.selectionEnd;
+                            textarea.value = textarea.value.substring(0, start) + '  ' + textarea.value.substring(end);
+                            textarea.selectionStart = textarea.selectionEnd = start + 2;
+                        }
+                        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                            e.preventDefault();
+                            doSave();
+                        }
+                    });
+
+                    editorWrap.appendChild(textarea);
+
+                    var statusBar = document.createElement('div');
+                    statusBar.style.cssText = [
+                        'display:flex', 'align-items:center', 'gap:16px',
+                        'padding:4px 16px', 'background:#007acc', 'font-size:.72em',
+                        'color:#fff', 'flex-shrink:0'
+                    ].join(';');
+                    var langLabel = document.createElement('span');
+                    langLabel.textContent = '';
+                    var fileLabel = document.createElement('span');
+                    fileLabel.style.cssText = 'opacity:.8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                    fileLabel.textContent = '';
+                    var sizeLabel = document.createElement('span');
+                    sizeLabel.style.cssText = 'opacity:.7;';
+                    statusBar.appendChild(langLabel);
+                    statusBar.appendChild(fileLabel);
+                    statusBar.appendChild(sizeLabel);
+
+                    dialog.appendChild(header);
+                    dialog.appendChild(tabStrip);
+                    dialog.appendChild(editorWrap);
+                    dialog.appendChild(statusBar);
+
+                    overlay.appendChild(dialog);
+                    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
+                    document.addEventListener('keydown', function onKey(e) {
+                        if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKey); }
+                    });
+                    document.body.appendChild(overlay);
+
+                    var files = [];
+                    var activeIdx = 0;
+                    var dirty = false;
+
+                    function setDirty(val) {
+                        dirty = val;
+                        saveBtn.style.background = val ? '#c97c0c' : '#0e639c';
+                        saveStatus.textContent = val ? 'Unsaved changes' : '';
+                    }
+
+                    textarea.addEventListener('input', function () { setDirty(true); });
+
+                    function loadTab(idx) {
+                        if (files.length === 0) return;
+                        if (dirty) {
+                            files[activeIdx].pendingContent = textarea.value;
+                        }
+                        activeIdx = idx;
+                        var f = files[idx];
+                        textarea.value = f.pendingContent !== undefined ? f.pendingContent : (f.content || '');
+                        langLabel.textContent = (f.lang || '').toUpperCase();
+                        fileLabel.textContent = f.filename || '';
+                        sizeLabel.textContent = ((f.content || '').length / 1024).toFixed(1) + ' KB';
+                        setDirty(f.pendingContent !== undefined);
+
+                        var tabs = tabStrip.querySelectorAll('[data-tab-idx]');
+                        for (var i = 0; i < tabs.length; i++) {
+                            var active = parseInt(tabs[i].getAttribute('data-tab-idx')) === idx;
+                            tabs[i].style.background = active ? '#1e1e1e' : 'transparent';
+                            tabs[i].style.borderBottom = active ? '2px solid #007acc' : '2px solid transparent';
+                            tabs[i].style.color = active ? '#fff' : 'rgba(255,255,255,0.5)';
+                        }
+                        textarea.focus();
+                    }
+
+                    function buildTabs() {
+                        tabStrip.innerHTML = '';
+                        for (var i = 0; i < files.length; i++) {
+                            (function (idx) {
+                                var tab = document.createElement('button');
+                                tab.type = 'button';
+                                tab.setAttribute('data-tab-idx', idx);
+                                tab.style.cssText = [
+                                    'padding:8px 20px', 'border:none', 'background:transparent',
+                                    'color:rgba(255,255,255,0.5)', 'cursor:pointer',
+                                    'font-size:.8em', 'border-bottom:2px solid transparent',
+                                    'white-space:nowrap', 'flex-shrink:0'
+                                ].join(';');
+                                tab.textContent = files[idx].tabLabel || (files[idx].type + '.' + files[idx].lang);
+                                tab.addEventListener('click', function () { loadTab(idx); });
+                                tabStrip.appendChild(tab);
+                            })(i);
+                        }
+                    }
+
+                    function doSave() {
+                        if (files.length === 0) return;
+                        files[activeIdx].pendingContent = textarea.value;
+
+                        var toSave = [];
+                        for (var i = 0; i < files.length; i++) {
+                            if (files[i].pendingContent !== undefined) {
+                                toSave.push({ idx: i, file: files[i] });
+                            }
+                        }
+                        if (toSave.length === 0) return;
+
+                        saveBtn.disabled = true;
+                        saveStatus.textContent = 'Saving...';
+
+                        var done = 0;
+                        var failed = 0;
+                        toSave.forEach(function (item) {
+                            ApiClient.ajax({
+                                url: ApiClient.getUrl('JellyFrame/api/cache/file') + '?path=' + encodeURIComponent(item.file.path),
+                                type: 'PUT',
+                                data: JSON.stringify({ content: item.file.pendingContent }),
+                                contentType: 'application/json'
+                            }).then(function () {
+                                files[item.idx].content = files[item.idx].pendingContent;
+                                delete files[item.idx].pendingContent;
+                                done++;
+                                if (done + failed === toSave.length) onSaveDone(failed);
+                            }).catch(function () {
+                                failed++;
+                                if (done + failed === toSave.length) onSaveDone(failed);
+                            });
+                        });
+                    }
+
+                    function onSaveDone(failCount) {
+                        saveBtn.disabled = false;
+                        if (failCount > 0) {
+                            saveStatus.textContent = failCount + ' file(s) failed to save';
+                            saveStatus.style.color = '#f44';
+                        } else {
+                            saveStatus.textContent = 'Saved - reloading...';
+                            saveStatus.style.color = '#4f4';
+                            setDirty(false);
+                            setTimeout(function () {
+                                try {
+                                    if (window.parent && window.parent.location) {
+                                        window.parent.location.reload();
+                                    }
+                                } catch (e) {
+                                    saveStatus.textContent = 'Saved - refresh to apply';
+                                    saveStatus.style.color = '';
+                                }
+                            }, 800);
+                        }
+                    }
+
+                    saveBtn.addEventListener('click', doSave);
+
+                    textarea.value = 'Loading...';
+                    ApiClient.ajax({
+                        url: ApiClient.getUrl('JellyFrame/api/cache/files/' + encodeURIComponent(itemId)) + '?kind=' + kind,
+                        type: 'GET',
+                        dataType: 'json'
+                    }).then(function (data) {
+                        files = data.files || [];
+                        if (files.length === 0) {
+                            textarea.value = '// No cached files found for this ' + kind + '.\n// Enable the ' + kind + ' and trigger a page load to populate the cache, then reopen this editor.';
+                            tabStrip.innerHTML = '';
+                            langLabel.textContent = '';
+                            fileLabel.textContent = 'No files cached';
+                            sizeLabel.textContent = '';
+                            return;
+                        }
+
+                        var pending = files.length;
+                        files.forEach(function (f, idx) {
+                            ApiClient.ajax({
+                                url: ApiClient.getUrl('JellyFrame/api/cache/file') + '?path=' + encodeURIComponent(f.path),
+                                type: 'GET',
+                                dataType: 'json'
+                            }).then(function (res) {
+                                files[idx].content = res.content || '';
+                                pending--;
+                                if (pending === 0) {
+                                    buildTabs();
+                                    loadTab(0);
+                                }
+                            }).catch(function () {
+                                files[idx].content = '// Failed to load file content.';
+                                pending--;
+                                if (pending === 0) {
+                                    buildTabs();
+                                    loadTab(0);
+                                }
+                            });
+                        });
+                    }).catch(function () {
+                        textarea.value = '// Failed to load file list. Are you logged in as admin?';
+                    });
+                }
 
             })();
         </script>

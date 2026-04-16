@@ -33,7 +33,7 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
                 {
                     allMods = JsonSerializer.Deserialize<List<Services.ModEntry>>(
                         config.CachedMods,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
                         ?? allMods;
                 }
                 catch { }

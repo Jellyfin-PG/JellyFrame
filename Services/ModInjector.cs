@@ -15,7 +15,8 @@ namespace Jellyfin.Plugin.JellyFrame.Services
 
         private static readonly JsonSerializerOptions JsonOpts = new JsonSerializerOptions
         {
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
         private static void Log(bool debug, string msg)
@@ -87,7 +88,6 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                         continue;
                     }
 
-                    // Collect preconnect origins (deduplicated across all mods)
                     foreach (var origin in mod.Preconnect ?? new List<string>())
                         if (!string.IsNullOrWhiteSpace(origin))
                             preconnects.Add(origin.Trim());
@@ -255,6 +255,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public string Jellyfin { get; set; } = string.Empty;
         public List<string> Tags { get; set; } = new List<string>();
         public string PreviewUrl { get; set; } = string.Empty;
+        public List<string> Screenshots { get; set; } = new List<string>();
         public string SourceUrl { get; set; } = string.Empty;
 
         public string CssUrl { get; set; }
@@ -270,5 +271,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public List<string> Preconnect { get; set; } = new List<string>();
 
         public List<ModVar> Vars { get; set; } = new List<ModVar>();
+        public bool EditorsChoice { get; set; } = false;
+        public List<System.Text.Json.JsonElement> Changelog { get; set; } = new List<System.Text.Json.JsonElement>();
     }
 }

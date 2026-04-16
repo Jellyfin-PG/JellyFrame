@@ -1705,8 +1705,13 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                     if (ws.State != System.Net.WebSockets.WebSocketState.Open) continue;
                     try
                     {
-                        ws.SendAsync(msg, CancellationToken.None).GetAwaiter().GetResult();
+                        using var wsCts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        ws.SendAsync(msg, wsCts.Token).GetAwaiter().GetResult();
                         sent++;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogDebug("[JellyFrame] Notify: send to session {Id} timed out", session.Id);
                     }
                     catch (Exception ex)
                     {
