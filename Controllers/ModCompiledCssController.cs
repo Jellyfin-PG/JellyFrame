@@ -30,7 +30,7 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
             try
             {
                 mods = JsonSerializer.Deserialize<List<ModEntry>>(config.CachedMods,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
             }
             catch { return StatusCode(500); }
 
@@ -47,7 +47,7 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
                 {
                     modVars = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(
                         config.ModVars,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
                         ?? modVars;
                 }
                 catch { }

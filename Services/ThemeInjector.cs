@@ -26,7 +26,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private const string EndMarker = "<!-- JellyFrame-Theme-End -->";
 
         private static readonly JsonSerializerOptions JsonOpts =
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
         private static void Log(bool debug, string msg)
         {
@@ -90,7 +90,6 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 var linkHref = "/JellyFrame/themes/" + Uri.EscapeDataString(theme.Id)
                              + "/compiled.css?v=" + hash;
 
-                // Preconnect hints go into <head> so the browser acts on them immediately
                 if (theme.Preconnect != null && theme.Preconnect.Count > 0)
                 {
                     var headSb = new System.Text.StringBuilder();
@@ -106,8 +105,6 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                     html = Regex.Replace(html, @"(</head>)", headSb.ToString() + "$1");
                 }
 
-                // Stylesheet goes before </body> so it loads AFTER Jellyfin's own dark theme
-                // and can correctly override it via CSS cascade order
                 var sb = new System.Text.StringBuilder();
                 sb.Append("\n").Append(StartMarker).Append("\n");
                 sb.Append("<link rel=\"stylesheet\" data-jellyframe-theme=\"1\"")
@@ -151,13 +148,11 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 bool active;
                 if (!string.IsNullOrEmpty(addon.TriggerVar))
                 {
-                    // Driven by a named var — on when that var is "true"
                     active = vars.TryGetValue(addon.TriggerVar, out var tv) &&
                              string.Equals(tv, "true", StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {
-                    // No triggerVar — driven by synthetic key __addon__{id}, default off
                     var syntheticKey = "__addon__" + addon.Id;
                     active = vars.TryGetValue(syntheticKey, out var sv) &&
                              string.Equals(sv, "true", StringComparison.OrdinalIgnoreCase);
@@ -203,7 +198,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
 
         private static string HashVars(Dictionary<string, string> vars)
         {
-            if (vars == null || vars.Count == 0) return "default";
+            if (vars == null || vars.Count == 0) return "novars";
             var keys = new List<string>(vars.Keys);
             keys.Sort(StringComparer.OrdinalIgnoreCase);
             var sb = new StringBuilder();
@@ -226,11 +221,14 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public string Jellyfin { get; set; } = string.Empty;
         public List<string> Tags { get; set; } = new List<string>();
         public string PreviewUrl { get; set; } = string.Empty;
+        public List<string> Screenshots { get; set; } = new List<string>();
         public string SourceUrl { get; set; } = string.Empty;
         public string CssUrl { get; set; }
         public List<string> Preconnect { get; set; } = new List<string>();
         public List<ThemeVar> Vars { get; set; } = new List<ThemeVar>();
         public List<ThemeAddon> Addons { get; set; } = new List<ThemeAddon>();
+        public bool EditorsChoice { get; set; } = false;
+        public List<System.Text.Json.JsonElement> Changelog { get; set; } = new List<System.Text.Json.JsonElement>();
     }
 
     public class ThemeVar

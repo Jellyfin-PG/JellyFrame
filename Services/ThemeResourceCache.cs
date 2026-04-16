@@ -55,6 +55,8 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             if (!Directory.Exists(cacheDir)) return;
             foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "__*"))
                 try { File.Delete(file); } catch { }
+            foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "--*"))
+                try { File.Delete(file); } catch { }
         }
 
         public static void InvalidateAddon(string themeId, string addonId, IApplicationPaths paths)
@@ -74,6 +76,14 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             {
                 var name = Path.GetFileNameWithoutExtension(file);
                 if (name.Split(new[] { "__" }, StringSplitOptions.None).Length == 4)
+                    try { File.Delete(file); } catch { }
+            }
+            foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "--*"))
+            {
+                var name = Path.GetFileNameWithoutExtension(file);
+                var dashIdx = name.IndexOf("--", System.StringComparison.Ordinal);
+                var remainder = dashIdx >= 0 ? name.Substring(dashIdx + 2) : name;
+                if (remainder.Split(new[] { "__" }, System.StringSplitOptions.None).Length == 4)
                     try { File.Delete(file); } catch { }
             }
         }
@@ -106,7 +116,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         {
             if (string.IsNullOrWhiteSpace(url)) return null;
 
-            var cacheDir  = GetCacheDir(paths);
+            var cacheDir = GetCacheDir(paths);
             var cacheFile = vars != null
                 ? GetCacheFilePath(cacheDir, id, version, type, HashVars(vars))
                 : GetCacheFilePath(cacheDir, id, version, type, null);

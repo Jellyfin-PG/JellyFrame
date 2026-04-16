@@ -56,7 +56,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         private readonly Timer _gcTimer;
         private ModFileWatcher _watcher;
 
-        private static readonly JsonSerializerOptions _jsonOpts = new() { PropertyNameCaseInsensitive = true };
+        private static readonly JsonSerializerOptions _jsonOpts = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         private bool _disposed;
 
         private static readonly TimeSpan GcInterval = TimeSpan.FromMinutes(10);
@@ -187,7 +187,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             var webhooks = new WebhookSurface(mod.Id, _logger);
             var rpc = new RpcSurface(mod.Id, _logger);
             var filesystem = new FileSystemSurface(mod.Id, _logger);
-            var os    = new OsSurface(mod.Id, _logger);
+            var os = new OsSurface(mod.Id, _logger);
             var perms = new PermissionSurface(mod.Id, mod.Permissions);
             var jellyfin = new JellyfinSurface(
                 _library, _userData, _users, _sessions,
@@ -294,16 +294,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         {
             _watcher?.Dispose();
 
-            Func<string, Task> onCssChanged = modId =>
-            {
-                _logger.LogInformation(
-                    "[JellyFrame] CSS hot-reload: invalidating CSS cache for '{Id}'", modId);
-                ModResourceCache.InvalidateType(modId, "css", _paths);
-                return Task.CompletedTask;
-            };
-
-            _watcher = new ModFileWatcher(cacheDir, getModEntryAndVars, _logger, onCssChanged);
-            _logger.LogInformation("[JellyFrame] Hot-reload watcher started on '{Dir}' (JS + CSS)", cacheDir);
+            _watcher = new ModFileWatcher(cacheDir, getModEntryAndVars, _logger, onCssChanged: null);
+            _logger.LogInformation("[JellyFrame] Hot-reload watcher started on '{Dir}' (server JS only)", cacheDir);
         }
 
         public void StopWatcher()
