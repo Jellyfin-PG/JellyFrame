@@ -40,9 +40,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         private Engine BuildEngine() => new Engine(options =>
         {
             options.Strict();
-            options.LimitMemory(64 * 1024 * 1024);
+            options.LimitMemory(256 * 1024 * 1024);
             options.TimeoutInterval(TimeSpan.FromSeconds(30));
-            options.MaxStatements(1_000_000);
+            options.MaxStatements(10_000_000);
         });
 
         private void RegisterGlobals()
@@ -89,7 +89,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 }
                 catch (MemoryLimitExceededException)
                 {
-                    _logger.LogError("[JellyFrame] Mod {ModId} exceeded 64 MB memory limit", _context.ModId);
+                    _logger.LogError("[JellyFrame] Mod {ModId} exceeded 256 MB memory limit", _context.ModId);
                     DisposeEngine();
                     throw;
                 }
