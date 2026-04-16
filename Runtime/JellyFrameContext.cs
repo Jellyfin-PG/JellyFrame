@@ -102,6 +102,8 @@ public GatedRpcSurface            Rpc        { get; }
         public void InvokeStop()
         {
             try { _stopHandler?.Invoke(); }
+            catch (Jint.Runtime.StatementsCountOverflowException) { /* expected during teardown */ }
+            catch (TimeoutException) { /* expected: onStop hit engine timeout during teardown */ }
             catch (Exception ex) { Log.Error("onStop error: " + ex.Message); }
         }
 
