@@ -11,11 +11,15 @@
 
 <p align="center">
   <a href="assets/screen01.png">
-    <img src="assets/screen01.png" width="45%" alt="Jellyframe Theme Marketplace" />
+    <img src="assets/screen01.png" width="45%" alt="Jellyframe Mod Marketplace" />
   </a>
    
   <a href="assets/screen02.png">
-    <img src="assets/screen02.png" width="45%" alt="Jellyframe Mod Marketplace" />
+    <img src="assets/screen02.png" width="45%" alt="Jellyframe Live Editor" />
+  </a>
+
+  <a href="assets/screen03.png">
+    <img src="assets/screen03.png" width="45%" alt="Jellyframe Variables" />
   </a>
 </p>
 <p align="center">
