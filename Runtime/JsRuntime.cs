@@ -35,6 +35,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             _context._rawBus?.SetEngine(_engine);
             _context._rawWebhooks?.SetEngine(_engine);
             _context._rawRpc?.SetEngine(_engine);
+            _context._rawDb?.SetEngine(_engine);
         }
 
         private Engine BuildEngine() => new Engine(options =>
@@ -67,6 +68,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 "  rpc:       __jfCtx.Rpc," +
                 "  fs:        __jfCtx.Fs," +
                 "  os:        __jfCtx.Os," +
+                "  db:        __jfCtx.Db," +
                 "  onStart:   function(fn) { __jfCtx.OnStart(fn); }," +
                 "  onStop:    function(fn)  { __jfCtx.OnStop(fn); }" +
                 "};"

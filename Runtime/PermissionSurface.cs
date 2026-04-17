@@ -23,13 +23,14 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public const string Bus = "bus";
         public const string Filesystem = "filesystem";
         public const string Os = "os";
+        public const string Db = "db";
 
         public static readonly IReadOnlyList<string> All = new[]
         {
             Http, JellyfinRead, JellyfinWrite, JellyfinDelete, JellyfinTasks,
             JellyfinRefresh, JellyfinLiveTv, JellyfinAdmin,
             Store, SharedStore, Scheduler, Webhooks, Rpc, Bus,
-            Filesystem, Os
+            Filesystem, Os, Db
         };
 
         private readonly string _modId;
@@ -59,8 +60,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 case JellyfinDelete: return "jf.jellyfin (delete methods)";
                 case JellyfinTasks: return "jf.jellyfin (scheduled task execution)";
                 case JellyfinRefresh: return "jf.jellyfin (metadata refresh)";
-                case JellyfinLiveTv:  return "jf.jellyfin (live TV recording management)";
-                case JellyfinAdmin:   return "jf.jellyfin (admin: users, sessions, server management)";
+                case JellyfinLiveTv: return "jf.jellyfin (live TV recording management)";
+                case JellyfinAdmin: return "jf.jellyfin (admin: users, sessions, server management)";
                 case Store: return "jf.store / jf.userStore";
                 case SharedStore: return "jf.kv (shared cross-mod key-value store)";
                 case Scheduler: return "jf.scheduler";
@@ -69,6 +70,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 case Bus: return "jf.bus";
                 case Filesystem: return "jf.fs (local filesystem access)";
                 case Os: return "jf.os (native OS commands)";
+                case Db: return "jf.db (SQLite database access)";
                 default: return "jf." + permission;
             }
         }
