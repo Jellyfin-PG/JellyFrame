@@ -15,16 +15,25 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Plugin.JellyFrame.Runtime
 {
     /// <summary>
-    /// SQLite-backed database surface exposed to mods as <c>jf.db</c>.
-    /// Requires the <c>db</c> permission.
+    /// SQLite-backed database surface exposed to mods.
     ///
-    /// All mods share a single backing file at
-    /// <c>{DataPath}/JellyFrame/jellyframe.db</c>. Tables are automatically
-    /// namespaced with <c>{modId}__</c> so mods cannot see or query each
-    /// other's tables. From the mod's perspective, it has a private database;
-    /// the prefix is invisible.
+    /// Two modes:
     ///
-    /// Three levels of API:
+    ///   • Private (<c>jf.db</c>, requires <c>db</c> permission):
+    ///       Backed by <c>{DataPath}/JellyFrame/mods/{modId}/mod.db</c>.
+    ///       Completely isolated to the mod — no other mod can reach this file.
+    ///       Tables have NO automatic prefix in this mode; the isolation is
+    ///       physical (separate file) rather than logical.
+    ///
+    ///   • Shared (<c>jf.sharedDb</c>, requires <c>db.shared</c> permission):
+    ///       Backed by <c>{DataPath}/JellyFrame/jellyframe_shared.db</c>.
+    ///       Tables have NO automatic prefix — every mod with the permission
+    ///       sees the same tables.  Use this for large cross-mod datasets.
+    ///       Raw-SQL validation still applies (ATTACH/DETACH blocked, etc.)
+    ///       but table-ownership checks are skipped because sharing is the
+    ///       whole point.
+    ///
+    /// Three levels of API (same for both modes):
     ///
     ///   1. Table helpers — no SQL required, covers the 80% case:
     ///        jf.db.table('ratings').insert({ itemId: 'x', rating: 7.5 });
@@ -41,22 +50,20 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
     ///        jf.db.exec("CREATE INDEX ...", []);
     ///        jf.db.queryRaw("SELECT * FROM ratings WHERE ...", [param]);
     ///        jf.db.transaction(function() { ... });
-    ///
-    /// Raw SQL is validated so a mod can only reference its own tables —
-    /// `ATTACH`, `DETACH`, dangerous `PRAGMA` and cross-mod references
-    /// are rejected.
     /// </summary>
     public sealed class DbSurface : IDisposable
     {
-        // One shared process-wide lock used only for the *first* open of the
-        // database file, to avoid a race when multiple mods all start at once
-        // and all try to set WAL mode simultaneously.
-        private static readonly object _firstOpenLock = new();
-        private static bool _walInitialized = false;
-        private static string _sharedDbPath = null;
+        // ── per-file WAL-init guards ────────────────────────────────────────
+        // We use two separate guards so the private and shared files each get
+        // their WAL mode set exactly once, regardless of which mod opens first.
+        private static readonly object _privateOpenLock = new();
+        private static bool _privateWalInitialized = false;
 
+        private static readonly object _sharedOpenLock = new();
+        private static bool _sharedWalInitialized = false;
+
+        // ── instance fields ─────────────────────────────────────────────────
         private readonly string _modId;
-        private readonly string _tablePrefix;
         private readonly ILogger _logger;
         private readonly SqliteConnection _conn;
         private readonly object _connLock = new();
@@ -71,57 +78,53 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         private static readonly Regex IdentRegex =
             new Regex("^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled);
 
+        /// <summary>Creates a private (per-mod namespaced) db surface.</summary>
         public DbSurface(string modId, IApplicationPaths paths, ILogger logger)
+            : this(modId, paths, logger, isShared: false) { }
+
+        /// <summary>
+        /// Creates either a private or shared db surface.
+        /// In shared mode the table prefix is empty and table-ownership
+        /// validation in raw SQL is skipped.
+        /// </summary>
+        public DbSurface(string modId, IApplicationPaths paths, ILogger logger, bool isShared)
         {
-            _modId = modId;
-            _logger = logger;
-            _tablePrefix = SanitizeModIdForPrefix(modId) + "__";
+            _modId    = modId;
+            _logger   = logger;
 
-            var dir = Path.Combine(paths.DataPath, "JellyFrame");
-            Directory.CreateDirectory(dir);
-            var dbPath = Path.Combine(dir, "jellyframe.db");
-
-            lock (_firstOpenLock)
+            string dbPath;
+            if (isShared)
             {
-                _sharedDbPath = dbPath;
+                // Shared database: root of the JellyFrame data folder, accessible
+                // to any mod that holds the db.shared permission.
+                var dir = Path.Combine(paths.DataPath, "JellyFrame");
+                Directory.CreateDirectory(dir);
+                dbPath = Path.Combine(dir, "jellyframe_shared.db");
+            }
+            else
+            {
+                // Private database: isolated to this mod's own subdirectory.
+                // No other mod can reach this file at all.
+                var dir = Path.Combine(paths.DataPath, "JellyFrame", "mods", SanitizeModIdForPrefix(modId));
+                Directory.CreateDirectory(dir);
+                dbPath = Path.Combine(dir, "mod.db");
+            }
 
-                _conn = new SqliteConnection("Data Source=" + dbPath);
-                _conn.Open();
+            _conn = new SqliteConnection("Data Source=" + dbPath);
+            _conn.Open();
 
-                // Per-connection settings (must be set on every open).
-                using (var cmd = _conn.CreateCommand())
-                {
-                    cmd.CommandText = "PRAGMA busy_timeout=5000;";
-                    cmd.ExecuteNonQuery();
-                }
-                using (var cmd = _conn.CreateCommand())
-                {
-                    cmd.CommandText = "PRAGMA foreign_keys=ON;";
-                    cmd.ExecuteNonQuery();
-                }
-
-                // Database-level settings: apply once per process. WAL mode
-                // persists on the file but re-issuing the pragma is cheap and
-                // makes the behavior deterministic if someone else toggled it.
-                if (!_walInitialized)
-                {
-                    using (var cmd = _conn.CreateCommand())
-                    {
-                        cmd.CommandText = "PRAGMA journal_mode=WAL;";
-                        // Must consume the singleton result, or the pragma
-                        // is silently ignored.
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read()) { /* drain */ }
-                        }
-                    }
-                    using (var cmd = _conn.CreateCommand())
-                    {
-                        cmd.CommandText = "PRAGMA synchronous=NORMAL;";
-                        cmd.ExecuteNonQuery();
-                    }
-                    _walInitialized = true;
-                }
+            // Apply per-connection and one-time WAL pragmas under the correct
+            // per-file lock.  We use two explicit branches because static
+            // readonly fields cannot be passed as ref in C#.
+            if (isShared)
+            {
+                lock (_sharedOpenLock)
+                    InitPragmas(ref _sharedWalInitialized);
+            }
+            else
+            {
+                lock (_privateOpenLock)
+                    InitPragmas(ref _privateWalInitialized);
             }
         }
 
@@ -136,20 +139,17 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         }
 
         /// <summary>
-        /// Lists the mod's own tables (without the internal prefix).
+        /// Lists all tables in this surface's database file.
+        /// Private mode returns only tables in the mod's isolated file.
+        /// Shared mode returns all tables in the shared file.
         /// </summary>
         public string[] Tables()
         {
-            const string sql =
-                "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE @p ESCAPE '\\'";
-            var like = EscapeLike(_tablePrefix) + "%";
-            var rows = QueryInternal(sql, new[] { new KeyValuePair<string, object>("@p", like) });
+            const string sql = "SELECT name FROM sqlite_master WHERE type='table'";
+            var rows = QueryInternal(sql, null);
             var result = new List<string>(rows.Length);
             foreach (var r in rows)
-            {
-                if (r.TryGetValue("name", out var n) && n is string full && full.StartsWith(_tablePrefix))
-                    result.Add(full.Substring(_tablePrefix.Length));
-            }
+                if (r.TryGetValue("name", out var n) && n is string s) result.Add(s);
             return result.ToArray();
         }
 
@@ -250,9 +250,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             }
         }
 
-        internal string InternalTableName(string modVisibleName) => _tablePrefix + modVisibleName;
-
-        internal string TablePrefix => _tablePrefix;
+        internal string InternalTableName(string modVisibleName) => modVisibleName;
 
         internal bool TableExists(string modVisibleName)
         {
@@ -397,8 +395,14 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             return result;
         }
 
-        private static string EscapeLike(string s)
-            => s.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
+        private static void RequireValidIdentifier(string s, string kind)
+        {
+            if (string.IsNullOrWhiteSpace(s))
+                throw new ArgumentException(kind + " must not be empty.");
+            if (!IdentRegex.IsMatch(s))
+                throw new ArgumentException(
+                    "Invalid " + kind + ": '" + s + "'. Only letters, digits and underscores; must not start with a digit.");
+        }
 
         // ────────────────────────────────────────────────────────────────
         // Parameter binding: accept IDictionary (C#), IList (JS array),
@@ -517,35 +521,6 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                         "[JellyFrame] mod '" + _modId + "' tried to issue restricted PRAGMA '" + pragmaName + "'");
             }
 
-            // Enforce table-name prefix: scan identifier-like tokens that
-            // look like they might be table references (after FROM / JOIN /
-            // INTO / UPDATE / TABLE) and reject anything that doesn't start
-            // with this mod's prefix.
-            //
-            // We deliberately scan the comment/literal-stripped text so that
-            // a string like 'other-mod__ratings' inside a VALUES clause
-            // doesn't trip this.
-            var strippedOriginalCase = StripCommentsAndLiterals(sql);
-            var tableRefs = Regex.Matches(
-                strippedOriginalCase,
-                "\\b(?:FROM|JOIN|INTO|UPDATE|TABLE)\\s+([A-Za-z_][A-Za-z0-9_]*)",
-                RegexOptions.IgnoreCase);
-            foreach (Match m in tableRefs)
-            {
-                var name = m.Groups[1].Value;
-                // Allow sqlite_master for introspection, but only read-only
-                // contexts — which is already enforced by ValidateRawSql
-                // being orthogonal to whether the caller used Exec/Run vs
-                // QueryRaw. We accept sqlite_master here; raw-writes against
-                // it would still fail at SQLite's own permission layer.
-                if (name.StartsWith("sqlite_", StringComparison.OrdinalIgnoreCase))
-                    continue;
-                if (!name.StartsWith(_tablePrefix, StringComparison.Ordinal))
-                    throw new InvalidOperationException(
-                        "[JellyFrame] mod '" + _modId + "' tried to reference table '" + name
-                        + "' which does not belong to it. Use jf.db.table('" + name
-                        + "') — the mod prefix is applied automatically.");
-            }
         }
 
         // Replace SQL string literals, identifier literals, line comments
@@ -625,15 +600,6 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             return sb.ToString();
         }
 
-        private static void RequireValidIdentifier(string s, string kind)
-        {
-            if (string.IsNullOrWhiteSpace(s))
-                throw new ArgumentException(kind + " must not be empty.");
-            if (!IdentRegex.IsMatch(s))
-                throw new ArgumentException(
-                    "Invalid " + kind + ": '" + s + "'. Only letters, digits and underscores; must not start with a digit.");
-        }
-
         // ModIds allow hyphens in JellyFrame; SQL identifiers don't like
         // them in unquoted contexts. Map '-' to '_' so the prefix is safe
         // to embed. Since the result still goes through QuoteIdent in
@@ -645,6 +611,39 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             foreach (var c in modId)
                 sb.Append(char.IsLetterOrDigit(c) || c == '_' ? c : '_');
             return sb.ToString();
+        }
+
+        // Applies per-connection PRAGMAs and, on first call per database file,
+        // the one-time WAL/synchronous settings.  Must be called while holding
+        // the appropriate per-file lock.
+        private void InitPragmas(ref bool walInitialized)
+        {
+            using (var cmd = _conn.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA busy_timeout=5000;";
+                cmd.ExecuteNonQuery();
+            }
+            using (var cmd = _conn.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA foreign_keys=ON;";
+                cmd.ExecuteNonQuery();
+            }
+
+            if (!walInitialized)
+            {
+                using (var cmd = _conn.CreateCommand())
+                {
+                    cmd.CommandText = "PRAGMA journal_mode=WAL;";
+                    using (var reader = cmd.ExecuteReader())
+                        while (reader.Read()) { /* drain */ }
+                }
+                using (var cmd = _conn.CreateCommand())
+                {
+                    cmd.CommandText = "PRAGMA synchronous=NORMAL;";
+                    cmd.ExecuteNonQuery();
+                }
+                walInitialized = true;
+            }
         }
 
         public void Dispose()
