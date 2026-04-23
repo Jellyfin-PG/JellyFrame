@@ -24,13 +24,14 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public const string Filesystem = "filesystem";
         public const string Os = "os";
         public const string Db = "db";
+        public const string DbShared = "db.shared";
 
         public static readonly IReadOnlyList<string> All = new[]
         {
             Http, JellyfinRead, JellyfinWrite, JellyfinDelete, JellyfinTasks,
             JellyfinRefresh, JellyfinLiveTv, JellyfinAdmin,
             Store, SharedStore, Scheduler, Webhooks, Rpc, Bus,
-            Filesystem, Os, Db
+            Filesystem, Os, Db, DbShared
         };
 
         private readonly string _modId;
@@ -70,7 +71,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 case Bus: return "jf.bus";
                 case Filesystem: return "jf.fs (local filesystem access)";
                 case Os: return "jf.os (native OS commands)";
-                case Db: return "jf.db (SQLite database access)";
+                case Db: return "jf.db (private SQLite database)";
+                case DbShared: return "jf.sharedDb (shared cross-mod SQLite database)";
                 default: return "jf." + permission;
             }
         }

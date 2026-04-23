@@ -340,4 +340,34 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public object Transaction(Jint.Native.JsValue fn) { _perms.Require(PermissionSurface.Db); return _inner.Transaction(fn); }
     }
 
+    /// <summary>
+    /// Gated wrapper for the shared (cross-mod) SQLite database surface.
+    /// Requires the <c>db.shared</c> permission.
+    /// Tables have no automatic prefix — all mods with this permission
+    /// share the same table namespace.
+    /// </summary>
+    public class GatedSharedDbSurface
+    {
+        private readonly DbSurface _inner;
+        private readonly PermissionSurface _perms;
+
+        public GatedSharedDbSurface(DbSurface inner, PermissionSurface perms)
+        {
+            _inner = inner;
+            _perms = perms;
+        }
+
+        public DbTable Table(string name) { _perms.Require(PermissionSurface.DbShared); return _inner.Table(name); }
+        public string[] Tables() { _perms.Require(PermissionSurface.DbShared); return _inner.Tables(); }
+        public bool HasTable(string name) { _perms.Require(PermissionSurface.DbShared); return _inner.HasTable(name); }
+        public bool DropTable(string name) { _perms.Require(PermissionSurface.DbShared); return _inner.DropTable(name); }
+
+        public DbQuery Query(string tableName) { _perms.Require(PermissionSurface.DbShared); return _inner.Query(tableName); }
+
+        public void Exec(string sql, object parameters = null) { _perms.Require(PermissionSurface.DbShared); _inner.Exec(sql, parameters); }
+        public object Run(string sql, object parameters = null) { _perms.Require(PermissionSurface.DbShared); return _inner.Run(sql, parameters); }
+        public object[] QueryRaw(string sql, object parameters = null) { _perms.Require(PermissionSurface.DbShared); return _inner.QueryRaw(sql, parameters); }
+        public object Transaction(Jint.Native.JsValue fn) { _perms.Require(PermissionSurface.DbShared); return _inner.Transaction(fn); }
+    }
+
 }
