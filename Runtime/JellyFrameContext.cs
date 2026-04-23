@@ -17,6 +17,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         internal readonly RpcSurface _rawRpc;
         internal readonly FileSystemSurface _rawFilesystem;
         internal readonly OsSurface _rawOs;
+        internal readonly DbSurface _rawDb;
         internal readonly JellyfinSurface _rawJellyfin;
         internal readonly RoutesSurface _rawRoutes;
 
@@ -37,6 +38,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             RpcSurface rpc,
             FileSystemSurface filesystem,
             OsSurface os,
+            DbSurface db,
             PermissionSurface permissions)
         {
             ModId = modId;
@@ -54,6 +56,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             _rawRpc = rpc;
             _rawFilesystem = filesystem;
             _rawOs = os;
+            _rawDb = db;
             _rawJellyfin = jellyfin;
             _rawRoutes = routes;
 
@@ -69,6 +72,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             Rpc = new GatedRpcSurface(rpc, permissions);
             Fs = new GatedFileSystemSurface(filesystem, permissions);
             Os = new GatedOsSurface(os, permissions);
+            Db = new GatedDbSurface(db, permissions);
         }
 
         public string ModId { get; }
@@ -89,6 +93,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public GatedRpcSurface Rpc { get; }
         public GatedFileSystemSurface Fs { get; }
         public GatedOsSurface Os { get; }
+        public GatedDbSurface Db { get; }
 
         public void OnStart(Action handler) => _startHandler = handler;
         public void OnStop(Action handler) => _stopHandler = handler;
@@ -120,6 +125,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             _rawBus?.Dispose();
             _rawWebhooks?.Dispose();
             _rawRpc?.Dispose();
+            _rawDb?.Dispose();
         }
     }
 }
