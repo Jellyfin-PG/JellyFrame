@@ -273,5 +273,13 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public List<ModVar> Vars { get; set; } = new List<ModVar>();
         public bool EditorsChoice { get; set; } = false;
         public List<System.Text.Json.JsonElement> Changelog { get; set; } = new List<System.Text.Json.JsonElement>();
+
+        /// <summary>
+        /// If true, the mod runtime will be automatically restarted after a crash
+        /// using an exponential backoff (30s → 60s → 120s → 120s …).
+        /// Defaults to false — crashes leave the mod in a stopped state until
+        /// the server restarts or an admin manually re-enables the mod.
+        /// </summary>
+        public bool RestartOnCrash { get; set; } = false;
     }
 }
