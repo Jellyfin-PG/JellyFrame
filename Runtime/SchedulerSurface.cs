@@ -10,17 +10,17 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 {
     public class SchedulerSurface : IDisposable
     {
-        private readonly string  _modId;
+        private readonly string _modId;
         private readonly ILogger _logger;
-        private Engine           _engine;
+        private Engine _engine;
 
         private readonly ConcurrentDictionary<string, Timer> _tasks = new();
-        private int  _idCounter;
+        private int _idCounter;
         private bool _disposed;
 
         public SchedulerSurface(string modId, ILogger logger)
         {
-            _modId  = modId;
+            _modId = modId;
             _logger = logger;
         }
 
@@ -29,7 +29,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public string Interval(double intervalMs, JsValue handler)
         {
             if (_disposed) return null;
-            var id    = NextId();
+            var id = NextId();
             var delay = TimeSpan.FromMilliseconds(Math.Max(intervalMs, 100));
             var timer = new Timer(_ => Invoke(id, handler), null, delay, delay);
             _tasks[id] = timer;
@@ -121,15 +121,19 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         private class CronExpression
         {
-            private readonly int[] _minutes;
-            private readonly int[] _hours;
-            private readonly int[] _doms;
-            private readonly int[] _months;
-            private readonly int[] _dows;
+            private readonly HashSet<int> _minutes;
+            private readonly HashSet<int> _hours;
+            private readonly HashSet<int> _doms;
+            private readonly HashSet<int> _months;
+            private readonly HashSet<int> _dows;
 
             private CronExpression(int[] min, int[] hr, int[] dom, int[] mon, int[] dow)
             {
-                _minutes = min; _hours = hr; _doms = dom; _months = mon; _dows = dow;
+                _minutes = new HashSet<int>(min);
+                _hours = new HashSet<int>(hr);
+                _doms = new HashSet<int>(dom);
+                _months = new HashSet<int>(mon);
+                _dows = new HashSet<int>(dow);
             }
 
             public static bool TryParse(string expr, out CronExpression result)
@@ -153,17 +157,15 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
             public DateTime? Next(DateTime after)
             {
-
                 var t = after.AddSeconds(60 - after.Second).AddMilliseconds(-after.Millisecond);
 
                 var limit = after.AddYears(4);
                 while (t < limit)
                 {
-                    if (!Array.Exists(_months, m => m == t.Month))          { t = t.AddMonths(1).Date.AddHours(0); continue; }
-                    if (!Array.Exists(_doms,   d => d == t.Day) &&
-                        !Array.Exists(_dows,   d => d == (int)t.DayOfWeek)) { t = t.Date.AddDays(1); continue; }
-                    if (!Array.Exists(_hours,  h => h == t.Hour))           { t = t.Date.AddHours(t.Hour + 1); continue; }
-                    if (!Array.Exists(_minutes, m => m == t.Minute))        { t = t.AddMinutes(1); continue; }
+                    if (!_months.Contains(t.Month)) { t = t.AddMonths(1).Date.AddHours(0); continue; }
+                    if (!_doms.Contains(t.Day) && !_dows.Contains((int)t.DayOfWeek)) { t = t.Date.AddDays(1); continue; }
+                    if (!_hours.Contains(t.Hour)) { t = t.Date.AddHours(t.Hour + 1); continue; }
+                    if (!_minutes.Contains(t.Minute)) { t = t.AddMinutes(1); continue; }
                     return t;
                 }
                 return null;

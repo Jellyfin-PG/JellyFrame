@@ -18,6 +18,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         private static readonly TimeSpan FlushDelay = TimeSpan.FromMilliseconds(500);
 
+        private static readonly JsonSerializerOptions _jsonOpts =
+            new JsonSerializerOptions { WriteIndented = false };
+
         public StoreSurface(string modId, IApplicationPaths paths)
         {
             var dir = Path.Combine(paths.DataPath, "JellyFrame", "store");
@@ -68,7 +71,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         {
             lock (_lock)
             {
-                return new List<string>(_data.Keys).ToArray();
+                var keys = new string[_data.Count];
+                _data.Keys.CopyTo(keys, 0);
+                return keys;
             }
         }
 
@@ -101,9 +106,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 _dirty = false;
                 try
                 {
-                    File.WriteAllText(_filePath,
-                        JsonSerializer.Serialize(_data,
-                            new JsonSerializerOptions { WriteIndented = false }));
+                    File.WriteAllText(_filePath, JsonSerializer.Serialize(_data, _jsonOpts));
                 }
                 catch { }
             }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jint;
 
 namespace Jellyfin.Plugin.JellyFrame.Runtime
 {
@@ -34,6 +35,67 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public HttpResult Patch(string url, string body = null, object options = null)
             => Run(BuildRequest(HttpMethod.Patch, url, body, options));
+
+        /// <summary>
+        /// Fire-and-forget HTTP request.  The callback is invoked on a thread-pool
+        /// thread when the request completes.  Use this for non-blocking outbound
+        /// calls where the mod doesn't need to wait for the result inline.
+        ///
+        /// JS usage:
+        ///   jf.http.fetchAsync('https://example.com/api', { method: 'POST', body: '{}' },
+        ///     function(result) { jf.log.info('done', { status: result.status }); });
+        /// </summary>
+        public void FetchAsync(string url, object options, Jint.Native.JsValue callback)
+        {
+            var method   = HttpMethod.Get;
+            string body  = null;
+            IDictionary<string, object> opts = null;
+
+            if (options is IDictionary<string, object> dOpts)
+                opts = dOpts;
+            else if (options is Jint.Native.Object.ObjectInstance jsOpts)
+            {
+                var d = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                foreach (var prop in jsOpts.GetOwnProperties())
+                    d[prop.Key.ToString()] = prop.Value.Value?.ToObject();
+                opts = d;
+            }
+
+            if (opts != null)
+            {
+                if (opts.TryGetValue("method", out var m) && m != null)
+                    method = new HttpMethod(m.ToString().ToUpperInvariant());
+                if (opts.TryGetValue("body", out var b) && b != null)
+                    body = b.ToString();
+            }
+
+            var request = BuildRequest(method, url, body, options);
+            var engine  = _engine;
+
+            if (engine == null)
+            {
+                _ = System.Threading.Tasks.Task.Run(() => Run(request));
+                return;
+            }
+
+            _ = System.Threading.Tasks.Task.Run(() =>
+            {
+                var result = Run(request);
+                try
+                {
+                    lock (engine)
+                    {
+                        if (callback != null && !callback.IsNull() && !callback.IsUndefined())
+                            engine.Invoke(callback, Jint.Native.JsValue.Undefined,
+                                new[] { Jint.Native.JsValue.FromObject(engine, result) });
+                    }
+                }
+                catch { /* callback errors are non-fatal */ }
+            });
+        }
+
+        private Engine _engine;
+        public void SetEngine(Engine engine) => _engine = engine;
 
         private static HttpRequestMessage BuildRequest(
             HttpMethod method, string url, string body, object options)

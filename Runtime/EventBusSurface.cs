@@ -104,6 +104,9 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             }
         }
 
+        /// <summary>Number of active subscriptions owned by this mod instance.</summary>
+        public int SubscriptionCount { get { lock (_subLock) { return _ownedIds.Count; } } }
+
         public void OffAll()
         {
             lock (_subLock)

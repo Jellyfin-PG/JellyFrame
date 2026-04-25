@@ -394,6 +394,71 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         /// Returns null if not found.
         /// Requires: jellyfin.read
         /// </summary>
+        /// <summary>
+        /// Returns the full people list for an item, optionally filtered by role type.
+        /// type: "Actor" | "Director" | "Writer" | "Producer" | "GuestStar" | null (all)
+        ///
+        /// Each entry: { name, role, type, sortOrder, personId, imageTag, overview, birthDate, birthPlace, deathDate }
+        /// </summary>
+        public object[] GetItemPeople(string itemId, string type = null)
+        {
+            if (!Guid.TryParse(itemId, out var guid)) return Array.Empty<object>();
+
+            PersonKind pk = default;
+            var hasPk = !string.IsNullOrEmpty(type) && Enum.TryParse<PersonKind>(type, true, out pk);
+
+            var allPeople = _library.GetPeople(new InternalPeopleQuery { ItemId = guid });
+            var people = hasPk
+                ? allPeople.Where(p => p.Type == pk).ToList()
+                : allPeople;
+            var results = new List<object>(people.Count);
+
+            foreach (var p in people)
+            {
+                string personId = null, imageTag = null, overview = null, birthPlace = null;
+                DateTime? birthDate = null, deathDate = null;
+                try
+                {
+                    var entity = _library.GetPerson(p.Name);
+                    if (entity != null)
+                    {
+                        personId = entity.Id.ToString("N");
+                        overview = entity.Overview;
+                        birthDate = entity.PremiereDate;
+                        deathDate = entity.EndDate;
+                        birthPlace = entity.ProductionLocations?.Length > 0
+                            ? entity.ProductionLocations[0] : null;
+                        var img = entity.ImageInfos?.FirstOrDefault(
+                            x => x.Type == MediaBrowser.Model.Entities.ImageType.Primary);
+                        if (img != null)
+                        {
+                            var tb = System.Text.Encoding.UTF8.GetBytes(
+                                img.DateModified.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            imageTag = Convert.ToHexString(
+                                System.Security.Cryptography.MD5.HashData(tb)).ToLowerInvariant();
+                        }
+                    }
+                }
+                catch { }
+
+                results.Add(new
+                {
+                    name = p.Name,
+                    role = p.Role,
+                    type = p.Type.ToString(),
+                    sortOrder = p.SortOrder,
+                    personId = personId,
+                    imageTag = imageTag,
+                    overview = overview,
+                    birthDate = birthDate,
+                    deathDate = deathDate,
+                    birthPlace = birthPlace
+                });
+            }
+            return results.ToArray();
+        }
+
+        /// <summary>Lightweight person lookup — returns basic entity fields. Use GetPersonDetails for full bio + filmography.</summary>
         public object GetPerson(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) return null;
@@ -401,6 +466,63 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             return person == null ? null : SerializeItem(person);
         }
 
+        /// <summary>
+        /// Returns full biographical details for a named person.
+        /// Also returns their filmography — items in the library they appear in.
+        /// </summary>
+        public object GetPersonDetails(string name, string userId = null, int filmographyLimit = 50)
+        {
+            var person = _library.GetPerson(name);
+            if (person == null) return null;
+
+            User user = null;
+            if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var ug))
+                user = _users.GetUserById(ug);
+
+            // Filmography — items in the library that credit this person
+            object[] filmography = Array.Empty<object>();
+            try
+            {
+                filmography = _library.GetItemsResult(new InternalItemsQuery
+                {
+                    Person = name,
+                    Recursive = true,
+                    Limit = filmographyLimit,
+                    User = user,
+                    OrderBy = new[] { (ItemSortBy.PremiereDate,
+                        Jellyfin.Database.Implementations.Enums.SortOrder.Descending) }
+                }).Items.Select(i => SerializeItem(i, user)).ToArray();
+            }
+            catch { }
+
+            string imageTag = null;
+            try
+            {
+                var img = person.ImageInfos?.FirstOrDefault(
+                    x => x.Type == MediaBrowser.Model.Entities.ImageType.Primary);
+                if (img != null)
+                {
+                    var tb = System.Text.Encoding.UTF8.GetBytes(
+                        img.DateModified.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    imageTag = Convert.ToHexString(
+                        System.Security.Cryptography.MD5.HashData(tb)).ToLowerInvariant();
+                }
+            }
+            catch { }
+
+            return new
+            {
+                id = person.Id.ToString("N"),
+                name = person.Name,
+                overview = person.Overview,
+                birthDate = person.PremiereDate,
+                deathDate = person.EndDate,
+                birthPlace = person.ProductionLocations?.Length > 0 ? person.ProductionLocations[0] : null,
+                imageTag = imageTag,
+                providerIds = person.ProviderIds,
+                filmography = filmography
+            };
+        }
         /// <summary>
         /// Returns items that feature a specific person (by name), optionally filtered by type.
         /// itemType: optional BaseItemKind string e.g. "Movie", "Episode"
@@ -1946,6 +2068,60 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 _logger.LogDebug("[JellyFrame] SerializeItem item={Id} — no user, isFavorite will be false", item.Id);
             }
 
+            // People / cast — only populated for items that carry cast info.
+            // Each entry: { name, role, type, personId, imageTag }
+            object[] people = null;
+            try
+            {
+                var rawPeople = _library.GetPeople(new InternalPeopleQuery { ItemId = item.Id });
+                if (rawPeople != null && rawPeople.Count > 0)
+                {
+                    people = rawPeople.Select(person => (object)new
+                    {
+                        name = person.Name,
+                        role = person.Role,
+                        type = person.Type.ToString(),
+                        personId = (string)null  // lightweight — use GetItemPeople for full details
+                    }).ToArray();
+                }
+            }
+            catch { people = null; }
+
+            // Studios
+            string[] studios = null;
+            try { studios = item.Studios; } catch { }
+
+            // Critic / audience ratings (Rotten Tomatoes etc. via providers)
+            float? criticRating = null;
+            try { criticRating = item.CriticRating; } catch { }
+
+            // Series-specific fields
+            string seriesId = null;
+            string seasonId = null;
+            int? seasonNumber = null;
+            try
+            {
+                if (item is MediaBrowser.Controller.Entities.TV.Episode ep)
+                {
+                    seriesId = ep.SeriesId.ToString("N");
+                    seasonId = ep.SeasonId.ToString("N");
+                    seasonNumber = ep.ParentIndexNumber;
+                }
+            }
+            catch { }
+
+            // Collection/box-set membership
+            string[] collectionIds = null;
+            try
+            {
+                var parents = item.GetParents();
+                collectionIds = parents
+                    .Where(p => p is MediaBrowser.Controller.Entities.Movies.BoxSet)
+                    .Select(p => p.Id.ToString("N"))
+                    .ToArray();
+            }
+            catch { }
+
             return new
             {
                 id = item.Id.ToString("N"),
@@ -1956,8 +2132,11 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 premiereDate = item.PremiereDate,
                 officialRating = item.OfficialRating,
                 communityRating = item.CommunityRating,
+                criticRating = criticRating,
                 genres = item.Genres,
                 tags = item.Tags,
+                studios = studios,
+                people = people,
                 providerIds = item.ProviderIds,
                 parentId = item.ParentId.ToString("N"),
                 productionYear = item.ProductionYear,
@@ -1965,20 +2144,27 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
                 isFavorite = isFavorite,
                 dateCreated = item.DateCreated,
                 dateModified = item.DateModified,
+                // TV-specific
                 seriesName = (item as MediaBrowser.Controller.Entities.TV.Episode)?.SeriesName,
                 seasonName = (item as MediaBrowser.Controller.Entities.TV.Episode)?.SeasonName,
+                seriesId = seriesId,
+                seasonId = seasonId,
                 indexNumber = item.IndexNumber,
+                seasonNumber = seasonNumber,
+                // Collections
+                collectionIds = collectionIds,
+                // Images
                 imageTags = item.ImageInfos == null ? null : new
                 {
-                    Primary = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Primary) is var p && p != null ? GetTag(p) : null,
-                    Thumb = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Thumb) is var th && th != null ? GetTag(th) : null,
-                    Banner = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Banner) is var bn && bn != null ? GetTag(bn) : null,
-                    Logo = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Logo) is var l && l != null ? GetTag(l) : null,
-                    Backdrop = item.ImageInfos.FirstOrDefault(i => i.Type == ImageType.Backdrop) is var bd && bd != null ? GetTag(bd) : null
+                    Primary = item.ImageInfos.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.ImageType.Primary) is var p && p != null ? GetTag(p) : null,
+                    Thumb = item.ImageInfos.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.ImageType.Thumb) is var th && th != null ? GetTag(th) : null,
+                    Banner = item.ImageInfos.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.ImageType.Banner) is var bn && bn != null ? GetTag(bn) : null,
+                    Logo = item.ImageInfos.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.ImageType.Logo) is var l && l != null ? GetTag(l) : null,
+                    Backdrop = item.ImageInfos.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.ImageType.Backdrop) is var bd && bd != null ? GetTag(bd) : null
                 },
                 backdropImageTags = item.ImageInfos == null ? Array.Empty<string>()
                     : item.ImageInfos
-                        .Where(i => i.Type == ImageType.Backdrop)
+                        .Where(i => i.Type == MediaBrowser.Model.Entities.ImageType.Backdrop)
                         .Select(i => GetTag(i))
                         .ToArray()
             };

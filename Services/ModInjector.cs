@@ -19,6 +19,15 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
+        private static readonly Regex _modsBlockRegex = new Regex(
+            Regex.Escape(StartMarker) + @"[\s\S]*?" + Regex.Escape(EndMarker) + @"\n?",
+            RegexOptions.Compiled);
+        private static readonly Regex _preconnectBlockRegex = new Regex(
+            @"<!-- JellyFrame-Mods-Preconnect-Start -->[\s\S]*?<!-- JellyFrame-Mods-Preconnect-End -->\n?",
+            RegexOptions.Compiled);
+        private static readonly Regex _bodyTagRegex = new Regex(@"(</body>)", RegexOptions.Compiled);
+        private static readonly Regex _headTagRegex = new Regex(@"(</head>)", RegexOptions.Compiled);
+
         private static void Log(bool debug, string msg)
         {
             if (debug) Console.Error.WriteLine("[JellyFrame] " + msg);
@@ -62,15 +71,9 @@ namespace Jellyfin.Plugin.JellyFrame.Services
 
                 Dictionary<string, Dictionary<string, string>> modVars = LoadModVars(config.ModVars, dbg);
 
-                html = Regex.Replace(
-                    html,
-                    Regex.Escape(StartMarker) + @"[\s\S]*?" + Regex.Escape(EndMarker) + @"\n?",
-                    string.Empty);
+                html = _modsBlockRegex.Replace(html, string.Empty);
 
-                html = Regex.Replace(
-                    html,
-                    @"<!-- JellyFrame-Mods-Preconnect-Start -->[\s\S]*?<!-- JellyFrame-Mods-Preconnect-End -->\n?",
-                    string.Empty);
+                html = _preconnectBlockRegex.Replace(html, string.Empty);
 
                 var cssBlocks = new List<string>();
                 var jsBlocks = new List<string>();
@@ -131,11 +134,17 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                         headSb.Append("<link rel=\"dns-prefetch\" href=\"").Append(safe).Append("\">\n");
                     }
                     headSb.Append("<!-- JellyFrame-Mods-Preconnect-End -->\n");
-                    html = Regex.Replace(html, @"(</head>)", headSb.ToString() + "$1");
+                    html = _headTagRegex.Replace(html, headSb.ToString() + "$1");
                     Log(dbg, "Injected " + preconnects.Count + " preconnect origin(s)");
                 }
 
                 Log(dbg, "Totals — cssBlocks: " + cssBlocks.Count + ", jsBlocks: " + jsBlocks.Count);
+
+                if (cssBlocks.Count == 0 && jsBlocks.Count == 0)
+                {
+                    Log(dbg, "Nothing to inject");
+                    return html;
+                }
 
                 var injection = new StringBuilder();
 
@@ -163,18 +172,13 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                     injection.AppendLine("</script>");
                 }
 
-                if (!string.IsNullOrEmpty(injection.ToString().Trim()))
                 {
                     string block = "\n" + StartMarker + "\n" + injection.ToString() + EndMarker + "\n";
                     string before = html;
-                    html = Regex.Replace(html, @"(</body>)", block + "$1");
+                    html = _bodyTagRegex.Replace(html, block + "$1");
                     Log(dbg, html == before
                         ? "WARNING: </body> not found — injection failed"
                         : "Injected successfully. New length: " + html.Length);
-                }
-                else
-                {
-                    Log(dbg, "Nothing to inject");
                 }
 
                 return html;
@@ -273,5 +277,13 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public List<ModVar> Vars { get; set; } = new List<ModVar>();
         public bool EditorsChoice { get; set; } = false;
         public List<System.Text.Json.JsonElement> Changelog { get; set; } = new List<System.Text.Json.JsonElement>();
+
+        /// <summary>
+        /// If true, the mod runtime will be automatically restarted after a crash
+        /// using an exponential backoff (30s → 60s → 120s → 120s …).
+        /// Defaults to false — crashes leave the mod in a stopped state until
+        /// the server restarts or an admin manually re-enables the mod.
+        /// </summary>
+        public bool RestartOnCrash { get; set; } = false;
     }
 }

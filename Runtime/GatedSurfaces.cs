@@ -30,6 +30,10 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public HttpSurface.HttpResult Patch(string url, string body = null, object options = null)
         { _perms.Require(PermissionSurface.Http); return _inner.Patch(url, body, options); }
+
+        /// <summary>Fire-and-forget HTTP request with optional JS callback.</summary>
+        public void FetchAsync(string url, object options, Jint.Native.JsValue callback)
+        { _perms.Require(PermissionSurface.Http); _inner.FetchAsync(url, options, callback); }
     }
 
     public class GatedStoreSurface
@@ -177,6 +181,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public object[] GetStudios(string parentId = null, string userId = null) { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetStudios(parentId, userId); }
         public object GetPerson(string name) { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetPerson(name); }
         public object[] GetPersonItems(string personName, string userId = null, string itemType = null, int limit = 50) { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetPersonItems(personName, userId, itemType, limit); }
+        public object[] GetItemPeople(string itemId, string type = null) { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetItemPeople(itemId, type); }
+        public object GetPersonDetails(string name, string userId = null, int filmographyLimit = 50) { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetPersonDetails(name, userId, filmographyLimit); }
         public object[] GetNextUp(string userId, int limit = 20, string seriesId = null) { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetNextUp(userId, limit, seriesId); }
         public object[] GetSimilarItems(string itemId, string userId = null, int limit = 12) { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetSimilarItems(itemId, userId, limit); }
         public object GetItemCounts(string userId = null) { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetItemCounts(userId); }
@@ -230,7 +236,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public System.Threading.Tasks.Task PlayItem(string s, string i) { _perms.Require(PermissionSurface.JellyfinWrite); return _inner.PlayItem(s, i); }
         public System.Threading.Tasks.Task DownloadSubtitles(string i, int idx) { _perms.Require(PermissionSurface.JellyfinWrite); return _inner.DownloadSubtitles(i, idx); }
 
-        public void On(string evt, Func<object, System.Threading.Tasks.Task> h) => _inner.On(evt, h);
+        public void On(string evt, Func<object, System.Threading.Tasks.Task> h) { _perms.Require(PermissionSurface.JellyfinRead); _inner.On(evt, h); }
         public void Off(string evt) => _inner.Off(evt);
 
         public object[] GetChannels(string userId = null, int limit = 100, int startIndex = 0) { _perms.Require(PermissionSurface.JellyfinRead); return _inner.GetChannels(userId, limit, startIndex); }
@@ -338,6 +344,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public object Run(string sql, object parameters = null) { _perms.Require(PermissionSurface.Db); return _inner.Run(sql, parameters); }
         public object[] QueryRaw(string sql, object parameters = null) { _perms.Require(PermissionSurface.Db); return _inner.QueryRaw(sql, parameters); }
         public object Transaction(Jint.Native.JsValue fn) { _perms.Require(PermissionSurface.Db); return _inner.Transaction(fn); }
+        public int Migrate(object migrations) { _perms.Require(PermissionSurface.Db); return _inner.Migrate(migrations); }
     }
 
     /// <summary>
@@ -368,6 +375,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public object Run(string sql, object parameters = null) { _perms.Require(PermissionSurface.DbShared); return _inner.Run(sql, parameters); }
         public object[] QueryRaw(string sql, object parameters = null) { _perms.Require(PermissionSurface.DbShared); return _inner.QueryRaw(sql, parameters); }
         public object Transaction(Jint.Native.JsValue fn) { _perms.Require(PermissionSurface.DbShared); return _inner.Transaction(fn); }
+        public int Migrate(object migrations) { _perms.Require(PermissionSurface.DbShared); return _inner.Migrate(migrations); }
     }
 
 }

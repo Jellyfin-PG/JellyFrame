@@ -129,9 +129,76 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         }
 
         /// <summary>
-        /// Returns a <see cref="DbTable"/> handle for the given mod-visible
-        /// table name. The table is lazily created on first write.
+        /// Schema migration helper. Tracks the current schema version in a
+        /// reserved <c>__jf_migrations</c> table and runs only the migration
+        /// functions whose version number is higher than the stored version,
+        /// in ascending order.
+        ///
+        /// JS usage:
+        ///   jf.db.migrate([
+        ///     { version: 1, up: function() { jf.db.exec('CREATE TABLE ...', []); } },
+        ///     { version: 2, up: function() { jf.db.exec('ALTER TABLE ...', []); } },
+        ///   ]);
+        ///
+        /// Returns the new schema version (or the current version if nothing ran).
         /// </summary>
+        public int Migrate(object migrations)
+        {
+            if (_engine == null)
+                throw new InvalidOperationException("[JellyFrame] DbSurface.migrate() called before engine was bound.");
+
+            // Ensure the migrations meta-table exists.
+            const string createMeta =
+                "CREATE TABLE IF NOT EXISTS __jf_migrations (version INTEGER NOT NULL)";
+            ExecInternal(createMeta, null);
+
+            // Read current version.
+            var rows = QueryInternal("SELECT version FROM __jf_migrations LIMIT 1", null);
+            int current = rows.Length > 0 && rows[0].TryGetValue("version", out var v)
+                ? Convert.ToInt32(v) : 0;
+            if (rows.Length == 0)
+                ExecInternal("INSERT INTO __jf_migrations (version) VALUES (0)", null);
+
+            // Parse the JS array of { version, up } objects.
+            var steps = new SortedDictionary<int, JsValue>();
+            if (migrations is System.Collections.IList list)
+            {
+                foreach (var item in list)
+                {
+                    var d = DbTable.ToDictOrNull(item);
+                    if (d == null) continue;
+                    if (!d.TryGetValue("version", out var ver) || ver == null) continue;
+                    if (!d.TryGetValue("up", out var fn) || fn == null) continue;
+                    if (!int.TryParse(ver.ToString(), out var vnum)) continue;
+                    if (fn is JsValue jsv && !jsv.IsNull() && !jsv.IsUndefined())
+                        steps[vnum] = jsv;
+                }
+            }
+
+            int newVersion = current;
+            foreach (var step in steps)
+            {
+                if (step.Key <= current) continue;
+                lock (_connLock)
+                {
+                    using var tx = _conn.BeginTransaction(System.Data.IsolationLevel.Serializable);
+                    try
+                    {
+                        _engine.Invoke(step.Value, JsValue.Undefined, Array.Empty<JsValue>());
+                        ExecInternal("UPDATE __jf_migrations SET version = @v",
+                            new[] { new KeyValuePair<string, object>("@v", (object)step.Key) });
+                        tx.Commit();
+                        newVersion = step.Key;
+                    }
+                    catch
+                    {
+                        try { tx.Rollback(); } catch { }
+                        throw;
+                    }
+                }
+            }
+            return newVersion;
+        }
         public DbTable Table(string name)
         {
             RequireValidIdentifier(name, "table name");
