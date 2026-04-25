@@ -1726,6 +1726,10 @@
                                     ['Cache entries', mod.cacheEntries],
                                     ['Store keys', mod.storeKeys],
                                     ['User store', mod.userStoreUsers + ' user(s)'],
+                                    ['Bus subscriptions', mod.busSubscriptions != null ? mod.busSubscriptions : '—'],
+                                    ['KV keys', mod.kvKeys != null ? mod.kvKeys : '—'],
+                                    ['DB tables', (mod.dbTables && mod.dbTables.length) ? mod.dbTables.join(', ') : '—'],
+                                    ['Shared DB tables', (mod.sharedDbTables && mod.sharedDbTables.length) ? mod.sharedDbTables.join(', ') : '—'],
                                     ['Webhooks', (mod.registeredWebhooks || []).join(', ') || '—'],
                                     ['RPC methods', (mod.rpcMethods || []).join(', ') || '—'],
                                     ['Permissions', (mod.permissions || []).join(', ') || 'none'],
@@ -1739,11 +1743,27 @@
                                         + '</div>';
                                 }).join('');
 
+                                var crashHtml = '';
+                                if (mod.crashCount || mod.restartOnCrash) {
+                                    var crashColor = mod.crashCount ? '#e06060' : 'rgba(255,255,255,0.35)';
+                                    var lastCrash = mod.lastCrashAt ? new Date(mod.lastCrashAt).toLocaleString() : 'never';
+                                    var nextRestart = mod.nextRestartAt ? new Date(mod.nextRestartAt).toLocaleString() : '—';
+                                    crashHtml = '<div style="margin-top:8px;padding:8px 10px;border-radius:4px;background:rgba(224,96,96,0.08);border:1px solid rgba(224,96,96,0.18);font-size:.8em;">'
+                                        + '<div style="font-weight:600;color:' + crashColor + ';margin-bottom:4px;">Crash / Restart</div>'
+                                        + '<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="opacity:.5;">Crashes</span><span>' + (mod.crashCount || 0) + '</span></div>'
+                                        + '<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="opacity:.5;">Last crash</span><span>' + escHtml(lastCrash) + '</span></div>'
+                                        + (mod.lastError ? '<div style="padding:4px 0;opacity:.55;word-break:break-word;">' + escHtml(mod.lastError) + '</div>' : '')
+                                        + '<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="opacity:.5;">Restart on crash</span><span>' + (mod.restartOnCrash ? 'yes' : 'no') + '</span></div>'
+                                        + (mod.restartOnCrash && mod.nextRestartAt ? '<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="opacity:.5;">Next restart</span><span>' + escHtml(nextRestart) + '</span></div>' : '')
+                                        + '</div>';
+                                }
+
                                 card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">'
                                     + '<span style="font-weight:600;font-size:.95em;">' + statusDot + escHtml(mod.name || mod.id) + '</span>'
                                     + '<span style="font-size:.75em;opacity:.4;">loaded ' + loadedAt + '</span>'
                                     + '</div>'
-                                    + metricHtml;
+                                    + metricHtml
+                                    + crashHtml;
 
                                 grid.appendChild(card);
                             });
