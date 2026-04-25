@@ -48,6 +48,8 @@ namespace Jellyfin.Plugin.JellyFrame
         private readonly MediaBrowser.Controller.Library.ILibraryManager _libraryManager;
         private readonly MediaBrowser.Controller.Session.ISessionManager _sessionManager;
         private readonly MediaBrowser.Controller.Library.IUserDataManager _userDataManager;
+        private readonly MediaBrowser.Controller.Library.IUserManager _userManager;
+        private readonly MediaBrowser.Model.Tasks.ITaskManager _taskManager;
         private Runtime.JellyfinEventSurface _eventSurface;
         private bool _disposed;
 
@@ -83,6 +85,8 @@ namespace Jellyfin.Plugin.JellyFrame
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
             _userDataManager = userDataManager;
+            _userManager = userManager;
+            _taskManager = taskManager;
 
             ModLoader = new ServerModLoader(
                 libraryManager,
@@ -305,6 +309,8 @@ namespace Jellyfin.Plugin.JellyFrame
                     _libraryManager,
                     _sessionManager,
                     _userDataManager,
+                    _userManager,
+                    _taskManager,
                     _logger,
                     (eventName, data) => ModLoader.FireEventAsync(eventName, data));
             }

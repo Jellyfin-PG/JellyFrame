@@ -32,6 +32,23 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         private readonly ConcurrentDictionary<string, JsRuntime> _runtimes
             = new(StringComparer.OrdinalIgnoreCase);
 
+        // Per-mod crash tracking for optional auto-restart with backoff.
+        private sealed class CrashState
+        {
+            public int Count;
+            public DateTime? LastCrashAt;
+            public string LastError;
+            public Timer RestartTimer;
+            public DateTime? NextRestartAt;
+            // Backoff sequence: 30s, 60s, 120s, then cap at 120s.
+            public TimeSpan NextDelay => Count switch { 1 => TimeSpan.FromSeconds(30), 2 => TimeSpan.FromSeconds(60), _ => TimeSpan.FromSeconds(120) };
+        }
+        private readonly ConcurrentDictionary<string, CrashState> _crashStates
+            = new(StringComparer.OrdinalIgnoreCase);
+        // Snapshot of the most recent mod manifest entries, needed to restart mods.
+        private readonly ConcurrentDictionary<string, (Services.ModEntry Mod, Dictionary<string, Dictionary<string, string>> Vars)> _modRegistry
+            = new(StringComparer.OrdinalIgnoreCase);
+
         private readonly ILibraryManager _library;
         private readonly IUserDataManager _userData;
         private readonly IUserManager _users;
@@ -200,13 +217,37 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             foreach (var u in PermissionSurface.UnknownPermissions(mod.Permissions))
                 _logger.LogWarning("[JellyFrame] Mod '{Id}' declared unknown permission '{P}'", mod.Id, u);
 
+            // Keep a copy of the manifest+vars so crash-restart can reload without
+            // needing the caller to pass them again.
+            _modRegistry[mod.Id] = (mod, modVars);
+
             var context = new JellyFrameContext(
                 mod.Id, vars, jellyfin, routes, store, userStore,
                 kv, cache, http, log, scheduler, bus, webhooks, rpc,
                 filesystem, os, db, sharedDb, perms);
             var runtime = new JsRuntime(context, _logger);
 
-            runtime.LoadScript(script);
+            // Propagate manifest settings to the runtime so health snapshots are complete.
+            runtime.RestartOnCrash = mod.RestartOnCrash;
+            if (_crashStates.TryGetValue(mod.Id, out var cs))
+            {
+                runtime.CrashCount = cs.Count;
+                runtime.LastCrashAt = cs.LastCrashAt;
+                runtime.LastError = cs.LastError;
+                runtime.NextRestartAt = cs.NextRestartAt;
+            }
+
+            try
+            {
+                runtime.LoadScript(script);
+            }
+            catch (Exception ex)
+            {
+                RecordCrash(mod.Id, ex.Message, mod.RestartOnCrash, modVars);
+                runtime.Dispose();
+                throw;
+            }
+
             _runtimes[mod.Id] = runtime;
 
             _logger.LogInformation("[JellyFrame] Server mod loaded: {Id} — {Routes} route(s)",
@@ -233,11 +274,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             if (!_runtimes.TryRemove(modId, out var runtime)) return;
             runtime.Dispose();
             _logger.LogInformation("[JellyFrame] Disabled server mod: {Id}", modId);
-            await Task.Run(() =>
-            {
-                GC.Collect(2, GCCollectionMode.Forced, blocking: true, compacting: true);
-                GC.WaitForPendingFinalizers();
-            });
+            // Non-blocking: nudge the GC to collect the freed Jint engine but don't stall the process.
+            await Task.Run(() => GC.Collect(1, GCCollectionMode.Optimized, blocking: false));
         }
 
         public async Task ReloadModAsync(ModEntry mod, Dictionary<string, Dictionary<string, string>> modVars)
@@ -257,9 +295,14 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public async Task<bool> TryHandleRequestAsync(HttpContext context)
         {
+            var requestPath = context.Request.Path.Value ?? string.Empty;
             foreach (var runtime in _runtimes.Values)
             {
                 if (!runtime.IsLoaded) continue;
+                // Cheap prefix check — avoids lock acquisition and route iteration inside the runtime
+                // for the vast majority of requests that belong to a different mod or no mod at all.
+                if (!requestPath.StartsWith("/JellyFrame/mods/" + runtime.ModId + "/api",
+                        StringComparison.OrdinalIgnoreCase)) continue;
                 try { if (await runtime.HandleRequestAsync(context)) return true; }
                 catch (Exception ex)
                 {
@@ -319,6 +362,42 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             return list;
         }
 
+        /// <summary>
+        /// Records a crash for the given mod, and schedules a restart if
+        /// <paramref name="restartOnCrash"/> is true.
+        /// </summary>
+        private void RecordCrash(string modId, string errorMessage, bool restartOnCrash,
+            Dictionary<string, Dictionary<string, string>> modVars)
+        {
+            var cs = _crashStates.GetOrAdd(modId, _ => new CrashState());
+            cs.Count++;
+            cs.LastCrashAt = DateTime.UtcNow;
+            cs.LastError = errorMessage;
+
+            _logger.LogError("[JellyFrame] Mod '{Id}' crashed (crash #{N}): {Err}", modId, cs.Count, errorMessage);
+
+            if (!restartOnCrash) return;
+
+            var delay = cs.NextDelay;
+            cs.NextRestartAt = DateTime.UtcNow + delay;
+
+            _logger.LogInformation("[JellyFrame] Mod '{Id}' will be restarted in {Sec}s (crash #{N})",
+                modId, (int)delay.TotalSeconds, cs.Count);
+
+            cs.RestartTimer?.Dispose();
+            cs.RestartTimer = new Timer(async _ =>
+            {
+                if (_disposed) return;
+                cs.NextRestartAt = null;
+                if (!_modRegistry.TryGetValue(modId, out var entry)) return;
+                _logger.LogInformation("[JellyFrame] Auto-restarting mod '{Id}' after crash backoff", modId);
+                await _loadLock.WaitAsync();
+                try { await LoadModCoreAsync(entry.Mod, entry.Vars, CancellationToken.None); }
+                catch (Exception ex) { _logger.LogError(ex, "[JellyFrame] Auto-restart of '{Id}' failed", modId); }
+                finally { _loadLock.Release(); }
+            }, null, delay, Timeout.InfiniteTimeSpan);
+        }
+
         public void Dispose()
         {
             if (_disposed) return;
@@ -326,6 +405,8 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             _logger.LogInformation("[JellyFrame] ServerModLoader shutting down — {Count} mod(s)", _runtimes.Count);
             _gcTimer?.Dispose();
             _watcher?.Dispose();
+            foreach (var cs in _crashStates.Values)
+                try { cs.RestartTimer?.Dispose(); } catch { }
             foreach (var kv in _runtimes)
                 try { kv.Value.Dispose(); }
                 catch (Exception ex) { _logger.LogError(ex, "[JellyFrame] Error disposing {Id}", kv.Key); }
@@ -421,5 +502,20 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public string[] RegisteredWebhooks { get; set; }
         public string[] RpcMethods { get; set; }
         public DateTime? LoadedAt { get; set; }
+
+        // DB
+        public string[] DbTables { get; set; }
+        public string[] SharedDbTables { get; set; }
+
+        // Crash / restart tracking
+        public int CrashCount { get; set; }
+        public DateTime? LastCrashAt { get; set; }
+        public string LastError { get; set; }
+        public bool RestartOnCrash { get; set; }
+        public DateTime? NextRestartAt { get; set; }
+
+        // Bus / KV
+        public int BusSubscriptions { get; set; }
+        public int KvKeys { get; set; }
     }
 }

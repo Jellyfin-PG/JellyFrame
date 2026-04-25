@@ -37,6 +37,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             _context._rawRpc?.SetEngine(_engine);
             _context._rawDb?.SetEngine(_engine);
             _context._rawSharedDb?.SetEngine(_engine);
+            _context._rawHttp?.SetEngine(_engine);
         }
 
         private Engine BuildEngine() => new Engine(options =>
@@ -119,6 +120,13 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             }
         }
 
+        // Crash / restart tracking — populated by ServerModLoader
+        public int CrashCount { get; set; }
+        public DateTime? LastCrashAt { get; set; }
+        public string LastError { get; set; }
+        public bool RestartOnCrash { get; set; }
+        public DateTime? NextRestartAt { get; set; }
+
         public ModHealthSnapshot GetHealthSnapshot() => new ModHealthSnapshot
         {
             ModId = ModId,
@@ -130,8 +138,27 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             UserStoreUsers = _context?._rawUserStore?.Users()?.Length ?? 0,
             RegisteredWebhooks = _context?._rawWebhooks?.List() ?? Array.Empty<string>(),
             RpcMethods = _context?._rawRpc?.Methods() ?? Array.Empty<string>(),
-            LoadedAt = LoadedAt
+            LoadedAt = LoadedAt,
+            DbTables = TryGetDbTables(false),
+            SharedDbTables = TryGetDbTables(true),
+            BusSubscriptions = _context?._rawBus?.SubscriptionCount ?? 0,
+            KvKeys = _context?._rawKv?.Keys()?.Length ?? 0,
+            CrashCount = CrashCount,
+            LastCrashAt = LastCrashAt,
+            LastError = LastError,
+            RestartOnCrash = RestartOnCrash,
+            NextRestartAt = NextRestartAt,
         };
+
+        private string[] TryGetDbTables(bool shared)
+        {
+            try
+            {
+                var db = shared ? _context?._rawSharedDb : _context?._rawDb;
+                return db?.Tables() ?? Array.Empty<string>();
+            }
+            catch { return Array.Empty<string>(); }
+        }
 
         public Task<bool> HandleRequestAsync(HttpContext context)
         {

@@ -71,7 +71,19 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
                         rpcMethods       = h.RpcMethods,
                         loadedAt         = h.LoadedAt,
                         permissions      = me?.Permissions ?? new List<string>(),
-                        requires         = me?.Requires    ?? new List<string>()
+                        requires         = me?.Requires    ?? new List<string>(),
+                        // DB
+                        dbTables         = h.DbTables,
+                        sharedDbTables   = h.SharedDbTables,
+                        // Crash / restart
+                        crashCount       = h.CrashCount,
+                        lastCrashAt      = h.LastCrashAt,
+                        lastError        = h.LastError,
+                        restartOnCrash   = h.RestartOnCrash,
+                        nextRestartAt    = h.NextRestartAt,
+                        // Bus / KV
+                        busSubscriptions = h.BusSubscriptions,
+                        kvKeys           = h.KvKeys
                     };
                 })
             });

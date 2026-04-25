@@ -15,6 +15,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public record RouteHandler(string Method, string Path, JsValue Handler);
 
         private readonly List<RouteHandler> _routes = new();
+        private readonly List<JsValue> _middleware = new();
         private readonly string _modId;
         private Engine _engine;
         private readonly object _engineLock = new();
@@ -41,6 +42,24 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public void Patch(string path, JsValue handler)
             => _routes.Add(new RouteHandler("PATCH", Normalize(path), handler));
+
+        /// <summary>
+        /// Register a middleware function that runs before every route handler
+        /// on this mod.  The function receives (req, res, next) — call next()
+        /// to continue to the route handler, or send a response directly to
+        /// short-circuit.  Multiple middleware are run in registration order.
+        ///
+        /// JS usage:
+        ///   jf.routes.use(function(req, res, next) {
+        ///     if (!req.headers['x-api-key']) { res.status(401).json({ error: 'Unauthorized' }); return; }
+        ///     next();
+        ///   });
+        /// </summary>
+        public void Use(JsValue handler)
+        {
+            if (handler != null && !handler.IsNull() && !handler.IsUndefined())
+                _middleware.Add(handler);
+        }
 
         private string Normalize(string path)
             => "/" + path.TrimStart('/');
@@ -75,13 +94,26 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
                 lock (_engineLock)
                 {
-                    var result = _engine.Invoke(route.Handler, JsValue.Undefined, new[] { jsReq, jsRes });
-
-                    if (result.IsObject())
+                    // Run middleware chain first.
+                    bool aborted = false;
+                    foreach (var mw in _middleware)
                     {
-                        var raw = result.ToObject();
-                        if (raw is Task t)
-                            t.GetAwaiter().GetResult();
+                        bool calledNext = false;
+                        var nextFn = JsValue.FromObject(_engine,
+                            new System.Action(() => { calledNext = true; }));
+                        _engine.Invoke(mw, JsValue.Undefined, new[] { jsReq, jsRes, nextFn });
+                        if (!calledNext) { aborted = true; break; }
+                    }
+
+                    if (!aborted)
+                    {
+                        var result = _engine.Invoke(route.Handler, JsValue.Undefined, new[] { jsReq, jsRes });
+                        if (result.IsObject())
+                        {
+                            var raw = result.ToObject();
+                            if (raw is Task t)
+                                t.GetAwaiter().GetResult();
+                        }
                     }
                 }
 

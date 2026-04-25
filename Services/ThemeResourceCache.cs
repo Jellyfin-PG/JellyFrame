@@ -189,16 +189,19 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             if (vars == null || vars.Count == 0) return "novars";
             var keys = new System.Collections.Generic.List<string>(vars.Keys);
             keys.Sort(StringComparer.OrdinalIgnoreCase);
-            var sb = new StringBuilder();
-            foreach (var k in keys)
-                sb.Append(k).Append('=').Append(vars[k] ?? string.Empty).Append(';');
             uint h = 2166136261u;
-            foreach (char c in sb.ToString())
-                h = (h ^ c) * 16777619u;
+            foreach (var k in keys)
+            {
+                foreach (char c in k) h = (h ^ c) * 16777619u;
+                h = (h ^ '=') * 16777619u;
+                foreach (char c in vars[k] ?? string.Empty) h = (h ^ c) * 16777619u;
+                h = (h ^ ';') * 16777619u;
+            }
             return h.ToString("x8");
         }
 
+        private static readonly Regex _safeIdRegex = new Regex(@"[^\w\-.]", RegexOptions.Compiled);
         private static string SafeId(string s)
-            => Regex.Replace(s ?? "unknown", @"[^\w\-.]", "_");
+            => _safeIdRegex.Replace(s ?? "unknown", "_");
     }
 }

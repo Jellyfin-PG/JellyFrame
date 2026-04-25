@@ -21,6 +21,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         internal readonly DbSurface _rawSharedDb;
         internal readonly JellyfinSurface _rawJellyfin;
         internal readonly RoutesSurface _rawRoutes;
+        internal readonly HttpSurface _rawHttp;
 
         public JellyFrameContext(
             string modId,
@@ -46,10 +47,11 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             ModId = modId;
             Vars = vars;
             Cache = cache;
+            cache.PersistentStore = store; // enables jf.cache.set(key, val, ttl, true)
             Log = log;
             Perms = permissions;
 
-            _rawStore = store;
+            _rawHttp = http;
             _rawUserStore = userStore;
             _rawKv = kv;
             _rawScheduler = scheduler;
