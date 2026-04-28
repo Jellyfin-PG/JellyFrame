@@ -5,6 +5,24 @@
   <p>A complete customization and extension framework for Jellyfin. Install community mods and themes from the dashboard, or build your own with a full server-side JavaScript API.</p>
 </div>
 
+<p align="center">
+  <a href="https://github.com/Jellyfin-PG/JellyFrame/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/Jellyfin-PG/JellyFrame/release.yml" />
+  </a>
+
+  <a href="https://github.com/Jellyfin-PG/JellyFrame/releases">
+    <img src="https://img.shields.io/github/downloads/Jellyfin-PG/JellyFrame/total?label=downloads" />
+  </a>
+
+  <a href="https://github.com/orgs/Jellyfin-PG/projects/3">
+    <img src="https://img.shields.io/badge/Project-Board-blue" />
+  </a>
+
+  <a href="https://discord.gg/v7P9CAvCKZ">
+    <img src="https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white" />
+  </a>
+</p>
+
 ---
 
 ## Screenshots
