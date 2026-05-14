@@ -6,9 +6,9 @@
 
 <p align="center">
   <a href="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/release.yml">
-    <img src="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/release.yml/badge.svg?branch=main&event=push" />
+    <img src="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/release.yml/badge.svg" />
   </a>
-
+  
   <a href="https://github.com/Jellyfin-PG/JellyFrame/releases">
     <img src="https://img.shields.io/github/downloads/Jellyfin-PG/JellyFrame/total?label=downloads" />
   </a>
