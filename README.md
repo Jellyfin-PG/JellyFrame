@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/release.yml">
-    <img src="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/release.yml/badge.svg" />
+    <img src="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/release.yml/badge.svg?cacheBust=123" />
   </a>
   
   <a href="https://github.com/Jellyfin-PG/JellyFrame/releases">
