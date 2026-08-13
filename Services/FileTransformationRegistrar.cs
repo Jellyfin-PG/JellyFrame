@@ -140,6 +140,61 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             }
         }
 
+        public static void UpdateLoomInjection()
+        {
+            try
+            {
+                bool useLoom = Plugin.Instance?.Configuration?.UseLoomInjector ?? false;
+                if (!useLoom) return;
+
+                var targetAssembly = AssemblyLoadContext.All
+                    .SelectMany(x => x.Assemblies)
+                    .FirstOrDefault(x => x.FullName?.Contains(".Loom") ?? false);
+
+                if (targetAssembly == null) return;
+
+                var pluginInterfaceType = targetAssembly.GetType("Jellyfin.Plugin.Loom.LoomInterface");
+                if (pluginInterfaceType == null) return;
+
+                var newtonsoftAssembly = AssemblyLoadContext.All
+                    .SelectMany(x => x.Assemblies)
+                    .FirstOrDefault(x => x.GetName().Name == "Newtonsoft.Json"
+                                      && x != typeof(FileTransformationRegistrar).Assembly)
+                    ?? AssemblyLoadContext.All
+                        .SelectMany(x => x.Assemblies)
+                        .FirstOrDefault(x => x.GetName().Name == "Newtonsoft.Json");
+
+                if (newtonsoftAssembly == null) return;
+
+                var jobjectType = newtonsoftAssembly.GetType("Newtonsoft.Json.Linq.JObject");
+                var jtokenType  = newtonsoftAssembly.GetType("Newtonsoft.Json.Linq.JToken");
+                var fromObject  = jtokenType.GetMethod("FromObject", new[] { typeof(object) });
+                var indexerSet  = jobjectType.GetProperty("Item", new[] { typeof(string) })
+                                             ?.GetSetMethod();
+
+                var payload = System.Activator.CreateInstance(jobjectType);
+
+                void Set(string key, object value)
+                {
+                    var token = fromObject.Invoke(null, new[] { value });
+                    indexerSet.Invoke(payload, new[] { key, token });
+                }
+
+                Set("id",               TransformationId.ToString());
+                Set("fileNamePattern",  "index.html");
+                Set("callbackAssembly", typeof(ModInjector).Assembly.FullName);
+                Set("callbackClass",    typeof(ModInjector).FullName);
+                Set("callbackMethod",   nameof(ModInjector.InjectMods));
+
+                pluginInterfaceType.GetMethod("UpdateTransformation")
+                    ?.Invoke(null, new[] { payload });
+            }
+            catch
+            {
+                // Ignore silently
+            }
+        }
+
         private void InitializeLoomServiceProvider(System.Reflection.Assembly loomAssembly)
         {
             try
