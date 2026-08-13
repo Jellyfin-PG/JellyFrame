@@ -23,6 +23,8 @@ namespace Jellyfin.Plugin.JellyFrame.Configuration
 
         public string ThemeVars { get; set; } = "{}";
 
+        public bool UseLoomInjector { get; set; } = false;
+
         public bool DebugLogging { get; set; } = false;
     }
 }

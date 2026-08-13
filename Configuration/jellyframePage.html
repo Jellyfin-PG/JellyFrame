@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>JellyFrame - Settings</title>
+</head>
+
+<body>
+    <div id="JellyFramePage" data-role="page" class="page type-interior pluginConfigurationPage jfConfigPage"
+        data-require="emby-input,emby-button,emby-select">
+
+        <style>
+            .jfConfigPage {
+                font-family: "Roboto", "Segoe UI", sans-serif;
+                color: rgba(255, 255, 255, 0.87);
+                padding: 10px;
+            }
+
+            .jfConfigPage .mui-card {
+                background-color: #1e1e1e;
+                border-radius: 12px;
+                box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2),
+                    0px 6px 10px 0px rgba(0, 0, 0, 0.14),
+                    0px 1px 18px 0px rgba(0, 0, 0, 0.12);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                padding: 24px;
+                margin-bottom: 24px;
+                transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+                    border-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+            }
+
+            .jfConfigPage .mui-card:hover {
+                border-color: rgba(144, 202, 249, 0.4);
+                box-shadow: 0px 5px 8px -2px rgba(0, 0, 0, 0.3),
+                    0px 8px 16px 1px rgba(0, 0, 0, 0.2),
+                    0px 3px 22px 2px rgba(0, 0, 0, 0.15);
+            }
+
+            .jfConfigPage .mui-card-header {
+                margin-bottom: 20px;
+            }
+
+            .jfConfigPage .mui-card-title {
+                font-size: 1.35rem;
+                font-weight: 500;
+                line-height: 1.6;
+                letter-spacing: 0.0075em;
+                margin: 0;
+                color: #fff;
+            }
+
+            .jfConfigPage .mui-card-subtitle {
+                font-size: 0.875rem;
+                font-weight: 400;
+                line-height: 1.43;
+                letter-spacing: 0.01071em;
+                color: rgba(255, 255, 255, 0.55);
+                margin: 4px 0 0 0;
+            }
+
+            .jfConfigPage .mui-form-group {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 16px 20px;
+                border-radius: 8px;
+                background-color: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                margin-bottom: 24px;
+                transition: background-color 150ms;
+            }
+
+            .jfConfigPage .mui-form-group:hover {
+                background-color: rgba(255, 255, 255, 0.04);
+            }
+
+            .jfConfigPage .mui-switch-container {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                cursor: pointer;
+                user-select: none;
+                padding: 8px;
+                border-radius: 50%;
+            }
+
+            .jfConfigPage .mui-switch-track {
+                position: relative;
+                width: 44px;
+                height: 20px;
+                background-color: rgba(255, 255, 255, 0.3);
+                border-radius: 10px;
+                transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+            }
+
+            .jfConfigPage .mui-switch-thumb {
+                position: absolute;
+                top: -2px;
+                left: -2px;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background-color: #bdbdbd;
+                box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),
+                    0px 1px 1px 0px rgba(0, 0, 0, 0.14),
+                    0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+                transition: left 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+                    background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+                    box-shadow 150ms;
+            }
+
+            .jfConfigPage .mui-switch-container:hover .mui-switch-thumb {
+                box-shadow: 0px 0px 0px 8px rgba(255, 255, 255, 0.08),
+                    0px 2px 1px -1px rgba(0, 0, 0, 0.2);
+            }
+
+            .jfConfigPage .mui-switch-container.checked .mui-switch-track {
+                background-color: rgba(144, 202, 249, 0.5);
+            }
+
+            .jfConfigPage .mui-switch-container.checked .mui-switch-thumb {
+                left: 22px;
+                background-color: #90caf9;
+            }
+
+            .jfConfigPage .mui-switch-container.checked:hover .mui-switch-thumb {
+                box-shadow: 0px 0px 0px 8px rgba(144, 202, 249, 0.16),
+                    0px 2px 1px -1px rgba(0, 0, 0, 0.2);
+            }
+
+            .jfConfigPage .mui-label {
+                font-size: 1.05rem;
+                font-weight: 500;
+                line-height: 1.5;
+                color: #fff;
+            }
+
+            .jfConfigPage .mui-description {
+                font-size: 0.85rem;
+                color: rgba(255, 255, 255, 0.5);
+                line-height: 1.45;
+                margin-top: 4px;
+                max-width: 85%;
+            }
+
+            .jfConfigPage .mui-btn-primary {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #90caf9;
+                color: rgba(0, 0, 0, 0.87);
+                font-weight: 600;
+                padding: 8px 24px;
+                font-size: 0.875rem;
+                line-height: 1.75;
+                letter-spacing: 0.02857em;
+                border-radius: 6px;
+                border: none;
+                cursor: pointer;
+                box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+                    0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+                    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+                transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+                    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+                    transform 100ms;
+            }
+
+            .jfConfigPage .mui-btn-primary:hover {
+                background-color: #64b5f6;
+                box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+                    0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+                    0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+            }
+
+            .jfConfigPage .mui-btn-primary:active {
+                transform: scale(0.98);
+            }
+
+            .jfConfigPage .mui-btn-primary:disabled {
+                background-color: rgba(255, 255, 255, 0.12);
+                color: rgba(255, 255, 255, 0.3);
+                box-shadow: none;
+                cursor: default;
+                transform: none;
+            }
+
+            .jfConfigPage .mui-alert {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 18px;
+                border-radius: 8px;
+                font-size: 0.875rem;
+                margin-top: 24px;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+                    transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+                pointer-events: none;
+            }
+
+            .jfConfigPage .mui-alert.show {
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+
+            .jfConfigPage .mui-alert-warning {
+                background-color: #191207;
+                color: #ffe0b2;
+                border: 1px solid rgba(255, 179, 0, 0.25);
+            }
+
+            .jfConfigPage .mui-alert-icon {
+                display: flex;
+                font-size: 20px;
+                flex-shrink: 0;
+            }
+
+            .jfConfigPage .mui-alert-message {
+                flex-grow: 1;
+                line-height: 1.45;
+            }
+        </style>
+
+        <div data-role="content">
+            <div class="content-primary">
+                <h2>JellyFrame</h2>
+
+                <!-- Main Configuration Card -->
+                <div class="mui-card">
+                    <div class="mui-card-header">
+                        <h3 class="mui-card-title">Frontend Injection Hook</h3>
+                        <p class="mui-card-subtitle">Configure how JellyFrame injects mods and themes into the frontend
+                            interface.</p>
+                    </div>
+
+                    <!-- Switch Control Group -->
+                    <div class="mui-form-group">
+                        <div>
+                            <div class="mui-label">Use Loom Injector</div>
+                            <div class="mui-description">
+                                Memory-based injection system (requires Loom plugin). When turned OFF, defaults to
+                                standard File Transformation plugin injector.
+                            </div>
+                        </div>
+
+                        <!-- Toggle Switch -->
+                        <div id="loomToggle" class="mui-switch-container">
+                            <div class="mui-switch-track">
+                                <div class="mui-switch-thumb"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save & Apply Button -->
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <button type="button" id="btnSaveConfig" class="mui-btn-primary">Save & Apply</button>
+                        <span id="saveStatus" style="font-size: 0.875rem; font-weight: 500;"></span>
+                    </div>
+
+                    <!-- Warning & Feedback Alert -->
+                    <div id="feedbackAlert" class="mui-alert mui-alert-warning">
+                        <div class="mui-alert-icon">⚠️</div>
+                        <div id="alertMessage" class="mui-alert-message">
+                            Configuration saved. A restart of the Jellyfin server is required to apply the injection
+                            change.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            (function () {
+                var PLUGIN_ID = 'd4e5f6a7-b8c9-0123-defa-456789012345';
+                var currentConfig = null;
+
+                function el(id) { return document.getElementById(id); }
+
+                function initPage() {
+                    el('saveStatus').textContent = '';
+                    el('feedbackAlert').classList.remove('show');
+                    el('btnSaveConfig').disabled = true;
+
+                    ApiClient.getPluginConfiguration(PLUGIN_ID).then(function (config) {
+                        currentConfig = config;
+
+                        var switchContainer = el('loomToggle');
+                        if (config.UseLoomInjector) {
+                            switchContainer.classList.add('checked');
+                        } else {
+                            switchContainer.classList.remove('checked');
+                        }
+
+                        el('btnSaveConfig').disabled = false;
+                    }).catch(function () {
+                        el('saveStatus').textContent = 'Failed to load configuration.';
+                        el('saveStatus').style.color = '#ef5350';
+                    });
+                }
+
+                // Bind Toggle Event
+                el('loomToggle').addEventListener('click', function () {
+                    this.classList.toggle('checked');
+                });
+
+                // Bind Save Event
+                el('btnSaveConfig').addEventListener('click', function () {
+                    if (!currentConfig) return;
+
+                    var btn = this;
+                    btn.disabled = true;
+                    el('saveStatus').textContent = 'Saving...';
+                    el('saveStatus').style.color = '';
+                    el('feedbackAlert').classList.remove('show');
+
+                    var isLoomChecked = el('loomToggle').classList.contains('checked');
+
+                    var updatedConfig = Object.assign({}, currentConfig, {
+                        UseLoomInjector: isLoomChecked
+                    });
+
+                    ApiClient.updatePluginConfiguration(PLUGIN_ID, updatedConfig).then(function () {
+                        currentConfig = updatedConfig;
+                        btn.disabled = false;
+                        el('saveStatus').textContent = 'Saved successfully.';
+                        el('saveStatus').style.color = '#66bb6a';
+
+                        // Show MUI Alert notifying about restart
+                        var alertEl = el('feedbackAlert');
+                        alertEl.className = 'mui-alert mui-alert-warning show';
+                        el('alertMessage').textContent = 'Configuration saved successfully! A restart of the Jellyfin server is required to swap the frontend injection method.';
+
+                        Dashboard.processPluginConfigurationUpdateResult();
+                    }).catch(function () {
+                        btn.disabled = false;
+                        el('saveStatus').textContent = 'Failed to save configuration.';
+                        el('saveStatus').style.color = '#ef5350';
+                    });
+                });
+
+                // Bind page initialization to viewshow
+                var pageEl = document.querySelector('.jfConfigPage');
+                if (pageEl) {
+                    pageEl.addEventListener('viewshow', initPage);
+                }
+            })();
+        </script>
+
+    </div>
+</body>
+
+</html>

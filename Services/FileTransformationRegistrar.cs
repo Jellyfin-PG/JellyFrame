@@ -13,10 +13,12 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private static readonly Guid TransformationId = Guid.Parse("b2c3d4e5-f6a7-8901-bcde-456789012345");
 
         private readonly ILogger<FileTransformationRegistrar> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
-        public FileTransformationRegistrar(ILogger<FileTransformationRegistrar> logger)
+        public FileTransformationRegistrar(ILogger<FileTransformationRegistrar> logger, IServiceProvider serviceProvider)
         {
             _logger = logger;
+            _serviceProvider = serviceProvider;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -25,27 +27,43 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            DeregisterTransformation();
+            return Task.CompletedTask;
+        }
 
         private void RegisterWithFileTransformation()
         {
             try
             {
-                var ftAssembly = AssemblyLoadContext.All
-                    .SelectMany(x => x.Assemblies)
-                    .FirstOrDefault(x => x.FullName?.Contains(".FileTransformation") ?? false);
+                bool useLoom = Plugin.Instance?.Configuration?.UseLoomInjector ?? false;
+                string fragment = useLoom ? ".Loom" : ".FileTransformation";
+                string typeName = useLoom ? "Jellyfin.Plugin.Loom.LoomInterface" : "Jellyfin.Plugin.FileTransformation.PluginInterface";
+                string displayName = useLoom ? "Loom" : "File Transformation";
 
-                if (ftAssembly == null)
+                _logger.LogInformation("[JellyFrame] Probing for {DisplayName} plugin injection...", displayName);
+
+                var targetAssembly = AssemblyLoadContext.All
+                    .SelectMany(x => x.Assemblies)
+                    .FirstOrDefault(x => x.FullName?.Contains(fragment) ?? false);
+
+                if (targetAssembly == null)
                 {
-                    _logger.LogWarning("[JellyFrame] File Transformation plugin not found.");
+                    _logger.LogWarning("[JellyFrame] {DisplayName} plugin assembly not found.", displayName);
                     return;
                 }
 
-                var pluginInterfaceType = ftAssembly.GetType("Jellyfin.Plugin.FileTransformation.PluginInterface");
+                var pluginInterfaceType = targetAssembly.GetType(typeName);
                 if (pluginInterfaceType == null)
                 {
-                    _logger.LogWarning("[JellyFrame] Could not find PluginInterface in File Transformation assembly.");
+                    _logger.LogWarning("[JellyFrame] Could not find {TypeName} in {DisplayName} assembly.", typeName, displayName);
                     return;
+                }
+
+                if (useLoom)
+                {
+                    InitializeLoomServiceProvider(targetAssembly);
                 }
 
                 var newtonsoftAssembly = AssemblyLoadContext.All
@@ -85,11 +103,64 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 pluginInterfaceType.GetMethod("RegisterTransformation")
                     ?.Invoke(null, new[] { payload });
 
-                _logger.LogInformation("[JellyFrame] Successfully registered mod injection with File Transformation.");
+                _logger.LogInformation("[JellyFrame] Successfully registered mod injection with {DisplayName}.", displayName);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[JellyFrame] Failed to register with File Transformation.");
+                _logger.LogError(ex, "[JellyFrame] Failed to register mod injection.");
+            }
+        }
+
+        private void DeregisterTransformation()
+        {
+            try
+            {
+                bool useLoom = Plugin.Instance?.Configuration?.UseLoomInjector ?? false;
+                string fragment = useLoom ? ".Loom" : ".FileTransformation";
+                string typeName = useLoom ? "Jellyfin.Plugin.Loom.LoomInterface" : "Jellyfin.Plugin.FileTransformation.PluginInterface";
+                string displayName = useLoom ? "Loom" : "File Transformation";
+
+                var targetAssembly = AssemblyLoadContext.All
+                    .SelectMany(x => x.Assemblies)
+                    .FirstOrDefault(x => x.FullName?.Contains(fragment) ?? false);
+
+                if (targetAssembly == null) return;
+
+                var pluginInterfaceType = targetAssembly.GetType(typeName);
+                if (pluginInterfaceType == null) return;
+
+                pluginInterfaceType.GetMethod("DeregisterTransformation")
+                    ?.Invoke(null, new object[] { TransformationId });
+
+                _logger.LogInformation("[JellyFrame] Successfully deregistered from {DisplayName}.", displayName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[JellyFrame] Failed to deregister from transformation plugin.");
+            }
+        }
+
+        private void InitializeLoomServiceProvider(System.Reflection.Assembly loomAssembly)
+        {
+            try
+            {
+                Type loomPluginType = loomAssembly.GetType("Jellyfin.Plugin.Loom.Plugin");
+                if (loomPluginType == null) return;
+
+                var instanceProp = loomPluginType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                object instance = instanceProp?.GetValue(null);
+                if (instance == null) return;
+
+                var serviceProviderProp = loomPluginType.GetProperty("ServiceProvider", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if (serviceProviderProp != null && serviceProviderProp.GetValue(instance) == null)
+                {
+                    serviceProviderProp.SetValue(instance, _serviceProvider);
+                    _logger.LogDebug("[JellyFrame] Safely initialized Loom plugin ServiceProvider via reflection.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[JellyFrame] Failed to initialize Loom ServiceProvider via reflection.");
             }
         }
     }
