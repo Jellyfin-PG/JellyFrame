@@ -28,7 +28,7 @@ namespace Jellyfin.Plugin.JellyFrame
 {
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IDisposable
     {
-        private const int CurrentConfigVersion = 1;
+        private const int CurrentConfigVersion = 2;
 
         public override string Name => "JellyFrame";
         public override Guid Id => Guid.Parse("d4e5f6a7-b8c9-0123-defa-456789012345");
@@ -432,6 +432,9 @@ namespace Jellyfin.Plugin.JellyFrame
                         if (string.IsNullOrWhiteSpace(Configuration.ThemeVars))
                             Configuration.ThemeVars = "{}";
                         break;
+                    case 2:
+                        Configuration.UseLoomInjector = false;
+                        break;
                 }
                 Configuration.ConfigVersion = v;
                 dirty = true;
@@ -441,6 +444,13 @@ namespace Jellyfin.Plugin.JellyFrame
 
         public IEnumerable<PluginPageInfo> GetPages() => new[]
         {
+            new PluginPageInfo
+            {
+                Name                 = "JellyFrame",
+                DisplayName          = "JellyFrame",
+                EnableInMainMenu     = true,
+                EmbeddedResourcePath = $"{GetType().Namespace}.Configuration.jellyframePage.html"
+            },
             new PluginPageInfo
             {
                 Name                 = "JellyFrameMods",
