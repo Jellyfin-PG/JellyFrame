@@ -162,6 +162,7 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
             try
             {
                 System.IO.File.WriteAllText(absolutePath, body.Content ?? string.Empty, Encoding.UTF8);
+                Services.FileTransformationRegistrar.UpdateLoomInjection();
                 return Ok(new { ok = true, path });
             }
             catch (Exception ex)

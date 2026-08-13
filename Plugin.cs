@@ -247,6 +247,7 @@ namespace Jellyfin.Plugin.JellyFrame
             }
 
             _ = ReloadServerModsAsync();
+            Services.FileTransformationRegistrar.UpdateLoomInjection();
         }
 
         private Dictionary<string, ModEntry> ParseModList(string json)
