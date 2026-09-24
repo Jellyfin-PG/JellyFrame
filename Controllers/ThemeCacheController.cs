@@ -36,12 +36,23 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
                     var info = new FileInfo(file);
                     var name = Path.GetFileNameWithoutExtension(file);
                     var parts = name.Split(new[] { "__" }, StringSplitOptions.None);
+                    var fullId = parts.Length >= 1 ? parts[0] : "unknown";
+                    var isAddon = fullId.Contains("--");
+                    var baseThemeId = isAddon ? fullId.Split(new[] { "--" }, StringSplitOptions.None)[0] : fullId;
+                    var addonId = isAddon ? fullId.Substring(fullId.IndexOf("--", StringComparison.Ordinal) + 2) : null;
+                    var version = parts.Length >= 2 ? parts[1] : "unknown";
+                    var type = parts.Length >= 3 ? parts[2] : "unknown";
+                    var isCompiled = parts.Length >= 5;
+
                     entries.Add(new
                     {
                         file = info.Name,
-                        themeId = parts.Length >= 1 ? parts[0] : "unknown",
-                        version = parts.Length >= 2 ? parts[1] : "unknown",
-                        type = parts.Length >= 3 ? parts[2] : "unknown",
+                        fullId,
+                        themeId = baseThemeId,
+                        addonId,
+                        version,
+                        type,
+                        isCompiled,
                         sizeBytes = info.Length,
                         modified = info.LastWriteTimeUtc
                     });

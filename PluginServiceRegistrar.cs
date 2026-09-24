@@ -16,6 +16,11 @@ namespace Jellyfin.Plugin.JellyFrame
     {
         public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
         {
+            if (applicationHost?.ApplicationVersion != null)
+            {
+                Plugin.ServerVersion = applicationHost.ApplicationVersion;
+            }
+
             serviceCollection.AddHostedService<FileTransformationRegistrar>();
             serviceCollection.AddTransient<JellyFrameMiddleware>();
         }

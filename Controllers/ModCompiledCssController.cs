@@ -37,7 +37,11 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
             var mod = mods?.Find(m =>
                 string.Equals(m.Id, modId, System.StringComparison.OrdinalIgnoreCase));
 
-            if (mod == null || string.IsNullOrWhiteSpace(mod.CssUrl))
+            if (mod == null)
+                return NotFound();
+
+            var cssFiles = mod.GetMatchingFiles("css", Plugin.ServerVersion);
+            if (cssFiles.Count == 0)
                 return NotFound();
 
             var modVars = new Dictionary<string, Dictionary<string, string>>();
@@ -54,13 +58,21 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
             }
 
             var vars = BuildVarMap(mod, modVars);
-            var css = await ModResourceCache.GetCssAsync(mod, vars, paths);
+            var sb = new System.Text.StringBuilder();
 
-            if (string.IsNullOrWhiteSpace(css))
+            foreach (var cssFile in cssFiles)
+            {
+                var css = await ModResourceCache.GetFileAsync(mod, cssFile, vars, paths);
+                if (!string.IsNullOrWhiteSpace(css))
+                    sb.AppendLine(css);
+            }
+
+            var result = sb.ToString();
+            if (string.IsNullOrWhiteSpace(result))
                 return NotFound();
 
             Response.Headers.Append("Cache-Control", "public, max-age=86400");
-            return Content(css, "text/css; charset=utf-8");
+            return Content(result, "text/css; charset=utf-8");
         }
 
         private static Dictionary<string, string> BuildVarMap(

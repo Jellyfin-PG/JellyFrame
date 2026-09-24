@@ -10,19 +10,52 @@
         data-require="emby-input,emby-button,emby-select">
 
         <style>
+            :root {
+                --mui-palette-primary-main: #90caf9;
+                --mui-palette-primary-dark: #42a5f5;
+                --mui-palette-primary-contrast: rgba(0, 0, 0, 0.87);
+                --mui-palette-secondary-main: #ce93d8;
+                --mui-palette-success-main: #66bb6a;
+                --mui-palette-warning-main: #ffa726;
+                --mui-palette-error-main: #f44336;
+                --mui-palette-info-main: #29b6f6;
+                --mui-palette-bg-paper: #1e1e1e;
+                --mui-palette-bg-elevated: #262626;
+                --mui-palette-text-primary: rgba(255, 255, 255, 0.87);
+                --mui-palette-text-secondary: rgba(255, 255, 255, 0.60);
+                --mui-palette-divider: rgba(255, 255, 255, 0.12);
+                --mui-shape-radius-sm: 4px;
+                --mui-shape-radius-md: 8px;
+                --mui-shape-radius-lg: 12px;
+                --mui-shadow-elevation-1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-2: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-4: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-8: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+            }
+
             .jfConfigPage {
-                font-family: "Roboto", "Segoe UI", sans-serif;
-                color: rgba(255, 255, 255, 0.87);
-                padding: 10px;
+                font-family: "Roboto", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+                color: var(--mui-palette-text-primary);
+                padding: 16px 24px;
+                max-width: 900px;
+                margin: 0 auto;
+                box-sizing: border-box;
+            }
+
+            .jfConfigPage h2 {
+                font-size: 2.0rem;
+                font-weight: 600;
+                line-height: 1.25;
+                letter-spacing: -0.00833em;
+                margin: 0 0 24px 0;
+                color: var(--mui-palette-text-primary);
             }
 
             .jfConfigPage .mui-card {
-                background-color: #1e1e1e;
-                border-radius: 12px;
-                box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2),
-                    0px 6px 10px 0px rgba(0, 0, 0, 0.14),
-                    0px 1px 18px 0px rgba(0, 0, 0, 0.12);
-                border: 1px solid rgba(255, 255, 255, 0.08);
+                background-color: var(--mui-palette-bg-paper);
+                border-radius: var(--mui-shape-radius-lg);
+                box-shadow: var(--mui-shadow-elevation-1);
+                border: 1px solid var(--mui-palette-divider);
                 padding: 24px;
                 margin-bottom: 24px;
                 transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
@@ -30,48 +63,49 @@
             }
 
             .jfConfigPage .mui-card:hover {
-                border-color: rgba(144, 202, 249, 0.4);
-                box-shadow: 0px 5px 8px -2px rgba(0, 0, 0, 0.3),
-                    0px 8px 16px 1px rgba(0, 0, 0, 0.2),
-                    0px 3px 22px 2px rgba(0, 0, 0, 0.15);
+                border-color: rgba(144, 202, 249, 0.35);
+                box-shadow: var(--mui-shadow-elevation-2);
             }
 
             .jfConfigPage .mui-card-header {
-                margin-bottom: 20px;
+                margin-bottom: 24px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid var(--mui-palette-divider);
             }
 
             .jfConfigPage .mui-card-title {
-                font-size: 1.35rem;
+                font-size: 1.25rem;
                 font-weight: 500;
-                line-height: 1.6;
-                letter-spacing: 0.0075em;
+                line-height: 1.4;
+                letter-spacing: 0em;
                 margin: 0;
-                color: #fff;
+                color: var(--mui-palette-text-primary);
             }
 
             .jfConfigPage .mui-card-subtitle {
                 font-size: 0.875rem;
                 font-weight: 400;
-                line-height: 1.43;
-                letter-spacing: 0.01071em;
-                color: rgba(255, 255, 255, 0.55);
-                margin: 4px 0 0 0;
+                line-height: 1.57;
+                letter-spacing: 0.00714em;
+                color: var(--mui-palette-text-secondary);
+                margin: 6px 0 0 0;
             }
 
             .jfConfigPage .mui-form-group {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 16px 20px;
-                border-radius: 8px;
+                padding: 18px 20px;
+                border-radius: var(--mui-shape-radius-md);
                 background-color: rgba(255, 255, 255, 0.02);
-                border: 1px solid rgba(255, 255, 255, 0.05);
+                border: 1px solid var(--mui-palette-divider);
                 margin-bottom: 24px;
-                transition: background-color 150ms;
+                transition: background-color 150ms ease, border-color 150ms ease;
             }
 
             .jfConfigPage .mui-form-group:hover {
                 background-color: rgba(255, 255, 255, 0.04);
+                border-color: rgba(255, 255, 255, 0.2);
             }
 
             .jfConfigPage .mui-switch-container {
@@ -87,9 +121,9 @@
             .jfConfigPage .mui-switch-track {
                 position: relative;
                 width: 44px;
-                height: 20px;
+                height: 22px;
                 background-color: rgba(255, 255, 255, 0.3);
-                border-radius: 10px;
+                border-radius: 11px;
                 transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
             }
 
@@ -97,8 +131,8 @@
                 position: absolute;
                 top: -2px;
                 left: -2px;
-                width: 24px;
-                height: 24px;
+                width: 26px;
+                height: 26px;
                 border-radius: 50%;
                 background-color: #bdbdbd;
                 box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),
@@ -106,7 +140,7 @@
                     0px 1px 3px 0px rgba(0, 0, 0, 0.12);
                 transition: left 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
                     background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
-                    box-shadow 150ms;
+                    box-shadow 150ms ease;
             }
 
             .jfConfigPage .mui-switch-container:hover .mui-switch-thumb {
@@ -119,8 +153,8 @@
             }
 
             .jfConfigPage .mui-switch-container.checked .mui-switch-thumb {
-                left: 22px;
-                background-color: #90caf9;
+                left: 20px;
+                background-color: var(--mui-palette-primary-main);
             }
 
             .jfConfigPage .mui-switch-container.checked:hover .mui-switch-thumb {
@@ -129,71 +163,81 @@
             }
 
             .jfConfigPage .mui-label {
-                font-size: 1.05rem;
+                font-size: 1.0rem;
                 font-weight: 500;
                 line-height: 1.5;
-                color: #fff;
+                color: var(--mui-palette-text-primary);
             }
 
             .jfConfigPage .mui-description {
-                font-size: 0.85rem;
-                color: rgba(255, 255, 255, 0.5);
-                line-height: 1.45;
+                font-size: 0.875rem;
+                color: var(--mui-palette-text-secondary);
+                line-height: 1.43;
                 margin-top: 4px;
                 max-width: 85%;
             }
 
-            .jfConfigPage .mui-btn-primary {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                background-color: #90caf9;
-                color: rgba(0, 0, 0, 0.87);
-                font-weight: 600;
-                padding: 8px 24px;
-                font-size: 0.875rem;
-                line-height: 1.75;
-                letter-spacing: 0.02857em;
-                border-radius: 6px;
-                border: none;
-                cursor: pointer;
-                box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
-                    0px 2px 2px 0px rgba(0, 0, 0, 0.14),
-                    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+            .jfConfigPage .mui-btn-primary,
+            button.mui-btn-primary {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: var(--mui-palette-primary-main) !important;
+                color: var(--mui-palette-primary-contrast) !important;
+                font-family: inherit !important;
+                font-weight: 600 !important;
+                padding: 8px 24px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.75 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                border: none !important;
+                cursor: pointer !important;
+                box-shadow: var(--mui-shadow-elevation-2) !important;
                 transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
                     box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
-                    transform 100ms;
+                    transform 100ms ease !important;
+                user-select: none !important;
+                box-sizing: border-box !important;
             }
 
-            .jfConfigPage .mui-btn-primary:hover {
-                background-color: #64b5f6;
-                box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
-                    0px 4px 5px 0px rgba(0, 0, 0, 0.14),
-                    0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+            .jfConfigPage .mui-btn-primary:hover:not(:disabled),
+            button.mui-btn-primary:hover:not(:disabled) {
+                background-color: var(--mui-palette-primary-dark) !important;
+                box-shadow: var(--mui-shadow-elevation-4) !important;
             }
 
-            .jfConfigPage .mui-btn-primary:active {
-                transform: scale(0.98);
+            .jfConfigPage .mui-btn-primary:active:not(:disabled) {
+                transform: scale(0.98) !important;
             }
 
-            .jfConfigPage .mui-btn-primary:disabled {
-                background-color: rgba(255, 255, 255, 0.12);
-                color: rgba(255, 255, 255, 0.3);
-                box-shadow: none;
-                cursor: default;
-                transform: none;
+            .jfConfigPage .mui-btn-primary:disabled,
+            button.mui-btn-primary:disabled {
+                background-color: rgba(255, 255, 255, 0.12) !important;
+                color: rgba(255, 255, 255, 0.3) !important;
+                box-shadow: none !important;
+                cursor: default !important;
+                pointer-events: none !important;
+                transform: none !important;
+            }
+
+            .jfConfigPage .mui-btn-primary:focus-visible {
+                outline: 2px solid var(--mui-palette-primary-main) !important;
+                outline-offset: 2px !important;
             }
 
             .jfConfigPage .mui-alert {
                 display: flex;
                 align-items: center;
-                gap: 12px;
+                gap: 14px;
                 padding: 14px 18px;
-                border-radius: 8px;
+                border-radius: var(--mui-shape-radius-md);
                 font-size: 0.875rem;
                 margin-top: 24px;
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(8px);
                 transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
                     transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
                 pointer-events: none;
@@ -206,9 +250,9 @@
             }
 
             .jfConfigPage .mui-alert-warning {
-                background-color: #191207;
+                background-color: rgba(255, 167, 38, 0.12);
                 color: #ffe0b2;
-                border: 1px solid rgba(255, 179, 0, 0.25);
+                border: 1px solid rgba(255, 167, 38, 0.35);
             }
 
             .jfConfigPage .mui-alert-icon {
@@ -219,19 +263,19 @@
 
             .jfConfigPage .mui-alert-message {
                 flex-grow: 1;
-                line-height: 1.45;
+                line-height: 1.5;
             }
         </style>
 
         <div data-role="content">
             <div class="content-primary">
-                <h2>JellyFrame</h2>
+                <h2>JellyFrame Settings</h2>
 
                 <!-- Main Configuration Card -->
                 <div class="mui-card">
                     <div class="mui-card-header">
                         <h3 class="mui-card-title">Frontend Injection Hook</h3>
-                        <p class="mui-card-subtitle">Configure how JellyFrame injects mods and themes into the frontend
+                        <p class="mui-card-subtitle">Configure how JellyFrame injects mods and themes into the Jellyfin
                             interface.</p>
                     </div>
 
@@ -246,7 +290,8 @@
                         </div>
 
                         <!-- Toggle Switch -->
-                        <div id="loomToggle" class="mui-switch-container">
+                        <div id="loomToggle" class="mui-switch-container" role="switch" aria-checked="false"
+                            tabindex="0">
                             <div class="mui-switch-track">
                                 <div class="mui-switch-thumb"></div>
                             </div>
@@ -254,14 +299,19 @@
                     </div>
 
                     <!-- Save & Apply Button -->
-                    <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                         <button type="button" id="btnSaveConfig" class="mui-btn-primary">Save & Apply</button>
                         <span id="saveStatus" style="font-size: 0.875rem; font-weight: 500;"></span>
                     </div>
 
                     <!-- Warning & Feedback Alert -->
-                    <div id="feedbackAlert" class="mui-alert mui-alert-warning">
-                        <div class="mui-alert-icon">⚠️</div>
+                    <div id="feedbackAlert" class="mui-alert mui-alert-warning" role="alert">
+                        <div class="mui-alert-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z" />
+                            </svg>
+                        </div>
                         <div id="alertMessage" class="mui-alert-message">
                             Configuration saved. A restart of the Jellyfin server is required to apply the injection
                             change.

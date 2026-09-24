@@ -2,234 +2,640 @@
 <html lang="en">
 
 <head>
-    <title>JellyFrame — Themes</title>
-    <style>
-        .jfThemePage .cardImageContainer {
-            height: 140px !important;
-            position: relative;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .jfThemePage .cardImageContainer img {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: top center;
-            display: block;
-            pointer-events: none;
-        }
-
-        .jfThemePage .activeRing .cardBox {
-            outline: 3px solid #00a4dc;
-            outline-offset: -3px;
-            border-radius: 4px;
-        }
-
-        .jfThemePage .themeTypeBadge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            z-index: 2;
-            pointer-events: none;
-            background: rgba(0, 164, 220, .85);
-            color: #fff;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
-        }
-
-        .jfThemePage .activeCheck {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #00a4dc;
-            color: #fff;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 2;
-            pointer-events: none;
-        }
-
-        .jfThemePage .stateMsg {
-            padding: 3em 1em;
-            text-align: center;
-            opacity: .45;
-        }
-
-        .jfThemePage .card.editorsChoiceCard {
-            position: relative;
-            outline: 2px solid rgba(255, 200, 50, 0.8);
-            outline-offset: -2px;
-            border-radius: 4px;
-        }
-
-        .jfThemePage .card.editorsChoiceCard.activeRing {
-            outline: 3px solid #00a4dc;
-            outline-offset: -3px;
-        }
-
-        .jfThemePage .editorsBadge {
-            position: absolute;
-            top: 110px;
-            right: 8px;
-            z-index: 10;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, rgba(255, 185, 0, 0.95), rgba(200, 130, 0, 0.95));
-            border: 1px solid rgba(255, 215, 80, 0.65);
-            border-radius: 50%;
-            font-size: 12px;
-            color: #1a1100;
-            pointer-events: auto;
-            cursor: default;
-            box-shadow: 0 1px 6px rgba(180, 120, 0, 0.55), 0 0 0 0 rgba(255, 185, 0, 0);
-            animation: jfEcShimmer 3s ease-in-out infinite;
-        }
-
-        @keyframes jfEcShimmer {
-
-            0%,
-            100% {
-                box-shadow: 0 1px 6px rgba(180, 120, 0, 0.5);
-            }
-
-            50% {
-                box-shadow: 0 1px 14px rgba(255, 190, 0, 0.85);
-            }
-        }
-    </style>
+    <title>JellyFrame - Themes</title>
 </head>
 
 <body>
-    <div id="JellyFrameThemesPage" data-role="page" class="page type-interior pluginConfigurationPage jfThemePage"
+    <div id="JellyFrameThemesPage" data-role="page"
+        class="page type-interior pluginConfigurationPage jfThemesConfigPage jfThemePage"
         data-require="emby-input,emby-button,emby-select">
+
+        <style>
+            :root {
+                --mui-palette-primary-main: #90caf9;
+                --mui-palette-primary-dark: #42a5f5;
+                --mui-palette-primary-contrast: rgba(0, 0, 0, 0.87);
+                --mui-palette-secondary-main: #ce93d8;
+                --mui-palette-success-main: #66bb6a;
+                --mui-palette-warning-main: #ffa726;
+                --mui-palette-error-main: #f44336;
+                --mui-palette-info-main: #29b6f6;
+                --mui-palette-bg-default: #121212;
+                --mui-palette-bg-paper: #1e1e1e;
+                --mui-palette-bg-elevated: #262626;
+                --mui-palette-text-primary: rgba(255, 255, 255, 0.87);
+                --mui-palette-text-secondary: rgba(255, 255, 255, 0.60);
+                --mui-palette-divider: rgba(255, 255, 255, 0.12);
+                --mui-shape-radius-sm: 4px;
+                --mui-shape-radius-md: 8px;
+                --mui-shape-radius-lg: 12px;
+                --mui-shape-radius-pill: 9999px;
+                --mui-shadow-elevation-1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-2: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-4: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-8: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-24: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
+            }
+
+            .jfThemePage {
+                font-family: "Roboto", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif !important;
+                color: var(--mui-palette-text-primary) !important;
+                box-sizing: border-box !important;
+                padding: 16px 24px !important;
+                max-width: 1300px !important;
+                margin: 0 auto !important;
+            }
+
+            .jfThemePage h2 {
+                font-size: 2.0rem !important;
+                font-weight: 600 !important;
+                line-height: 1.25 !important;
+                letter-spacing: -0.00833em !important;
+                margin: 0 0 20px 0 !important;
+                color: var(--mui-palette-text-primary) !important;
+            }
+
+            /* MUI Tabs Navigation */
+            .jfThemePage .mui-tabs {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 0 !important;
+                margin-bottom: 24px !important;
+                border-bottom: 1px solid var(--mui-palette-divider) !important;
+                padding-bottom: 0 !important;
+                width: 100% !important;
+                min-height: 48px !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+            }
+
+            .jfThemePage .jfThemeTab,
+            .jfThemePage .mui-tab {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 8px !important;
+                min-height: 48px !important;
+                min-width: 90px !important;
+                padding: 12px 20px !important;
+                border: none !important;
+                background: transparent !important;
+                cursor: pointer !important;
+                border-bottom: 2px solid transparent !important;
+                margin-bottom: -1px !important;
+                color: var(--mui-palette-text-secondary) !important;
+                font-family: inherit !important;
+                font-size: 0.875rem !important;
+                font-weight: 500 !important;
+                line-height: 1.25 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1), background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                position: relative !important;
+                box-sizing: border-box !important;
+                user-select: none !important;
+                outline: none !important;
+                border-top-left-radius: var(--mui-shape-radius-sm) !important;
+                border-top-right-radius: var(--mui-shape-radius-sm) !important;
+            }
+
+            .jfThemePage .jfThemeTab:hover,
+            .jfThemePage .mui-tab:hover {
+                color: var(--mui-palette-text-primary) !important;
+                background-color: rgba(255, 255, 255, 0.04) !important;
+            }
+
+            .jfThemePage .jfThemeTab:focus-visible,
+            .jfThemePage .mui-tab:focus-visible {
+                outline: 2px solid var(--mui-palette-primary-main) !important;
+                outline-offset: -2px !important;
+            }
+
+            .jfThemePage .jfThemeTab.jfThemeTabActive,
+            .jfThemePage .jfThemeTabActive,
+            .jfThemePage .mui-tab-active {
+                color: var(--mui-palette-primary-main) !important;
+                border-bottom: 2px solid var(--mui-palette-primary-main) !important;
+                font-weight: 600 !important;
+                background-color: transparent !important;
+            }
+
+            .jfThemePage .mui-tab-icon {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 1.1rem !important;
+                line-height: 1 !important;
+            }
+
+            /* MUI Alert Banners */
+            .jfThemePage .mui-alert-banner {
+                display: flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+                padding: 12px 18px !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                margin-bottom: 20px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.5 !important;
+                transition: all 200ms ease !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfThemePage .mui-alert-banner-info {
+                background-color: rgba(144, 202, 249, 0.1) !important;
+                border: 1px solid rgba(144, 202, 249, 0.3) !important;
+                color: var(--mui-palette-primary-main) !important;
+            }
+
+            .jfThemePage .mui-alert-banner-warning {
+                background-color: rgba(255, 167, 38, 0.1) !important;
+                border: 1px solid rgba(255, 167, 38, 0.35) !important;
+                color: var(--mui-palette-warning-main) !important;
+            }
+
+            /* MUI Outlined Inputs & Form Controls */
+            .jfThemePage .inputContainer,
+            .jfThemePage .selectContainer {
+                margin-bottom: 16px !important;
+            }
+
+            .jfThemePage .inputLabel,
+            .jfThemePage .selectLabel {
+                font-size: 0.75rem !important;
+                font-weight: 600 !important;
+                color: var(--mui-palette-text-secondary) !important;
+                margin-bottom: 6px !important;
+                display: block !important;
+                letter-spacing: 0.01em !important;
+                text-transform: uppercase !important;
+            }
+
+            .jfThemePage input.emby-input,
+            .jfThemePage select.emby-select {
+                width: 100% !important;
+                padding: 10px 14px !important;
+                background-color: rgba(255, 255, 255, 0.04) !important;
+                border: 1px solid rgba(255, 255, 255, 0.23) !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                color: var(--mui-palette-text-primary) !important;
+                font-family: inherit !important;
+                font-size: 0.875rem !important;
+                box-sizing: border-box !important;
+                transition: border-color 200ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 200ms ease, background-color 200ms ease !important;
+            }
+
+            .jfThemePage input.emby-input:hover,
+            .jfThemePage select.emby-select:hover {
+                border-color: rgba(255, 255, 255, 0.4) !important;
+                background-color: rgba(255, 255, 255, 0.06) !important;
+            }
+
+            .jfThemePage input.emby-input:focus,
+            .jfThemePage select.emby-select:focus {
+                border-color: var(--mui-palette-primary-main) !important;
+                outline: none !important;
+                box-shadow: 0 0 0 1px var(--mui-palette-primary-main) !important;
+                background-color: rgba(255, 255, 255, 0.07) !important;
+            }
+
+            /* MUI Buttons */
+            .jfThemePage .mui-btn-contained,
+            button.mui-btn-contained,
+            a.mui-btn-contained {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: var(--mui-palette-primary-main) !important;
+                color: var(--mui-palette-primary-contrast) !important;
+                font-family: inherit !important;
+                font-weight: 600 !important;
+                padding: 8px 22px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.75 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                border: none !important;
+                cursor: pointer !important;
+                box-shadow: var(--mui-shadow-elevation-2) !important;
+                transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                text-decoration: none !important;
+                user-select: none !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfThemePage .mui-btn-contained:hover:not(:disabled),
+            button.mui-btn-contained:hover:not(:disabled) {
+                background-color: var(--mui-palette-primary-dark) !important;
+                box-shadow: var(--mui-shadow-elevation-4) !important;
+            }
+
+            .jfThemePage .mui-btn-contained:active:not(:disabled) {
+                transform: scale(0.98) !important;
+            }
+
+            .jfThemePage .mui-btn-contained:disabled,
+            button.mui-btn-contained:disabled {
+                background-color: rgba(255, 255, 255, 0.12) !important;
+                color: rgba(255, 255, 255, 0.3) !important;
+                box-shadow: none !important;
+                cursor: default !important;
+                pointer-events: none !important;
+            }
+
+            .jfThemePage .mui-btn-outlined,
+            button.mui-btn-outlined,
+            a.mui-btn-outlined {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: transparent !important;
+                color: var(--mui-palette-primary-main) !important;
+                border: 1px solid rgba(144, 202, 249, 0.5) !important;
+                font-family: inherit !important;
+                font-weight: 600 !important;
+                padding: 7px 18px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.75 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                cursor: pointer !important;
+                transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                text-decoration: none !important;
+                user-select: none !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfThemePage .mui-btn-outlined:hover:not(:disabled),
+            button.mui-btn-outlined:hover:not(:disabled) {
+                background-color: rgba(144, 202, 249, 0.08) !important;
+                border-color: var(--mui-palette-primary-main) !important;
+            }
+
+            .jfThemePage .mui-btn-outlined-danger,
+            button.mui-btn-outlined-danger {
+                color: var(--mui-palette-error-main) !important;
+                border-color: rgba(244, 67, 54, 0.5) !important;
+                background-color: rgba(244, 67, 54, 0.04) !important;
+            }
+
+            .jfThemePage .mui-btn-outlined-danger:hover:not(:disabled),
+            button.mui-btn-outlined-danger:hover:not(:disabled) {
+                background-color: rgba(244, 67, 54, 0.12) !important;
+                border-color: var(--mui-palette-error-main) !important;
+            }
+
+            /* MUI Cards Grid */
+            .jfThemePage #themeGrid,
+            #themeGrid {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+                gap: 20px !important;
+                padding: 16px 0 24px 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* MUI Card Containers */
+            .jfThemePage .card,
+            .jfThemePage .mui-card {
+                background-color: var(--mui-palette-bg-paper) !important;
+                border-radius: var(--mui-shape-radius-lg) !important;
+                border: 1px solid var(--mui-palette-divider) !important;
+                box-shadow: var(--mui-shadow-elevation-1) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+                pointer-events: auto !important;
+                transition: box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1), transform 200ms ease, border-color 250ms ease !important;
+            }
+
+            .jfThemePage .card:hover,
+            .jfThemePage .mui-card:hover {
+                box-shadow: var(--mui-shadow-elevation-4) !important;
+                border-color: rgba(144, 202, 249, 0.4) !important;
+                transform: translateY(-2px) !important;
+            }
+
+            .jfThemePage .card.activeRing {
+                border-color: var(--mui-palette-primary-main) !important;
+                box-shadow: 0 0 0 1px var(--mui-palette-primary-main), var(--mui-shadow-elevation-2) !important;
+            }
+
+            .jfThemePage .card.activeRing .cardBox {
+                outline: none !important;
+            }
+
+            .jfThemePage .card.editorsChoiceCard {
+                border-color: rgba(255, 167, 38, 0.6) !important;
+            }
+
+            .jfThemePage .card.editorsChoiceCard.activeRing {
+                border-color: var(--mui-palette-primary-main) !important;
+            }
+
+            .jfThemePage #jft-tabSettings .card,
+            .jfThemePage #jft-tabSettings .mui-card,
+            .jfThemePage #jft-tabSettings>div,
+            #jft-tabSettings .card,
+            #jft-tabSettings .mui-card,
+            #jft-tabSettings>div {
+                margin: 0 0 24px 0 !important;
+                padding: 24px !important;
+            }
+
+            .jfThemePage #jft-tabSettings>div:last-child,
+            #jft-tabSettings>div:last-child {
+                margin-bottom: 0 !important;
+            }
+
+            .jfThemePage .cardBox,
+            .jfThemePage .cardScalable,
+            .jfThemePage .cardPadder,
+            .jfThemePage .cardContent {
+                display: flex !important;
+                flex-direction: column !important;
+                flex: 1 1 auto !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                border-radius: 0 !important;
+                outline: none !important;
+                box-shadow: none !important;
+                pointer-events: auto !important;
+                position: relative !important;
+            }
+
+            .jfThemePage .cardImageContainer {
+                display: block !important;
+                width: 100% !important;
+                height: 160px !important;
+                min-height: 160px !important;
+                max-height: 160px !important;
+                flex: 0 0 160px !important;
+                position: relative !important;
+                overflow: hidden !important;
+                background-size: cover !important;
+                background-position: top center !important;
+                background-color: rgba(0, 0, 0, 0.35) !important;
+                border-top-left-radius: var(--mui-shape-radius-lg) !important;
+                border-top-right-radius: var(--mui-shape-radius-lg) !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfThemePage .cardImageContainer img {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 160px !important;
+                min-height: 160px !important;
+                max-height: 160px !important;
+                object-fit: cover !important;
+                object-position: top center !important;
+                display: block !important;
+                pointer-events: none !important;
+            }
+
+            .jfThemePage .cardFooter {
+                display: flex !important;
+                flex-direction: column !important;
+                flex: 1 1 auto !important;
+                padding: 14px 16px !important;
+                background: transparent !important;
+                box-sizing: border-box !important;
+            }
+
+            /* MUI Badges on Theme Cards */
+            .jfThemePage .themeTypeBadge {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                padding: 3px 8px;
+                border-radius: var(--mui-shape-radius-sm);
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                z-index: 2;
+                pointer-events: none;
+                background: rgba(41, 182, 246, 0.9);
+                color: #000;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+            }
+
+            .jfThemePage .activeCheck {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: var(--mui-palette-primary-main);
+                color: #000;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                font-weight: 800;
+                z-index: 2;
+                pointer-events: none;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            }
+
+            .jfThemePage .stateMsg {
+                grid-column: 1 / -1;
+                padding: 48px 16px;
+                text-align: center;
+                color: var(--mui-palette-text-secondary);
+                font-size: 0.95rem;
+            }
+
+            .jfThemePage .editorsBadge {
+                position: absolute;
+                top: 104px;
+                right: 10px;
+                z-index: 10;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #ffa726, #f57c00);
+                border: 1px solid rgba(255, 255, 255, 0.4);
+                border-radius: 50%;
+                font-size: 12px;
+                color: #000;
+                pointer-events: auto;
+                cursor: default;
+                box-shadow: 0 2px 6px rgba(245, 124, 0, 0.5);
+                animation: jfEcShimmer 3s ease-in-out infinite;
+            }
+
+            @keyframes jfEcShimmer {
+
+                0%,
+                100% {
+                    box-shadow: 0 1px 6px rgba(245, 124, 0, 0.5);
+                }
+
+                50% {
+                    box-shadow: 0 1px 16px rgba(255, 167, 38, 0.9);
+                }
+            }
+        </style>
 
         <div data-role="content">
             <div class="content-primary">
 
                 <h2>Themes</h2>
 
-                <div id="jfThemeTabs"
-                    style="display:flex;gap:4px;margin-bottom:1.5em;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0;">
-                    <button type="button" class="jfThemeTab jfThemeTabActive" data-tab="themes"
-                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid #00a4dc;color:#00a4dc;font-size:.9em;font-weight:600;letter-spacing:.03em;">
-                        Marketplace
+                <div id="jfThemeTabs" class="mui-tabs" role="tablist">
+                    <button type="button" class="jfThemeTab jfThemeTabActive mui-tab mui-tab-active" data-tab="themes"
+                        role="tab" aria-selected="true" tabindex="0">
+                        <span class="mui-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z" />
+                            </svg>
+                        </span>
+                        <span>Marketplace</span>
                     </button>
-                    <button type="button" class="jfThemeTab" data-tab="settings"
-                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:rgba(255,255,255,0.5);font-size:.9em;font-weight:600;letter-spacing:.03em;">
-                        Settings
+                    <button type="button" class="jfThemeTab mui-tab" data-tab="settings" role="tab"
+                        aria-selected="false" tabindex="-1">
+                        <span class="mui-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                            </svg>
+                        </span>
+                        <span>Settings</span>
                     </button>
                 </div>
 
                 <div id="tabThemes">
 
-                    <div class="activeBar" id="jft-activeBar" style="display:none">
+                    <div class="mui-alert-banner mui-alert-banner-info" id="jft-activeBar" style="display:none">
                         <span>Active theme: <strong id="activeThemeName">None</strong></span>
-                        <button type="button" id="btnDeactivate"
-                            style="margin-left:auto;padding:5px 14px;border-radius:4px;border:1px solid rgba(220,80,80,0.5);background:rgba(220,80,80,0.18);color:#e08080;cursor:pointer;font-size:.82em;font-weight:600;">
+                        <button type="button" id="btnDeactivate" class="mui-btn-outlined mui-btn-outlined-danger"
+                            style="margin-left:auto;padding:4px 14px;font-size:0.75rem;">
                             Deactivate
                         </button>
                     </div>
 
-
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="themesUrl">Theme Repository URL</label>
+                        <label class="inputLabel" for="themesUrl">Theme Repository URL</label>
                         <input type="url" id="themesUrl" class="emby-input"
                             placeholder="https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/themes.json" />
                     </div>
-                    <div style="margin-bottom:1.5em">
-                        <button is="emby-button" type="button" id="jft-btnLoad" class="raised emby-button">Load
-                            Themes</button>
+                    <div style="margin-bottom:1.75rem">
+                        <button type="button" id="jft-btnLoad" class="mui-btn-contained">Load Themes</button>
                     </div>
 
-
-                    <div class="inputContainer" style="margin-bottom:.25em">
-                        <label class="inputLabel inputLabelUnfocused" for="jft-searchInput">Search</label>
-                        <input type="text" id="jft-searchInput" class="emby-input" placeholder="Search themes…" />
+                    <div style="display:flex;gap:16px;align-items:flex-end;margin-bottom:12px;flex-wrap:wrap;">
+                        <div class="inputContainer" style="flex:1;min-width:220px;margin:0;">
+                            <label class="inputLabel" for="jft-searchInput">Search</label>
+                            <input type="text" id="jft-searchInput" class="emby-input" placeholder="Search themes…" />
+                        </div>
+                        <div class="selectContainer" style="min-width:200px;margin:0;">
+                            <label class="selectLabel" for="jft-sortSelect">Sort by</label>
+                            <select is="emby-select" id="jft-sortSelect" class="emby-select-withcolor emby-select">
+                                <option value="recently-updated" selected>Recently Updated</option>
+                                <option value="newest">Newest</option>
+                                <option value="name">Name (A–Z)</option>
+                                <option value="name-desc">Name (Z–A)</option>
+                            </select>
+                        </div>
                     </div>
                     <div id="jft-sourceStatus"
-                        style="display:none;margin:6px 0 14px;font-size:.82em;padding:5px 10px;border-radius:4px;">
+                        style="display:none;margin:6px 0 16px;font-size:0.8125rem;padding:6px 12px;border-radius:6px;">
                     </div>
 
                     <div id="jft-tagFilters"
-                        style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:16px;"></div>
+                        style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:20px;"></div>
 
-
-                    <div id="jftWhatsNewBar"
-                        style="display:none;gap:10px;padding:.65em 1em;background:rgba(255,200,50,.08);border:1px solid rgba(255,200,50,.25);border-radius:4px;margin-top:1em;margin-bottom:1em;font-size:.88em;align-items:center;">
-                        <span>&#x1F195;</span>
+                    <div id="jftWhatsNewBar" class="mui-alert-banner mui-alert-banner-warning" style="display:none">
+                        <span class="mui-alert-icon" style="display:inline-flex;align-items:center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-10 5h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                            </svg>
+                        </span>
                         <span id="jftWhatsNewText" style="flex:1"></span>
-                        <button type="button" id="btnJftWhatsNewChangelog"
-                            style="display:none;background:rgba(255,200,50,.18);border:1px solid rgba(255,200,50,.4);border-radius:4px;color:#ffd966;cursor:pointer;font-size:.82em;font-weight:600;padding:4px 10px;white-space:nowrap;">What's
+                        <button type="button" id="btnJftWhatsNewChangelog" class="mui-btn-outlined"
+                            style="display:none;color:#ffa726;border-color:rgba(255,167,38,0.5);padding:4px 12px;font-size:0.75rem;">What's
                             New</button>
-                        <button type="button" id="btnJftWhatsNewUpdate"
-                            style="background:#00a4dc;border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:.82em;font-weight:600;padding:4px 10px;white-space:nowrap;">Update
-                            Now</button>
+                        <button type="button" id="btnJftWhatsNewUpdate" class="mui-btn-contained"
+                            style="padding:4px 14px;font-size:0.75rem;">Update Now</button>
                         <button type="button" id="btnJftWhatsNewDismiss"
-                            style="background:none;border:none;cursor:pointer;opacity:.5;font-size:1.1em;line-height:1;padding:0 4px;">&#x2715;</button>
+                            style="background:none;border:none;cursor:pointer;opacity:0.6;color:inherit;font-size:1.1rem;padding:0 6px;">✕</button>
                     </div>
 
                     <div id="themeGrid" class="itemsContainer vertical-wrap">
                         <div class="stateMsg">Enter a repository URL above and click <strong>Load Themes</strong>.</div>
                     </div>
 
-
-                    <div style="margin-top:1.5em;display:flex;align-items:center;gap:1em;flex-wrap:wrap">
-                        <span id="jft-pendingLabel" style="font-size:.85em;opacity:.6">No pending changes</span>
-                        <button is="emby-button" type="button" id="jft-btnSave" class="raised button-submit emby-button"
-                            disabled>Save &amp; Apply</button>
+                    <div style="margin-top:2rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap">
+                        <span id="jft-pendingLabel" style="font-size:0.875rem;opacity:0.7">No pending changes</span>
+                        <button type="button" id="jft-btnSave" class="mui-btn-contained" disabled>Save &amp;
+                            Apply</button>
                     </div>
-                    <p style="font-size:.8em;opacity:.45;margin-top:.75em">
+                    <p style="font-size:0.8125rem;opacity:0.5;margin-top:0.75rem">
                         Edits are applied to the active theme immediately after saving.
                     </p>
 
                 </div>
 
                 <div id="jft-tabSettings" style="display:none">
-                    <div style="padding:1em;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:1em;">
-                        <div style="display:flex;align-items:center;gap:1em;margin-bottom:.75em;">
-                            <p style="margin:0;font-size:.9em;font-weight:600;">Theme Cache</p>
-                            <button type="button" id="btnRefreshThemeCache"
-                                style="padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.78em;">
+                    <div
+                        style="padding:20px;background:#1e1e1e;border:1px solid rgba(255,255,255,0.12);border-radius:12px;margin-bottom:20px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);">
+                        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+                            <p style="margin:0;font-size:1.0rem;font-weight:600;color:rgba(255,255,255,0.87);">Theme
+                                Cache</p>
+                            <button type="button" id="btnRefreshThemeCache" class="mui-btn-outlined"
+                                style="padding:3px 12px;font-size:0.75rem;">
                                 ↻ Refresh
                             </button>
                         </div>
-                        <p style="margin:0 0 .75em;font-size:.8em;opacity:.55;">Cached files are pre-compiled theme
-                            stylesheets. Purging forces a fresh download on next page load.</p>
-                        <div id="themeCacheInfoBar" style="font-size:.82em;opacity:.6;margin-bottom:.75em;">Loading…
+                        <p style="margin:0 0 16px;font-size:0.8125rem;color:rgba(255,255,255,0.6);line-height:1.5;">
+                            Cached files are pre-compiled theme stylesheets. Purging forces a fresh download on next
+                            page load.</p>
+                        <div id="themeCacheInfoBar" style="font-size:0.8125rem;opacity:0.6;margin-bottom:12px;">Loading…
                         </div>
                         <div id="themeCacheList"
-                            style="display:flex;flex-direction:column;gap:6px;margin-bottom:.75em;max-height:220px;overflow-y:auto;">
+                            style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:240px;overflow-y:auto;">
                         </div>
-                        <div style="display:flex;gap:.6em;flex-wrap:wrap;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;">
                             <button type="button" id="btnPurgeAllThemes"
-                                style="padding:6px 16px;border-radius:4px;border:1px solid rgba(220,80,80,0.5);background:rgba(220,80,80,0.18);color:#e08080;cursor:pointer;font-size:.82em;font-weight:600;">
+                                class="mui-btn-outlined mui-btn-outlined-danger"
+                                style="padding:6px 16px;font-size:0.8125rem;">
                                 Purge All
                             </button>
-                            <button type="button" id="btnPurgeSelectedThemes"
-                                style="padding:6px 16px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.82em;"
-                                disabled>
+                            <button type="button" id="btnPurgeSelectedThemes" class="mui-btn-outlined"
+                                style="padding:6px 16px;font-size:0.8125rem;" disabled>
                                 Purge Selected
                             </button>
                         </div>
-                        <p id="themeCacheResult" style="margin:.6em 0 0;font-size:.8em;color:#60e090;display:none;"></p>
+                        <p id="themeCacheResult"
+                            style="margin:12px 0 0;font-size:0.8125rem;color:#66bb6a;display:none;"></p>
                     </div>
                 </div>
 
@@ -249,11 +655,34 @@
                     pendingVars: null,
                     themeVars: {},
                     query: '',
-                    activeTags: []
+                    activeTags: [],
+                    sortBy: 'recently-updated'
                 };
 
-                var CHIP_OFF = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;';
-                var CHIP_ON = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid #00a4dc;background:#00a4dc;color:#fff;font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;font-weight:700;';
+                function sortItems(list, sortBy) {
+                    return list.slice().sort(function (a, b) {
+                        if (sortBy === 'name') {
+                            return getLocalizedTitle(a).localeCompare(getLocalizedTitle(b), undefined, { sensitivity: 'base' });
+                        }
+                        if (sortBy === 'name-desc') {
+                            return getLocalizedTitle(b).localeCompare(getLocalizedTitle(a), undefined, { sensitivity: 'base' });
+                        }
+                        if (sortBy === 'newest') {
+                            var dateA = new Date(a.createdAt || a.date || (a.files && a.files[0] && a.files[0].date) || 0).getTime();
+                            var dateB = new Date(b.createdAt || b.date || (b.files && b.files[0] && b.files[0].date) || 0).getTime();
+                            if (dateB !== dateA) return dateB - dateA;
+                            return getLocalizedTitle(a).localeCompare(getLocalizedTitle(b));
+                        }
+                        // Default: recently-updated
+                        var updateA = new Date(a.updatedAt || a.date || a.createdAt || (a.files && a.files[0] && a.files[0].date) || 0).getTime();
+                        var updateB = new Date(b.updatedAt || b.date || b.createdAt || (b.files && b.files[0] && b.files[0].date) || 0).getTime();
+                        if (updateB !== updateA) return updateB - updateA;
+                        return getLocalizedTitle(a).localeCompare(getLocalizedTitle(b));
+                    });
+                }
+
+                var CHIP_OFF = 'display:inline-flex;align-items:center;padding:4px 12px;border-radius:9999px;border:1px solid rgba(255,255,255,0.23);background:transparent;color:rgba(255,255,255,0.7);font-size:12px;font-weight:500;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;transition:all 150ms cubic-bezier(0.4,0,0.2,1);';
+                var CHIP_ON = 'display:inline-flex;align-items:center;padding:4px 12px;border-radius:9999px;border:1px solid #90caf9;background:rgba(144,202,249,0.16);color:#90caf9;font-size:12px;font-weight:600;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;transition:all 150ms cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 0 1px #90caf9;';
 
                 /**
                  * Resolve a localised string field.
@@ -382,7 +811,7 @@
                     el('jftWhatsNewBar').style.display = 'none';
                 });
 
-                var OFFICIAL_THEMES_URL = 'https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/themes.json';
+                var OFFICIAL_THEMES_URL = 'https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/themes.v2.json';
 
                 function updateThemeSourceStatus() {
                     var url = (el('themesUrl').value || '').trim();
@@ -683,11 +1112,6 @@
                     return wrap;
                 }
 
-                var jftPageEl2 = document.querySelector('.jfThemePage');
-                (jftPageEl2 ? jftPageEl2 : document).querySelectorAll('.jfThemeTab').forEach(function (btn) {
-                    btn.addEventListener('click', function () { switchThemeTab(btn.dataset.tab); });
-                });
-
                 var jftPageEl = document.querySelector('.jfThemePage');
                 if (jftPageEl) {
                     jftPageEl.addEventListener('viewshow', initThemesPage);
@@ -749,6 +1173,8 @@
                         return match && tagMatch;
                     });
 
+                    list = sortItems(list, state.sortBy || 'recently-updated');
+
                     var grid = el('themeGrid');
                     if (list.length === 0) {
                         grid.innerHTML = '<div class="stateMsg">No themes match your search.</div>';
@@ -760,27 +1186,17 @@
 
                 el('themesUrl').addEventListener('input', updateThemeSourceStatus);
                 el('jft-searchInput').addEventListener('input', function () { state.query = this.value; render(); });
+                var jftSortSelect = el('jft-sortSelect');
+                if (jftSortSelect) {
+                    jftSortSelect.addEventListener('change', function () { state.sortBy = this.value; render(); });
+                }
 
                 function buildCard(theme) {
                     var effectiveId = state.pendingId !== null ? state.pendingId : state.activeId;
                     var isActive = effectiveId === theme.id;
                     var hasVars = (theme.vars || []).length > 0 || (theme.addons || []).length > 0;
-
                     var card = document.createElement('div');
-                    card.className = 'card overflowBackdropCard' + (isActive ? ' activeRing' : '') + (theme.editorsChoice ? ' editorsChoiceCard' : '');
-                    card.style.cssText = 'min-width:200px;max-width:260px;pointer-events:none;position:relative;';
-
-                    var cardBox = document.createElement('div');
-                    cardBox.className = 'cardBox';
-
-                    var cardScalable = document.createElement('div');
-                    cardScalable.className = 'cardScalable';
-
-                    var cardPadder = document.createElement('div');
-                    cardPadder.className = 'cardPadder cardPadder-backdrop';
-
-                    var cardContent = document.createElement('div');
-                    cardContent.className = 'cardContent';
+                    card.className = 'card mui-card' + (isActive ? ' activeRing' : '') + (theme.editorsChoice ? ' editorsChoiceCard' : '');
 
                     var imgContainer = document.createElement('div');
                     imgContainer.className = 'cardImageContainer coveredImage';
@@ -801,15 +1217,17 @@
                         img.onerror = function () {
                             img.remove();
                             var fb = document.createElement('div');
-                            fb.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5em;opacity:.2;pointer-events:none;';
-                            fb.textContent = '🎨';
+                            fb.className = 'cardImageFallback';
+                            fb.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;min-height:160px;display:flex;align-items:center;justify-content:center;opacity:.25;pointer-events:none;color:#90caf9;';
+                            fb.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.36 19.64 10.63 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>';
                             imgContainer.appendChild(fb);
                         };
                         imgContainer.appendChild(img);
                     } else {
                         var fb = document.createElement('div');
-                        fb.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5em;opacity:.2;pointer-events:none;';
-                        fb.textContent = '🎨';
+                        fb.className = 'cardImageFallback';
+                        fb.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;min-height:160px;display:flex;align-items:center;justify-content:center;opacity:.25;pointer-events:none;color:#90caf9;';
+                        fb.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.36 19.64 10.63 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>';
                         imgContainer.appendChild(fb);
                     }
 
@@ -829,49 +1247,41 @@
 
                     if (hasVars) {
                         var varsBadge = document.createElement('div');
-                        varsBadge.style.cssText = 'position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:3px;font-size:9px;padding:1px 6px;z-index:1;letter-spacing:.04em;pointer-events:none;';
+                        varsBadge.style.cssText = 'position:absolute;bottom:8px;left:8px;background:rgba(18,18,18,0.85);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.87);border-radius:4px;font-size:10px;font-weight:600;padding:2px 6px;z-index:1;letter-spacing:0.04em;pointer-events:none;backdrop-filter:blur(4px);';
                         varsBadge.textContent = 'CONFIGURABLE';
                         imgContainer.appendChild(varsBadge);
                     }
 
                     if (_shotCount > 1) {
                         var shotsBadge = document.createElement('div');
-                        shotsBadge.style.cssText = 'position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:3px;font-size:9px;padding:1px 6px;z-index:1;letter-spacing:.04em;pointer-events:none;';
-                        shotsBadge.textContent = '\uD83D\uDCF7 ' + _shotCount;
+                        shotsBadge.style.cssText = 'position:absolute;bottom:8px;right:8px;background:rgba(18,18,18,0.85);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.87);border-radius:4px;font-size:10px;font-weight:600;padding:2px 6px;z-index:1;letter-spacing:0.04em;pointer-events:none;backdrop-filter:blur(4px);display:inline-flex;align-items:center;gap:3px;';
+                        shotsBadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12m-3.2 0a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>' + _shotCount;
                         imgContainer.appendChild(shotsBadge);
                     }
 
                     if (theme.editorsChoice) {
                         var ecBadge = document.createElement('div');
-                        ecBadge.textContent = '\u2605 Editor\'s Choice';
-                        ecBadge.style.cssText = 'position:absolute;top:8px;right:8px;z-index:3;background:linear-gradient(135deg,rgba(255,185,0,0.92),rgba(200,128,0,0.92));border:1px solid rgba(255,215,80,0.6);border-radius:4px;padding:2px 8px;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#1a1100;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 1px 5px rgba(160,100,0,0.5);pointer-events:none;';
+                        ecBadge.style.cssText = 'position:absolute;top:8px;right:8px;z-index:3;background:linear-gradient(135deg,#ffa726,#f57c00);border:1px solid rgba(255,255,255,0.4);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#000;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 2px 6px rgba(245,124,0,0.5);pointer-events:none;display:inline-flex;align-items:center;gap:3px;';
+                        ecBadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>Editor\'s Choice';
                         imgContainer.appendChild(ecBadge);
                     }
 
-                    cardContent.appendChild(imgContainer);
-                    cardPadder.appendChild(cardContent);
-                    cardScalable.appendChild(cardPadder);
-                    cardBox.appendChild(cardScalable);
-
-                    if (theme.editorsChoice) {
-                        cardBox.style.outline = '2px solid rgba(255,185,0,0.7)';
-                        cardBox.style.outlineOffset = '-2px';
-                        cardBox.style.borderRadius = '4px';
-                    }
-
-
+                    card.appendChild(imgContainer);
 
                     var footer = document.createElement('div');
                     footer.className = 'cardFooter';
+                    footer.style.cssText = 'padding:14px 16px;display:flex;flex-direction:column;flex:1;';
 
                     var nameEl = document.createElement('div');
                     nameEl.className = 'cardText';
+                    nameEl.style.cssText = 'font-size:1.0rem;font-weight:600;color:rgba(255,255,255,0.87);margin-bottom:2px;letter-spacing:-0.01em;';
                     nameEl.textContent = getLocalizedTitle(theme);
                     footer.appendChild(nameEl);
 
                     if (theme.author) {
                         var authEl = document.createElement('div');
                         authEl.className = 'cardText cardText-secondary';
+                        authEl.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.6);margin-bottom:6px;';
                         authEl.textContent = 'by ' + theme.author;
                         footer.appendChild(authEl);
                     }
@@ -880,7 +1290,7 @@
                     if (_themeDesc) {
                         var descEl = document.createElement('div');
                         descEl.className = 'cardText cardText-secondary';
-                        descEl.style.cssText = 'font-size:.8em;opacity:.7;margin-top:.2em;white-space:normal;word-break:break-word;overflow-wrap:break-word;';
+                        descEl.style.cssText = 'font-size:0.8125rem;color:rgba(255,255,255,0.6);line-height:1.43;margin-top:4px;white-space:normal;word-break:break-word;overflow-wrap:break-word;';
                         var TRUNCATE_LEN = 100;
                         if (_themeDesc.length <= TRUNCATE_LEN) {
                             descEl.textContent = _themeDesc;
@@ -889,7 +1299,7 @@
                             var readMoreBtn = document.createElement('button');
                             readMoreBtn.type = 'button';
                             readMoreBtn.textContent = 'more';
-                            readMoreBtn.style.cssText = 'background:none;border:none;padding:0;color:#00a4dc;cursor:pointer;font-size:inherit;font-family:inherit;pointer-events:auto;text-decoration:underline;';
+                            readMoreBtn.style.cssText = 'background:none;border:none;padding:0;color:#90caf9;cursor:pointer;font-size:inherit;font-family:inherit;font-weight:500;pointer-events:auto;text-decoration:underline;';
                             readMoreBtn.addEventListener('click', function (e) {
                                 e.stopPropagation();
                                 openPreviewModal(theme);
@@ -902,10 +1312,10 @@
 
                     if ((theme.tags || []).length > 0) {
                         var tagRow = document.createElement('div');
-                        tagRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:.5em;';
+                        tagRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;';
                         (theme.tags || []).slice(0, 4).forEach(function (tag) {
                             var t = document.createElement('span');
-                            t.style.cssText = 'display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);line-height:1.6;';
+                            t.style.cssText = 'display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:500;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.7);line-height:1.5;';
                             t.textContent = tag;
                             tagRow.appendChild(t);
                         });
@@ -914,20 +1324,20 @@
 
                     if ((theme.addons || []).length > 0) {
                         var addEl = document.createElement('div');
-                        addEl.style.cssText = 'margin-top:.4em;font-size:.78em;opacity:.5;';
+                        addEl.style.cssText = 'margin-top:6px;font-size:0.75rem;color:rgba(255,255,255,0.5);font-weight:500;';
                         addEl.textContent = (theme.addons || []).length + ' addon(s) available';
                         footer.appendChild(addEl);
                     }
 
                     var btnRow = document.createElement('div');
-                    btnRow.style.cssText = 'display:flex;gap:.4em;margin-top:.6em;padding-bottom:.4em';
+                    btnRow.style.cssText = 'display:flex;gap:6px;margin-top:auto;padding-top:12px;';
 
                     var activateBtn = document.createElement('button');
                     activateBtn.type = 'button';
-                    activateBtn.style.cssText = 'flex:1;padding:.4em .5em;font-size:.78em;border-radius:4px;border:none;cursor:pointer;font-weight:600;'
+                    activateBtn.style.cssText = 'flex:1;padding:6px 14px;font-size:0.8125rem;font-weight:600;letter-spacing:0.02857em;text-transform:uppercase;border-radius:8px;border:none;cursor:pointer;transition:all 200ms cubic-bezier(0.4,0,0.2,1);'
                         + (isActive
-                            ? 'background:#00a4dc;color:#fff;'
-                            : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);');
+                            ? 'background:#90caf9;color:rgba(0,0,0,0.87);box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);'
+                            : 'background:rgba(144,202,249,0.08);border:1px solid rgba(144,202,249,0.5);color:#90caf9;');
                     activateBtn.textContent = isActive ? '✓ Active' : 'Apply';
                     activateBtn.style.pointerEvents = 'auto';
                     activateBtn.addEventListener('click', function (e) {
@@ -939,8 +1349,8 @@
                     if (isActive && hasVars) {
                         var cfgBtn = document.createElement('button');
                         cfgBtn.type = 'button';
-                        cfgBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;pointer-events:auto;';
-                        cfgBtn.textContent = '⚙';
+                        cfgBtn.style.cssText = 'padding:6px 10px;font-size:0.875rem;border-radius:8px;border:1px solid rgba(255,255,255,0.23);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.87);cursor:pointer;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;transition:all 200ms;';
+                        cfgBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
                         cfgBtn.title = 'Configure theme';
                         cfgBtn.addEventListener('click', function (e) {
                             e.stopPropagation();
@@ -953,8 +1363,8 @@
                         (function (t) {
                             var editBtn = document.createElement('button');
                             editBtn.type = 'button';
-                            editBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;pointer-events:auto;';
-                            editBtn.textContent = '\u270E';
+                            editBtn.style.cssText = 'padding:6px 10px;font-size:0.875rem;border-radius:8px;border:1px solid rgba(255,255,255,0.23);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.87);cursor:pointer;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;transition:all 200ms;';
+                            editBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
                             editBtn.title = 'Edit cached files';
                             editBtn.addEventListener('click', function (e) {
                                 e.stopPropagation();
@@ -966,7 +1376,7 @@
 
                     if (theme.sourceUrl) {
                         var srcBtn = document.createElement('a');
-                        srcBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;pointer-events:auto;';
+                        srcBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.23);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.87);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;pointer-events:auto;transition:all 200ms;';
                         srcBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
                         srcBtn.title = 'View source';
                         srcBtn.href = theme.sourceUrl;
@@ -977,8 +1387,7 @@
                     }
 
                     footer.appendChild(btnRow);
-                    cardBox.appendChild(footer);
-                    card.appendChild(cardBox);
+                    card.appendChild(footer);
                     return card;
                 }
 
@@ -1072,42 +1481,43 @@
                     var overlay = document.createElement('div');
                     overlay.id = 'jfThemeModalOverlay';
                     overlay.style.cssText = [
-                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,.75)',
+                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.7)',
+                        'backdrop-filter:blur(4px)', '-webkit-backdrop-filter:blur(4px)',
                         'z-index:100000', 'display:flex', 'align-items:center',
-                        'justify-content:center', 'padding:20px'
+                        'justify-content:center', 'padding:24px'
                     ].join(';') + ';';
 
                     var dialog = document.createElement('div');
-                    dialog.style.cssText = 'background:#1e1e2e;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:24px;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;';
+                    dialog.style.cssText = 'background:#1e1e1e;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:24px;width:100%;max-width:540px;max-height:85vh;overflow-y:auto;box-shadow:0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12);color:rgba(255,255,255,0.87);font-family:inherit;';
 
                     var title = document.createElement('h3');
-                    title.style.cssText = 'margin:0 0 4px;font-size:1.05em;';
+                    title.style.cssText = 'margin:0 0 6px;font-size:1.25rem;font-weight:600;color:rgba(255,255,255,0.87);line-height:1.3;';
                     title.textContent = getLocalizedTitle(theme) + ' — Configuration';
                     dialog.appendChild(title);
 
                     var subtitle = document.createElement('p');
-                    subtitle.style.cssText = 'margin:0 0 1.2em;font-size:.8em;opacity:.45;';
+                    subtitle.style.cssText = 'margin:0 0 20px;font-size:0.8125rem;color:rgba(255,255,255,0.6);line-height:1.43;';
                     subtitle.textContent = 'Variables apply CSS custom properties. Addon toggles add extra stylesheets.';
                     dialog.appendChild(subtitle);
 
                     var regularVars = (theme.vars || []).filter(function (v) { return (v.type || 'text') !== 'boolean'; });
                     if (regularVars.length > 0) {
                         var varsSection = document.createElement('div');
-                        varsSection.style.cssText = 'display:flex;flex-direction:column;gap:12px;margin-bottom:1.2em;';
+                        varsSection.style.cssText = 'display:flex;flex-direction:column;gap:16px;margin-bottom:20px;';
 
                         regularVars.forEach(function (v) {
                             var row = document.createElement('div');
-                            row.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
+                            row.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
 
                             var label = document.createElement('label');
                             label.htmlFor = 'tv-' + v.key;
-                            label.style.cssText = 'font-size:.85em;font-weight:600;';
+                            label.style.cssText = 'font-size:0.75rem;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.01em;';
                             label.textContent = v.name || v.key;
                             row.appendChild(label);
 
                             if (v.description) {
                                 var hint = document.createElement('div');
-                                hint.style.cssText = 'font-size:.76em;opacity:.45;margin-bottom:2px;';
+                                hint.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:2px;line-height:1.3;';
                                 hint.textContent = v.description;
                                 row.appendChild(hint);
                             }
@@ -1126,7 +1536,7 @@
                                 input.type = inputType === 'number' ? 'number' : 'text';
                                 input.id = 'tv-' + v.key;
                                 input.value = saved[v.key] !== undefined ? saved[v.key] : (v.default || '');
-                                input.style.cssText = 'padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:5px;color:inherit;font-size:.85em;font-family:inherit;width:100%;box-sizing:border-box;';
+                                input.style.cssText = 'padding:10px 14px;background-color:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.23);border-radius:8px;color:rgba(255,255,255,0.87);font-size:0.875rem;font-family:inherit;width:100%;box-sizing:border-box;transition:border-color 200ms;';
                                 input.dataset.varKey = v.key;
                                 row.appendChild(input);
                             }
@@ -1138,12 +1548,12 @@
 
                     if ((theme.addons || []).length > 0) {
                         var addonsTitle = document.createElement('p');
-                        addonsTitle.style.cssText = 'margin:0 0 .75em;font-size:.88em;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.06em;';
+                        addonsTitle.style.cssText = 'margin:0 0 10px;font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;';
                         addonsTitle.textContent = 'Addon Stylesheets';
                         dialog.appendChild(addonsTitle);
 
                         var addonsSection = document.createElement('div');
-                        addonsSection.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-bottom:1.2em;';
+                        addonsSection.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-bottom:20px;';
 
                         (theme.addons || []).forEach(function (addon) {
                             var varKey = addon.triggerVar || ('__addon__' + addon.id);
@@ -1163,19 +1573,19 @@
                             row.className = 'jfAddonToggle';
                             row.dataset.varKey = varKey;
                             row.dataset.checked = isChecked ? 'true' : 'false';
-                            row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;cursor:pointer;user-select:none;transition:background .15s;margin-bottom:0;';
+                            row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:8px;cursor:pointer;user-select:none;transition:background-color 150ms;';
 
                             var info = document.createElement('div');
                             info.style.cssText = 'flex:1;min-width:0;';
 
                             var addonName = document.createElement('div');
-                            addonName.style.cssText = 'font-size:.88em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit;margin:0;padding:0;';
+                            addonName.style.cssText = 'font-size:0.875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,0.87);margin:0;padding:0;';
                             addonName.textContent = addon.name || addon.id;
                             info.appendChild(addonName);
 
                             if (addon.description) {
                                 var addonDesc = document.createElement('div');
-                                addonDesc.style.cssText = 'font-size:.75em;opacity:.5;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0;padding:0;';
+                                addonDesc.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.6);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0;padding:0;';
                                 addonDesc.textContent = addon.description;
                                 info.appendChild(addonDesc);
                             }
@@ -1184,27 +1594,27 @@
                             pill.style.cssText = [
                                 'display:inline-block',
                                 'flex-shrink:0',
-                                'width:42px',
-                                'height:24px',
-                                'border-radius:12px',
+                                'width:38px',
+                                'height:20px',
+                                'border-radius:10px',
                                 'position:relative',
-                                'transition:background .2s',
+                                'transition:background 200ms cubic-bezier(0.4, 0, 0.2, 1)',
                                 'cursor:pointer',
                                 isChecked
-                                    ? 'background:#00a4dc'
-                                    : 'background:rgba(255,255,255,0.14)'
+                                    ? 'background:#90caf9'
+                                    : 'background:rgba(255,255,255,0.38)'
                             ].join(';');
 
                             var knob = document.createElement('div');
                             knob.style.cssText = [
                                 'position:absolute',
                                 'top:3px',
-                                'width:18px',
-                                'height:18px',
+                                'width:14px',
+                                'height:14px',
                                 'border-radius:50%',
-                                'background:#fff',
+                                'background:#ffffff',
                                 'box-shadow:0 1px 3px rgba(0,0,0,0.4)',
-                                'transition:left .2s',
+                                'transition:left 200ms cubic-bezier(0.4, 0, 0.2, 1)',
                                 isChecked ? 'left:21px' : 'left:3px'
                             ].join(';');
                             pill.appendChild(knob);
@@ -1215,7 +1625,7 @@
                             row.addEventListener('click', function () {
                                 var nowChecked = row.dataset.checked !== 'true';
                                 row.dataset.checked = nowChecked ? 'true' : 'false';
-                                pill.style.background = nowChecked ? '#00a4dc' : 'rgba(255,255,255,0.14)';
+                                pill.style.background = nowChecked ? '#90caf9' : 'rgba(255,255,255,0.38)';
                                 knob.style.left = nowChecked ? '21px' : '3px';
                             });
 
@@ -1226,18 +1636,20 @@
                     }
 
                     var actions = document.createElement('div');
-                    actions.style.cssText = 'display:flex;justify-content:flex-end;gap:.6em;margin-top:.5em;';
+                    actions.style.cssText = 'display:flex;justify-content:flex-end;gap:12px;margin-top:12px;';
 
                     var cancelBtn = document.createElement('button');
                     cancelBtn.type = 'button';
+                    cancelBtn.className = 'mui-btn-outlined';
                     cancelBtn.textContent = 'Cancel';
-                    cancelBtn.style.cssText = 'padding:7px 18px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;font-size:.88em;';
+                    cancelBtn.style.cssText = 'padding:6px 18px;';
                     cancelBtn.addEventListener('click', closeModal);
 
                     var saveBtn = document.createElement('button');
-                    saveBtn.setAttribute('is', 'emby-button');
-                    saveBtn.className = 'raised button-submit emby-button';
+                    saveBtn.type = 'button';
+                    saveBtn.className = 'mui-btn-contained';
                     saveBtn.textContent = 'Apply';
+                    saveBtn.style.cssText = 'padding:6px 20px;';
                     saveBtn.addEventListener('click', function () {
                         var newVars = Object.assign({}, currentVars());
 
@@ -1296,23 +1708,24 @@
                     var overlay = document.createElement('div');
                     overlay.id = 'jftPreviewOverlay';
                     overlay.style.cssText = [
-                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.82)',
+                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.8)',
+                        'backdrop-filter:blur(4px)', '-webkit-backdrop-filter:blur(4px)',
                         'z-index:100001', 'display:flex', 'align-items:center',
-                        'justify-content:center', 'padding:20px', 'cursor:pointer'
+                        'justify-content:center', 'padding:24px', 'cursor:pointer'
                     ].join(';');
 
                     var dialog = document.createElement('div');
                     dialog.style.cssText = [
-                        'background:#1a1d21',
-                        'border:1px solid rgba(255,255,255,0.1)',
-                        'border-radius:12px',
+                        'background:#1e1e1e',
+                        'border:1px solid rgba(255,255,255,0.12)',
+                        'border-radius:16px',
                         'width:100%',
-                        'max-width:640px',
+                        'max-width:680px',
                         'max-height:88vh',
                         'display:flex',
                         'flex-direction:column',
                         'overflow:hidden',
-                        'box-shadow:0 32px 80px rgba(0,0,0,0.8)',
+                        'box-shadow:0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12)',
                         'cursor:default',
                         'position:relative'
                     ].join(';');
@@ -1322,12 +1735,13 @@
                     closeBtn.textContent = '\u2715';
                     closeBtn.style.cssText = [
                         'position:absolute', 'top:12px', 'right:12px',
-                        'z-index:10', 'background:rgba(0,0,0,0.5)',
-                        'border:none', 'border-radius:50%',
-                        'width:28px', 'height:28px',
-                        'color:rgba(255,255,255,0.7)', 'cursor:pointer',
-                        'font-size:.9em', 'line-height:1',
-                        'display:flex', 'align-items:center', 'justify-content:center'
+                        'z-index:10', 'background:rgba(0,0,0,0.6)',
+                        'border:1px solid rgba(255,255,255,0.15)', 'border-radius:50%',
+                        'width:32px', 'height:32px',
+                        'color:rgba(255,255,255,0.87)', 'cursor:pointer',
+                        'font-size:1.0rem', 'line-height:1',
+                        'display:flex', 'align-items:center', 'justify-content:center',
+                        'transition:background 150ms ease'
                     ].join(';');
                     closeBtn.addEventListener('click', function (e) { e.stopPropagation(); overlay.remove(); });
                     dialog.appendChild(closeBtn);
@@ -1335,10 +1749,10 @@
                     var imgArea = document.createElement('div');
                     imgArea.style.cssText = [
                         'position:relative',
-                        'background:#111',
+                        'background:#121212',
                         'flex-shrink:0',
                         'overflow:hidden',
-                        'border-radius:12px 12px 0 0',
+                        'border-radius:16px 16px 0 0',
                         'max-height:52vh',
                         'display:flex',
                         'align-items:center',
@@ -1353,12 +1767,12 @@
                         imgEl.src = shots[0];
                     } else {
                         imgEl = document.createElement('div');
-                        imgEl.style.cssText = 'width:100%;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:.4;';
+                        imgEl.style.cssText = 'width:100%;height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:.4;';
                         var noIcon = document.createElement('div');
-                        noIcon.style.cssText = 'font-size:3em;';
-                        noIcon.textContent = '\uD83C\uDFA8';
+                        noIcon.style.cssText = 'color:#90caf9;display:flex;align-items:center;justify-content:center;';
+                        noIcon.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.36 19.64 10.63 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>';
                         var noText = document.createElement('div');
-                        noText.style.cssText = 'font-size:.82em;letter-spacing:.05em;';
+                        noText.style.cssText = 'font-size:0.8125rem;letter-spacing:0.04em;';
                         noText.textContent = 'No preview available';
                         imgEl.appendChild(noIcon);
                         imgEl.appendChild(noText);
@@ -1369,27 +1783,27 @@
                     if (isGallery) {
                         var ARROW_BASE = [
                             'position:absolute', 'top:50%', 'transform:translateY(-50%)',
-                            'background:rgba(0,0,0,0.55)', 'border:none', 'color:#fff',
+                            'background:rgba(0,0,0,0.6)', 'border:1px solid rgba(255,255,255,0.15)', 'color:#fff',
                             'font-size:1.6em', 'line-height:1', 'width:40px', 'height:60px',
-                            'border-radius:6px', 'cursor:pointer', 'z-index:2',
+                            'border-radius:8px', 'cursor:pointer', 'z-index:2',
                             'display:flex', 'align-items:center', 'justify-content:center',
-                            'transition:opacity .15s'
+                            'transition:opacity 200ms ease, background 200ms ease'
                         ].join(';');
 
                         var prevBtn = document.createElement('button');
                         prevBtn.type = 'button';
-                        prevBtn.style.cssText = ARROW_BASE + ';left:8px;';
+                        prevBtn.style.cssText = ARROW_BASE + ';left:12px;';
                         prevBtn.innerHTML = '&#8249;';
-                        prevBtn.title = 'Previous (left arrow key)';
+                        prevBtn.title = 'Previous';
 
                         var nextBtn = document.createElement('button');
                         nextBtn.type = 'button';
-                        nextBtn.style.cssText = ARROW_BASE + ';right:8px;';
+                        nextBtn.style.cssText = ARROW_BASE + ';right:12px;';
                         nextBtn.innerHTML = '&#8250;';
-                        nextBtn.title = 'Next (right arrow key)';
+                        nextBtn.title = 'Next';
 
                         dotContainer = document.createElement('div');
-                        dotContainer.style.cssText = 'display:flex;gap:6px;justify-content:center;padding:10px 0 2px;flex-shrink:0;background:#1a1d21;';
+                        dotContainer.style.cssText = 'display:flex;gap:8px;justify-content:center;padding:12px 0 4px;flex-shrink:0;background:#1e1e1e;';
 
                         function renderDots() {
                             dotContainer.innerHTML = '';
@@ -1399,10 +1813,10 @@
                                     dot.type = 'button';
                                     var active = i === idx;
                                     dot.style.cssText = [
-                                        'width:' + (active ? '20px' : '8px'),
+                                        'width:' + (active ? '24px' : '8px'),
                                         'height:8px', 'border-radius:4px', 'border:none',
-                                        'background:' + (active ? '#00a4dc' : 'rgba(255,255,255,0.3)'),
-                                        'cursor:pointer', 'padding:0', 'transition:all .2s'
+                                        'background:' + (active ? '#90caf9' : 'rgba(255,255,255,0.25)'),
+                                        'cursor:pointer', 'padding:0', 'transition:all 200ms cubic-bezier(0.4,0,0.2,1)'
                                     ].join(';');
                                     dot.addEventListener('click', function (e) {
                                         e.stopPropagation();
@@ -1416,8 +1830,8 @@
 
                         function updateGallery() {
                             imgEl.src = shots[idx];
-                            prevBtn.style.opacity = idx === 0 ? '0.25' : '0.8';
-                            nextBtn.style.opacity = idx === shots.length - 1 ? '0.25' : '0.8';
+                            prevBtn.style.opacity = idx === 0 ? '0.25' : '0.85';
+                            nextBtn.style.opacity = idx === shots.length - 1 ? '0.25' : '0.85';
                             renderDots();
                         }
 
@@ -1445,37 +1859,37 @@
                     var infoPanel = document.createElement('div');
                     infoPanel.style.cssText = [
                         'overflow-y:auto',
-                        'padding:18px 20px 20px',
+                        'padding:20px 24px 24px',
                         'flex:1',
                         'min-height:0'
                     ].join(';');
 
                     var titleEl = document.createElement('div');
-                    titleEl.style.cssText = 'font-size:1.1em;font-weight:700;color:#fff;margin-bottom:4px;';
+                    titleEl.style.cssText = 'font-size:1.25rem;font-weight:600;color:rgba(255,255,255,0.87);margin-bottom:4px;line-height:1.3;';
                     titleEl.textContent = getLocalizedTitle(theme);
                     infoPanel.appendChild(titleEl);
 
                     if (theme.author) {
                         var authorEl = document.createElement('div');
-                        authorEl.style.cssText = 'font-size:.8em;opacity:.5;margin-bottom:10px;';
+                        authorEl.style.cssText = 'font-size:0.8125rem;color:rgba(255,255,255,0.6);margin-bottom:12px;';
                         authorEl.textContent = 'by ' + theme.author;
                         infoPanel.appendChild(authorEl);
                     }
 
                     if (isGallery) {
                         var counterEl = document.createElement('div');
-                        counterEl.style.cssText = 'font-size:.72em;opacity:.35;margin-bottom:10px;';
+                        counterEl.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:12px;';
                         counterEl.textContent = shots.length + ' screenshots';
                         infoPanel.appendChild(counterEl);
                     }
 
                     if (desc) {
                         var divider = document.createElement('div');
-                        divider.style.cssText = 'border-top:1px solid rgba(255,255,255,0.07);margin-bottom:12px;';
+                        divider.style.cssText = 'border-top:1px solid rgba(255,255,255,0.12);margin-bottom:14px;';
                         infoPanel.appendChild(divider);
 
                         var descEl = document.createElement('div');
-                        descEl.style.cssText = 'font-size:.85em;line-height:1.7;color:rgba(255,255,255,0.72);white-space:pre-wrap;word-break:break-word;';
+                        descEl.style.cssText = 'font-size:0.875rem;line-height:1.6;color:rgba(255,255,255,0.75);white-space:pre-wrap;word-break:break-word;';
                         descEl.textContent = desc;
                         infoPanel.appendChild(descEl);
                     }
@@ -1492,24 +1906,50 @@
                     document.body.appendChild(overlay);
                 }
 
-
                 var selectedThemeCacheIds = [];
 
                 function switchThemeTab(name) {
                     var panels = { themes: 'tabThemes', settings: 'jft-tabSettings' };
                     Object.keys(panels).forEach(function (k) {
-                        document.getElementById(panels[k]).style.display = k === name ? '' : 'none';
+                        var panel = document.getElementById(panels[k]);
+                        if (panel) panel.style.display = k === name ? '' : 'none';
                     });
                     var jftRoot = document.querySelector('.jfThemePage') || document;
                     jftRoot.querySelectorAll('.jfThemeTab').forEach(function (btn) {
-                        var active = btn.dataset.tab === name;
-                        btn.style.borderBottomColor = active ? '#00a4dc' : 'transparent';
-                        btn.style.color = active ? '#00a4dc' : 'rgba(255,255,255,0.5)';
+                        var tabKey = btn.getAttribute('data-tab') || btn.dataset.tab;
+                        var active = tabKey === name;
+                        btn.classList.toggle('jfThemeTabActive', active);
+                        btn.classList.toggle('mui-tab-active', active);
+                        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+                        btn.setAttribute('tabindex', active ? '0' : '-1');
                     });
                     if (name === 'settings') loadThemeCacheInfo();
                 }
 
+                document.querySelectorAll('.jfThemeTab').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var tabKey = this.getAttribute('data-tab') || this.dataset.tab;
+                        if (tabKey) switchThemeTab(tabKey);
+                    });
+                });
 
+
+
+                function formatCacheDate(d) {
+                    if (!d || isNaN(d.getTime()) || d.getTime() === 0) return '—';
+                    var now = new Date();
+                    var diffMs = now - d;
+                    var diffMin = Math.floor(diffMs / 60000);
+                    var diffHr = Math.floor(diffMin / 60);
+                    var diffDay = Math.floor(diffHr / 24);
+                    var rel = '';
+                    if (diffMin < 1) rel = 'just now';
+                    else if (diffMin < 60) rel = diffMin + 'm ago';
+                    else if (diffHr < 24) rel = diffHr + 'h ago';
+                    else if (diffDay < 30) rel = diffDay + 'd ago';
+                    else rel = d.toLocaleDateString();
+                    return rel + ' (' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ')';
+                }
 
                 function loadThemeCacheInfo() {
                     var infoBar = document.getElementById('themeCacheInfoBar');
@@ -1527,24 +1967,30 @@
 
                             var grouped = {};
                             (data.entries || []).forEach(function (e) {
-                                if (!grouped[e.themeId]) grouped[e.themeId] = [];
-                                grouped[e.themeId].push(e);
+                                var key = e.themeId || 'unknown';
+                                if (!grouped[key]) grouped[key] = [];
+                                grouped[key].push(e);
                             });
 
                             if (Object.keys(grouped).length === 0) {
-                                list.innerHTML = '<div style="font-size:.82em;opacity:.45;padding:.4em 0;">Cache is empty.</div>';
+                                list.innerHTML = '<div style="font-size:0.8125rem;color:rgba(255,255,255,0.5);padding:8px 0;">Cache is empty.</div>';
                                 return;
                             }
 
                             Object.keys(grouped).sort().forEach(function (themeId) {
                                 var files = grouped[themeId];
                                 var kb2 = (files.reduce(function (s, f) { return s + f.sizeBytes; }, 0) / 1024).toFixed(1);
+                                var latestTimestamp = Math.max.apply(null, files.map(function (f) {
+                                    return f.modified ? new Date(f.modified).getTime() : 0;
+                                }));
+                                var latestDate = latestTimestamp > 0 ? new Date(latestTimestamp) : null;
+
                                 var row = document.createElement('div');
-                                row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:4px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);cursor:pointer;user-select:none;';
+                                row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);cursor:pointer;user-select:none;transition:background-color 150ms;';
 
                                 var chk = document.createElement('input');
                                 chk.type = 'checkbox';
-                                chk.style.cssText = 'flex-shrink:0;accent-color:#00a4dc;cursor:pointer;';
+                                chk.style.cssText = 'flex-shrink:0;accent-color:#90caf9;cursor:pointer;width:16px;height:16px;';
                                 chk.addEventListener('change', function () {
                                     if (chk.checked) {
                                         if (!selectedThemeCacheIds.includes(themeId)) selectedThemeCacheIds.push(themeId);
@@ -1555,14 +2001,43 @@
                                 });
 
                                 var label = document.createElement('div');
-                                label.style.cssText = 'flex:1;font-size:.83em;';
-                                var typeList = files.map(function (f) { return f.type; }).join(', ');
-                                label.innerHTML = '<span style="font-weight:600;">' + escHtml(themeId) + '</span>'
-                                    + '<span style="opacity:.45;margin-left:.5em;">v' + escHtml(files[0].version) + '</span>'
-                                    + '<span style="opacity:.35;margin-left:.5em;font-size:.9em;">[' + typeList + ']</span>';
+                                label.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;';
+
+                                var badgesHtml = '';
+                                var hasBase = files.some(function (f) { return (f.type === 'base' || !f.type) && !f.isCompiled; });
+                                var hasCompiled = files.some(function (f) { return f.isCompiled; });
+                                var addonFiles = files.filter(function (f) { return f.type === 'addon' || f.addonId; });
+
+                                if (hasBase) {
+                                    badgesHtml += '<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(144,202,249,0.12);color:#90caf9;font-size:0.7rem;font-weight:600;">BASE</span>';
+                                }
+                                if (hasCompiled) {
+                                    badgesHtml += '<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(206,147,216,0.15);color:#ce93d8;font-size:0.7rem;font-weight:600;">CONFIGURED</span>';
+                                }
+                                if (addonFiles.length > 0) {
+                                    var addonNames = [];
+                                    addonFiles.forEach(function (f) {
+                                        var aName = f.addonId ? f.addonId : 'ADDON';
+                                        if (!addonNames.includes(aName)) addonNames.push(aName);
+                                    });
+                                    badgesHtml += '<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(102,187,106,0.15);color:#66bb6a;font-size:0.7rem;font-weight:600;">+' + escHtml(addonNames.join(', ')).toUpperCase() + '</span>';
+                                }
+
+                                var topRow = '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">'
+                                    + '<span style="font-weight:600;font-size:0.875rem;color:rgba(255,255,255,0.87);">' + escHtml(themeId) + '</span>'
+                                    + '<span style="color:rgba(255,255,255,0.5);font-size:0.75rem;">v' + escHtml(files[0].version || '1.0.0') + '</span>'
+                                    + badgesHtml
+                                    + '</div>';
+
+                                var bottomRow = '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'
+                                    + '<span>Cached: ' + escHtml(formatCacheDate(latestDate)) + '</span>'
+                                    + '<span>' + files.length + ' file' + (files.length > 1 ? 's' : '') + '</span>'
+                                    + '</div>';
+
+                                label.innerHTML = topRow + bottomRow;
 
                                 var size = document.createElement('div');
-                                size.style.cssText = 'font-size:.78em;opacity:.4;flex-shrink:0;font-variant-numeric:tabular-nums;';
+                                size.style.cssText = 'font-size:0.8125rem;font-weight:500;color:rgba(255,255,255,0.7);flex-shrink:0;font-variant-numeric:tabular-nums;';
                                 size.textContent = kb2 + ' KB';
 
                                 row.appendChild(chk);
@@ -1592,7 +2067,7 @@
                     }).then(function (res) {
                         if (resultEl) {
                             resultEl.style.display = '';
-                            resultEl.style.color = '#60e090';
+                            resultEl.style.color = '#66bb6a';
                             resultEl.textContent = '✓ Purged. Cache will rebuild on next page load.';
                             setTimeout(function () { resultEl.style.display = 'none'; }, 4000);
                         }
@@ -1601,7 +2076,7 @@
                     }).catch(function () {
                         if (resultEl) {
                             resultEl.style.display = '';
-                            resultEl.style.color = '#e06060';
+                            resultEl.style.color = '#f44336';
                             resultEl.textContent = '✗ Purge failed. Check that you are logged in as admin.';
                         }
                     });
@@ -1625,47 +2100,48 @@
                     var overlay = document.createElement('div');
                     overlay.id = 'jfChangelogOverlay';
                     overlay.style.cssText = [
-                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.82)',
+                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.75)',
+                        'backdrop-filter:blur(4px)', '-webkit-backdrop-filter:blur(4px)',
                         'z-index:100020', 'display:flex', 'align-items:center',
-                        'justify-content:center', 'padding:20px'
+                        'justify-content:center', 'padding:24px'
                     ].join(';');
 
                     var dialog = document.createElement('div');
                     dialog.style.cssText = [
-                        'background:#1a1d21',
-                        'border:1px solid rgba(255,200,50,0.25)',
-                        'border-radius:10px',
+                        'background:#1e1e1e',
+                        'border:1px solid rgba(255,167,38,0.3)',
+                        'border-radius:16px',
                         'width:100%',
-                        'max-width:540px',
-                        'max-height:82vh',
+                        'max-width:560px',
+                        'max-height:85vh',
                         'display:flex',
                         'flex-direction:column',
-                        'box-shadow:0 24px 60px rgba(0,0,0,0.75)',
+                        'box-shadow:0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12)',
                         'overflow:hidden'
                     ].join(';');
 
                     var header = document.createElement('div');
                     header.style.cssText = [
                         'display:flex', 'align-items:center', 'gap:10px',
-                        'padding:18px 20px 14px',
-                        'border-bottom:1px solid rgba(255,255,255,0.07)',
+                        'padding:18px 24px 14px',
+                        'border-bottom:1px solid rgba(255,255,255,0.1)',
                         'flex-shrink:0'
                     ].join(';');
 
                     var headerTitle = document.createElement('div');
-                    headerTitle.style.cssText = 'font-size:1em;font-weight:700;color:#fff;flex:1;';
+                    headerTitle.style.cssText = 'font-size:1.125rem;font-weight:600;color:rgba(255,255,255,0.87);flex:1;';
                     headerTitle.textContent = "What's New";
 
                     var headerSub = document.createElement('div');
-                    headerSub.style.cssText = 'font-size:.75em;opacity:.45;';
+                    headerSub.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.5);';
                     headerSub.textContent = changelogs.length + ' ' + kind + (changelogs.length === 1 ? '' : 's') + ' updated';
 
                     var closeBtn = document.createElement('button');
                     closeBtn.type = 'button';
                     closeBtn.textContent = '\u2715';
                     closeBtn.style.cssText = [
-                        'background:none', 'border:none', 'color:rgba(255,255,255,0.45)',
-                        'cursor:pointer', 'font-size:1.1em', 'padding:4px 6px', 'line-height:1'
+                        'background:none', 'border:none', 'color:rgba(255,255,255,0.6)',
+                        'cursor:pointer', 'font-size:1.1rem', 'padding:4px 6px', 'line-height:1'
                     ].join(';');
                     closeBtn.addEventListener('click', function () { overlay.remove(); });
 
@@ -1674,12 +2150,12 @@
                     header.appendChild(closeBtn);
 
                     var body = document.createElement('div');
-                    body.style.cssText = 'overflow-y:auto;padding:16px 20px 20px;flex:1;';
+                    body.style.cssText = 'overflow-y:auto;padding:18px 24px;flex:1;';
 
                     changelogs.forEach(function (item, i) {
                         if (i > 0) {
                             var divider = document.createElement('div');
-                            divider.style.cssText = 'border-top:1px solid rgba(255,255,255,0.06);margin:18px 0;';
+                            divider.style.cssText = 'border-top:1px solid rgba(255,255,255,0.08);margin:18px 0;';
                             body.appendChild(divider);
                         }
 
@@ -1687,16 +2163,16 @@
                         nameRow.style.cssText = 'display:flex;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap;';
 
                         var nameEl = document.createElement('div');
-                        nameEl.style.cssText = 'font-size:.95em;font-weight:700;color:#fff;';
+                        nameEl.style.cssText = 'font-size:1.0rem;font-weight:600;color:rgba(255,255,255,0.87);';
                         nameEl.textContent = item.name;
 
                         var pill = document.createElement('div');
                         pill.style.cssText = [
-                            'font-size:.72em', 'font-family:monospace',
-                            'background:rgba(255,200,50,0.12)',
-                            'border:1px solid rgba(255,200,50,0.3)',
-                            'color:#ffd966', 'border-radius:4px',
-                            'padding:1px 7px', 'white-space:nowrap'
+                            'font-size:0.75rem', 'font-family:monospace',
+                            'background:rgba(255,167,38,0.12)',
+                            'border:1px solid rgba(255,167,38,0.3)',
+                            'color:#ffa726', 'border-radius:4px',
+                            'padding:1px 8px', 'white-space:nowrap'
                         ].join(';');
                         pill.textContent = item.prevVersion + ' \u2192 ' + item.newVersion;
 
@@ -1725,7 +2201,7 @@
 
                         if (toShow.length === 0) {
                             var noChanges = document.createElement('div');
-                            noChanges.style.cssText = 'font-size:.82em;opacity:.4;font-style:italic;';
+                            noChanges.style.cssText = 'font-size:0.8125rem;color:rgba(255,255,255,0.5);font-style:italic;';
                             noChanges.textContent = 'No changelog entries for this version.';
                             body.appendChild(noChanges);
                             return;
@@ -1739,17 +2215,17 @@
 
                             if (entry.version && toShow.length > 1) {
                                 var vLabel = document.createElement('div');
-                                vLabel.style.cssText = 'font-size:.72em;font-family:monospace;opacity:.4;margin-bottom:4px;margin-top:6px;';
+                                vLabel.style.cssText = 'font-size:0.75rem;font-family:monospace;color:rgba(255,255,255,0.5);margin-bottom:4px;margin-top:6px;';
                                 vLabel.textContent = 'v' + entry.version;
                                 body.appendChild(vLabel);
                             }
 
                             var list = document.createElement('ul');
-                            list.style.cssText = 'margin:0 0 4px 4px;padding-left:16px;list-style:disc;';
+                            list.style.cssText = 'margin:0 0 6px 4px;padding-left:16px;list-style:disc;';
 
                             changes.forEach(function (change) {
                                 var li = document.createElement('li');
-                                li.style.cssText = 'font-size:.85em;line-height:1.65;color:rgba(255,255,255,0.75);margin-bottom:2px;';
+                                li.style.cssText = 'font-size:0.875rem;line-height:1.6;color:rgba(255,255,255,0.75);margin-bottom:3px;';
                                 li.textContent = change;
                                 list.appendChild(li);
                             });
@@ -1761,20 +2237,16 @@
                     var footer = document.createElement('div');
                     footer.style.cssText = [
                         'display:flex', 'justify-content:flex-end',
-                        'padding:12px 20px',
-                        'border-top:1px solid rgba(255,255,255,0.07)',
+                        'padding:14px 24px',
+                        'border-top:1px solid rgba(255,255,255,0.1)',
                         'flex-shrink:0'
                     ].join(';');
 
                     var dismissBtn = document.createElement('button');
                     dismissBtn.type = 'button';
+                    dismissBtn.className = 'mui-btn-outlined';
                     dismissBtn.textContent = 'Close';
-                    dismissBtn.style.cssText = [
-                        'padding:7px 18px', 'border-radius:4px',
-                        'border:1px solid rgba(255,255,255,0.15)',
-                        'background:rgba(255,255,255,0.06)',
-                        'color:rgba(255,255,255,0.75)', 'cursor:pointer', 'font-size:.85em'
-                    ].join(';');
+                    dismissBtn.style.cssText = 'padding:6px 18px;';
                     dismissBtn.addEventListener('click', function () { overlay.remove(); });
 
                     footer.appendChild(dismissBtn);
@@ -1798,48 +2270,46 @@
                     var overlay = document.createElement('div');
                     overlay.id = 'jfCacheEditorOverlay';
                     overlay.style.cssText = [
-                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.88)',
+                        'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.85)',
+                        'backdrop-filter:blur(4px)', '-webkit-backdrop-filter:blur(4px)',
                         'z-index:100010', 'display:flex', 'flex-direction:column',
-                        'align-items:center', 'justify-content:center', 'padding:20px'
+                        'align-items:center', 'justify-content:center', 'padding:24px'
                     ].join(';');
 
                     var dialog = document.createElement('div');
                     dialog.style.cssText = [
                         'background:#1e1e1e', 'border:1px solid rgba(255,255,255,0.12)',
-                        'border-radius:10px', 'width:100%', 'max-width:900px',
+                        'border-radius:16px', 'width:100%', 'max-width:940px',
                         'height:88vh', 'display:flex', 'flex-direction:column',
-                        'box-shadow:0 32px 80px rgba(0,0,0,0.8)', 'overflow:hidden'
+                        'box-shadow:0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12)', 'overflow:hidden'
                     ].join(';');
 
                     var header = document.createElement('div');
                     header.style.cssText = [
-                        'display:flex', 'align-items:center', 'gap:10px',
-                        'padding:12px 16px', 'background:#252526',
-                        'border-bottom:1px solid rgba(255,255,255,0.08)', 'flex-shrink:0'
+                        'display:flex', 'align-items:center', 'gap:12px',
+                        'padding:14px 20px', 'background:#262626',
+                        'border-bottom:1px solid rgba(255,255,255,0.1)', 'flex-shrink:0'
                     ].join(';');
 
                     var titleEl = document.createElement('div');
-                    titleEl.style.cssText = 'font-size:.9em;font-weight:600;color:#fff;flex:1;';
+                    titleEl.style.cssText = 'font-size:0.95rem;font-weight:600;color:rgba(255,255,255,0.87);flex:1;';
                     titleEl.textContent = 'Cache Editor: ' + itemName;
 
                     var saveBtn = document.createElement('button');
                     saveBtn.type = 'button';
-                    saveBtn.style.cssText = [
-                        'padding:5px 16px', 'border-radius:4px', 'border:none',
-                        'background:#0e639c', 'color:#fff', 'cursor:pointer',
-                        'font-size:.82em', 'font-weight:600'
-                    ].join(';');
+                    saveBtn.className = 'mui-btn-contained';
+                    saveBtn.style.cssText = 'padding:6px 18px;font-size:0.8125rem;';
                     saveBtn.textContent = 'Save';
 
                     var saveStatus = document.createElement('span');
-                    saveStatus.style.cssText = 'font-size:.78em;opacity:.55;min-width:80px;text-align:right;';
+                    saveStatus.style.cssText = 'font-size:0.8125rem;color:rgba(255,255,255,0.6);min-width:90px;text-align:right;';
 
                     var closeBtn = document.createElement('button');
                     closeBtn.type = 'button';
                     closeBtn.textContent = '\u2715';
                     closeBtn.style.cssText = [
-                        'background:none', 'border:none', 'color:rgba(255,255,255,0.5)',
-                        'cursor:pointer', 'font-size:1.1em', 'line-height:1', 'padding:4px 6px'
+                        'background:none', 'border:none', 'color:rgba(255,255,255,0.6)',
+                        'cursor:pointer', 'font-size:1.1rem', 'line-height:1', 'padding:4px 6px'
                     ].join(';');
                     closeBtn.addEventListener('click', function () { overlay.remove(); });
 
@@ -1850,9 +2320,9 @@
 
                     var tabStrip = document.createElement('div');
                     tabStrip.style.cssText = [
-                        'display:flex', 'background:#2d2d2d',
-                        'border-bottom:1px solid rgba(255,255,255,0.08)',
-                        'flex-shrink:0', 'overflow-x:auto', 'min-height:36px'
+                        'display:flex', 'background:#262626',
+                        'border-bottom:1px solid rgba(255,255,255,0.1)',
+                        'flex-shrink:0', 'overflow-x:auto', 'min-height:38px'
                     ].join(';');
 
                     var editorWrap = document.createElement('div');
@@ -1860,8 +2330,8 @@
 
                     var textarea = document.createElement('textarea');
                     textarea.style.cssText = [
-                        'width:100%', 'height:100%', 'background:#1e1e1e',
-                        'color:#d4d4d4', 'border:none', 'outline:none',
+                        'width:100%', 'height:100%', 'background:#121212',
+                        'color:#e0e0e0', 'border:none', 'outline:none',
                         'font-family:\'Consolas\',\'Monaco\',\'Courier New\',monospace',
                         'font-size:13px', 'line-height:1.5', 'padding:16px',
                         'resize:none', 'box-sizing:border-box', 'tab-size:2'
@@ -1887,16 +2357,17 @@
                     var statusBar = document.createElement('div');
                     statusBar.style.cssText = [
                         'display:flex', 'align-items:center', 'gap:16px',
-                        'padding:4px 16px', 'background:#007acc', 'font-size:.72em',
-                        'color:#fff', 'flex-shrink:0'
+                        'padding:6px 18px', 'background:#1e1e1e', 'border-top:1px solid rgba(255,255,255,0.1)',
+                        'font-size:0.75rem', 'color:rgba(255,255,255,0.7)', 'flex-shrink:0'
                     ].join(';');
                     var langLabel = document.createElement('span');
+                    langLabel.style.cssText = 'color:#90caf9;font-weight:600;';
                     langLabel.textContent = '';
                     var fileLabel = document.createElement('span');
-                    fileLabel.style.cssText = 'opacity:.8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                    fileLabel.style.cssText = 'color:rgba(255,255,255,0.6);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
                     fileLabel.textContent = '';
                     var sizeLabel = document.createElement('span');
-                    sizeLabel.style.cssText = 'opacity:.7;';
+                    sizeLabel.style.cssText = 'color:rgba(255,255,255,0.5);font-variant-numeric:tabular-nums;';
                     statusBar.appendChild(langLabel);
                     statusBar.appendChild(fileLabel);
                     statusBar.appendChild(sizeLabel);
@@ -1919,7 +2390,8 @@
 
                     function setDirty(val) {
                         dirty = val;
-                        saveBtn.style.background = val ? '#c97c0c' : '#0e639c';
+                        saveBtn.style.background = val ? '#ffa726' : '#90caf9';
+                        saveBtn.style.color = 'rgba(0,0,0,0.87)';
                         saveStatus.textContent = val ? 'Unsaved changes' : '';
                     }
 
@@ -1942,8 +2414,8 @@
                         for (var i = 0; i < tabs.length; i++) {
                             var active = parseInt(tabs[i].getAttribute('data-tab-idx')) === idx;
                             tabs[i].style.background = active ? '#1e1e1e' : 'transparent';
-                            tabs[i].style.borderBottom = active ? '2px solid #007acc' : '2px solid transparent';
-                            tabs[i].style.color = active ? '#fff' : 'rgba(255,255,255,0.5)';
+                            tabs[i].style.borderBottom = active ? '2px solid #90caf9' : '2px solid transparent';
+                            tabs[i].style.color = active ? '#90caf9' : 'rgba(255,255,255,0.6)';
                         }
                         textarea.focus();
                     }

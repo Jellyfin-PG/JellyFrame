@@ -2,144 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>JellyFrame — Mods</title>
-    <style>
-        .jfModsPage .cardImageContainer {
-            height: 130px !important;
-            position: relative;
-            overflow: hidden;
-            background-size: cover !important;
-            background-position: top center !important;
-        }
-
-        .jfModsPage .card.enabledCard .cardBox {
-            outline: 3px solid #00a4dc;
-            outline-offset: -3px;
-            border-radius: 4px;
-        }
-
-        .jfModsPage .activeBar {
-            display: flex;
-            align-items: center;
-            gap: .75em;
-            padding: .6em 1em;
-            background: rgba(0, 164, 220, .1);
-            border: 1px solid rgba(0, 164, 220, .3);
-            border-radius: 4px;
-            margin-bottom: 1em;
-            font-size: .9em;
-        }
-
-        .jfModsPage .typeBadge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            z-index: 2;
-            pointer-events: none;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
-        }
-
-        .jfModsPage .typeBadge-js {
-            background: rgba(200, 160, 0, .85);
-            color: #fff;
-        }
-
-        .jfModsPage .typeBadge-css {
-            background: rgba(30, 100, 220, .85);
-            color: #fff;
-        }
-
-        .jfModsPage .typeBadge-both {
-            background: rgba(120, 50, 200, .85);
-            color: #fff;
-        }
-
-        .jfModsPage .typeBadge-srv {
-            background: rgba(20, 140, 70, .85);
-            color: #fff;
-        }
-
-        .jfModsPage .typeBadge-mixed {
-            background: rgba(200, 90, 20, .85);
-            color: #fff;
-        }
-
-        .jfModsPage .enabledCheck {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            background: #00a4dc;
-            color: #fff;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 1;
-        }
-
-        .jfModsPage .stateMsg {
-            padding: 3em 1em;
-            text-align: center;
-            opacity: .45;
-        }
-
-        .jfModsPage .card.editorsChoiceCard {
-            position: relative;
-            outline: 2px solid rgba(255, 200, 50, 0.8);
-            outline-offset: -2px;
-            border-radius: 4px;
-        }
-
-        .jfModsPage .card.editorsChoiceCard.enabledCard {
-            outline: 3px solid #00a4dc;
-            outline-offset: -3px;
-        }
-
-        .jfModsPage .editorsBadge {
-            position: absolute;
-            top: 100px;
-            right: 8px;
-            z-index: 10;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, rgba(255, 185, 0, 0.95), rgba(200, 130, 0, 0.95));
-            border: 1px solid rgba(255, 215, 80, 0.65);
-            border-radius: 50%;
-            font-size: 12px;
-            color: #1a1100;
-            pointer-events: auto;
-            cursor: default;
-            box-shadow: 0 1px 6px rgba(180, 120, 0, 0.55), 0 0 0 0 rgba(255, 185, 0, 0);
-            animation: jfEcShimmer 3s ease-in-out infinite;
-        }
-
-        @keyframes jfEcShimmer {
-
-            0%,
-            100% {
-                box-shadow: 0 1px 6px rgba(180, 120, 0, 0.5);
-            }
-
-            50% {
-                box-shadow: 0 1px 14px rgba(255, 190, 0, 0.85);
-            }
-        }
-    </style>
+    <title>JellyFrame - Mods</title>
 </head>
 
 <body>
@@ -147,158 +10,670 @@
         class="page type-interior pluginConfigurationPage jfModsConfigPage jfModsPage"
         data-require="emby-input,emby-button,emby-select">
 
+        <style>
+            :root {
+                --mui-palette-primary-main: #90caf9;
+                --mui-palette-primary-dark: #42a5f5;
+                --mui-palette-primary-contrast: rgba(0, 0, 0, 0.87);
+                --mui-palette-secondary-main: #ce93d8;
+                --mui-palette-success-main: #66bb6a;
+                --mui-palette-warning-main: #ffa726;
+                --mui-palette-error-main: #f44336;
+                --mui-palette-info-main: #29b6f6;
+                --mui-palette-bg-default: #121212;
+                --mui-palette-bg-paper: #1e1e1e;
+                --mui-palette-bg-elevated: #262626;
+                --mui-palette-text-primary: rgba(255, 255, 255, 0.87);
+                --mui-palette-text-secondary: rgba(255, 255, 255, 0.60);
+                --mui-palette-divider: rgba(255, 255, 255, 0.12);
+                --mui-shape-radius-sm: 4px;
+                --mui-shape-radius-md: 8px;
+                --mui-shape-radius-lg: 12px;
+                --mui-shape-radius-pill: 9999px;
+                --mui-shadow-elevation-1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-2: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-4: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-8: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-24: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
+            }
+
+            .jfModsPage {
+                font-family: "Roboto", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif !important;
+                color: var(--mui-palette-text-primary) !important;
+                box-sizing: border-box !important;
+                padding: 16px 24px !important;
+                max-width: 1300px !important;
+                margin: 0 auto !important;
+            }
+
+            .jfModsPage h2 {
+                font-size: 2.0rem !important;
+                font-weight: 600 !important;
+                line-height: 1.25 !important;
+                letter-spacing: -0.00833em !important;
+                margin: 0 0 20px 0 !important;
+                color: var(--mui-palette-text-primary) !important;
+            }
+
+            /* MUI Tabs Navigation */
+            .jfModsPage .mui-tabs {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 0 !important;
+                margin-bottom: 24px !important;
+                border-bottom: 1px solid var(--mui-palette-divider) !important;
+                padding-bottom: 0 !important;
+                width: 100% !important;
+                min-height: 48px !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+            }
+
+            .jfModsPage .mmTab,
+            .jfModsPage .mui-tab {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 8px !important;
+                min-height: 48px !important;
+                min-width: 90px !important;
+                padding: 12px 20px !important;
+                border: none !important;
+                background: transparent !important;
+                cursor: pointer !important;
+                border-bottom: 2px solid transparent !important;
+                margin-bottom: -1px !important;
+                color: var(--mui-palette-text-secondary) !important;
+                font-family: inherit !important;
+                font-size: 0.875rem !important;
+                font-weight: 500 !important;
+                line-height: 1.25 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1), background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                position: relative !important;
+                box-sizing: border-box !important;
+                user-select: none !important;
+                outline: none !important;
+                border-top-left-radius: var(--mui-shape-radius-sm) !important;
+                border-top-right-radius: var(--mui-shape-radius-sm) !important;
+            }
+
+            .jfModsPage .mmTab:hover,
+            .jfModsPage .mui-tab:hover {
+                color: var(--mui-palette-text-primary) !important;
+                background-color: rgba(255, 255, 255, 0.04) !important;
+            }
+
+            .jfModsPage .mmTab:focus-visible,
+            .jfModsPage .mui-tab:focus-visible {
+                outline: 2px solid var(--mui-palette-primary-main) !important;
+                outline-offset: -2px !important;
+            }
+
+            .jfModsPage .mmTab.mmTabActive,
+            .jfModsPage .mmTabActive,
+            .jfModsPage .mui-tab-active {
+                color: var(--mui-palette-primary-main) !important;
+                border-bottom: 2px solid var(--mui-palette-primary-main) !important;
+                font-weight: 600 !important;
+                background-color: transparent !important;
+            }
+
+            .jfModsPage .mui-tab-icon {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 1.1rem !important;
+                line-height: 1 !important;
+            }
+
+            /* MUI Alert Banners */
+            .jfModsPage .mui-alert-banner {
+                display: flex !important;
+                align-items: center !important;
+                gap: 12px !important;
+                padding: 12px 18px !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                margin-bottom: 20px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.5 !important;
+                transition: all 200ms ease !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfModsPage .mui-alert-banner-info {
+                background-color: rgba(144, 202, 249, 0.1) !important;
+                border: 1px solid rgba(144, 202, 249, 0.3) !important;
+                color: var(--mui-palette-primary-main) !important;
+            }
+
+            .jfModsPage .mui-alert-banner-warning {
+                background-color: rgba(255, 167, 38, 0.1) !important;
+                border: 1px solid rgba(255, 167, 38, 0.35) !important;
+                color: var(--mui-palette-warning-main) !important;
+            }
+
+            /* MUI Outlined Inputs & Form Controls */
+            .jfModsPage .inputContainer,
+            .jfModsPage .selectContainer {
+                margin-bottom: 16px !important;
+            }
+
+            .jfModsPage .inputLabel,
+            .jfModsPage .selectLabel {
+                font-size: 0.75rem !important;
+                font-weight: 600 !important;
+                color: var(--mui-palette-text-secondary) !important;
+                margin-bottom: 6px !important;
+                display: block !important;
+                letter-spacing: 0.01em !important;
+                text-transform: uppercase !important;
+            }
+
+            .jfModsPage input.emby-input,
+            .jfModsPage select.emby-select {
+                width: 100% !important;
+                padding: 10px 14px !important;
+                background-color: rgba(255, 255, 255, 0.04) !important;
+                border: 1px solid rgba(255, 255, 255, 0.23) !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                color: var(--mui-palette-text-primary) !important;
+                font-family: inherit !important;
+                font-size: 0.875rem !important;
+                box-sizing: border-box !important;
+                transition: border-color 200ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 200ms ease, background-color 200ms ease !important;
+            }
+
+            .jfModsPage input.emby-input:hover,
+            .jfModsPage select.emby-select:hover {
+                border-color: rgba(255, 255, 255, 0.4) !important;
+                background-color: rgba(255, 255, 255, 0.06) !important;
+            }
+
+            .jfModsPage input.emby-input:focus,
+            .jfModsPage select.emby-select:focus {
+                border-color: var(--mui-palette-primary-main) !important;
+                outline: none !important;
+                box-shadow: 0 0 0 1px var(--mui-palette-primary-main) !important;
+                background-color: rgba(255, 255, 255, 0.07) !important;
+            }
+
+            /* MUI Buttons */
+            .jfModsPage .mui-btn-contained,
+            button.mui-btn-contained,
+            a.mui-btn-contained {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: var(--mui-palette-primary-main) !important;
+                color: var(--mui-palette-primary-contrast) !important;
+                font-family: inherit !important;
+                font-weight: 600 !important;
+                padding: 8px 22px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.75 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                border: none !important;
+                cursor: pointer !important;
+                box-shadow: var(--mui-shadow-elevation-2) !important;
+                transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                text-decoration: none !important;
+                user-select: none !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfModsPage .mui-btn-contained:hover:not(:disabled),
+            button.mui-btn-contained:hover:not(:disabled) {
+                background-color: var(--mui-palette-primary-dark) !important;
+                box-shadow: var(--mui-shadow-elevation-4) !important;
+            }
+
+            .jfModsPage .mui-btn-contained:active:not(:disabled) {
+                transform: scale(0.98) !important;
+            }
+
+            .jfModsPage .mui-btn-contained:disabled,
+            button.mui-btn-contained:disabled {
+                background-color: rgba(255, 255, 255, 0.12) !important;
+                color: rgba(255, 255, 255, 0.3) !important;
+                box-shadow: none !important;
+                cursor: default !important;
+                pointer-events: none !important;
+            }
+
+            .jfModsPage .mui-btn-outlined,
+            button.mui-btn-outlined,
+            a.mui-btn-outlined {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: transparent !important;
+                color: var(--mui-palette-primary-main) !important;
+                border: 1px solid rgba(144, 202, 249, 0.5) !important;
+                font-family: inherit !important;
+                font-weight: 600 !important;
+                padding: 7px 18px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.75 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                cursor: pointer !important;
+                transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                text-decoration: none !important;
+                user-select: none !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfModsPage .mui-btn-outlined:hover:not(:disabled),
+            button.mui-btn-outlined:hover:not(:disabled) {
+                background-color: rgba(144, 202, 249, 0.08) !important;
+                border-color: var(--mui-palette-primary-main) !important;
+            }
+
+            .jfModsPage .mui-btn-outlined-danger,
+            button.mui-btn-outlined-danger {
+                color: var(--mui-palette-error-main) !important;
+                border-color: rgba(244, 67, 54, 0.5) !important;
+                background-color: rgba(244, 67, 54, 0.04) !important;
+            }
+
+            .jfModsPage .mui-btn-outlined-danger:hover:not(:disabled),
+            button.mui-btn-outlined-danger:hover:not(:disabled) {
+                background-color: rgba(244, 67, 54, 0.12) !important;
+                border-color: var(--mui-palette-error-main) !important;
+            }
+
+            /* MUI Cards Grid */
+            .jfModsPage #modGrid,
+            #modGrid {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+                gap: 20px !important;
+                padding: 16px 0 24px 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* MUI Card Containers */
+            .jfModsPage .card,
+            .jfModsPage .mui-card,
+            .jfModsPage .overflowBackdropCard {
+                background-color: var(--mui-palette-bg-paper) !important;
+                border-radius: var(--mui-shape-radius-lg) !important;
+                border: 1px solid var(--mui-palette-divider) !important;
+                box-shadow: var(--mui-shadow-elevation-1) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+                pointer-events: auto !important;
+                transition: box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1), transform 200ms ease, border-color 250ms ease !important;
+            }
+
+            .jfModsPage .card:hover,
+            .jfModsPage .mui-card:hover {
+                box-shadow: var(--mui-shadow-elevation-4) !important;
+                border-color: rgba(144, 202, 249, 0.4) !important;
+                transform: translateY(-2px) !important;
+            }
+
+            .jfModsPage .card.enabledCard {
+                border-color: var(--mui-palette-primary-main) !important;
+                box-shadow: 0 0 0 1px var(--mui-palette-primary-main), var(--mui-shadow-elevation-2) !important;
+            }
+
+            .jfModsPage .card.editorsChoiceCard {
+                border-color: rgba(255, 167, 38, 0.6) !important;
+            }
+
+            .jfModsPage .card.editorsChoiceCard.enabledCard {
+                border-color: var(--mui-palette-primary-main) !important;
+            }
+
+            .jfModsPage #mm-tabSettings .card,
+            .jfModsPage #mm-tabSettings .mui-card,
+            #mm-tabSettings .card,
+            #mm-tabSettings .mui-card {
+                margin: 0 0 24px 0 !important;
+                padding: 24px !important;
+            }
+
+            .jfModsPage #mm-tabSettings .card:last-child,
+            .jfModsPage #mm-tabSettings .mui-card:last-child,
+            #mm-tabSettings .card:last-child,
+            #mm-tabSettings .mui-card:last-child {
+                margin-bottom: 0 !important;
+            }
+
+            .jfModsPage .cardBox,
+            .jfModsPage .cardScalable,
+            .jfModsPage .cardPadder,
+            .jfModsPage .cardContent {
+                display: flex !important;
+                flex-direction: column !important;
+                flex: 1 1 auto !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                border-radius: 0 !important;
+                outline: none !important;
+                box-shadow: none !important;
+                pointer-events: auto !important;
+                position: relative !important;
+            }
+
+            .jfModsPage .cardImageContainer {
+                display: block !important;
+                width: 100% !important;
+                height: 160px !important;
+                min-height: 160px !important;
+                max-height: 160px !important;
+                flex: 0 0 160px !important;
+                position: relative !important;
+                overflow: hidden !important;
+                background-size: cover !important;
+                background-position: top center !important;
+                background-color: rgba(0, 0, 0, 0.35) !important;
+                border-top-left-radius: var(--mui-shape-radius-lg) !important;
+                border-top-right-radius: var(--mui-shape-radius-lg) !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfModsPage .cardImageContainer img {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 160px !important;
+                min-height: 160px !important;
+                max-height: 160px !important;
+                object-fit: cover !important;
+                object-position: top center !important;
+                display: block !important;
+                pointer-events: none !important;
+            }
+
+            .jfModsPage .cardFooter {
+                display: flex !important;
+                flex-direction: column !important;
+                flex: 1 1 auto !important;
+                padding: 14px 16px !important;
+                background: transparent !important;
+                box-sizing: border-box !important;
+            }
+
+            /* MUI Badges & Chips on Cards */
+            .jfModsPage .typeBadge {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                padding: 3px 8px;
+                border-radius: var(--mui-shape-radius-sm);
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                z-index: 2;
+                pointer-events: none;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+            }
+
+            .jfModsPage .typeBadge-js {
+                background: rgba(255, 167, 38, 0.9);
+                color: #000;
+                font-weight: 800;
+            }
+
+            .jfModsPage .typeBadge-css {
+                background: rgba(41, 182, 246, 0.9);
+                color: #000;
+                font-weight: 800;
+            }
+
+            .jfModsPage .typeBadge-both {
+                background: rgba(171, 71, 188, 0.9);
+                color: #fff;
+            }
+
+            .jfModsPage .typeBadge-srv {
+                background: rgba(102, 187, 106, 0.9);
+                color: #000;
+                font-weight: 800;
+            }
+
+            .jfModsPage .typeBadge-mixed {
+                background: rgba(255, 112, 67, 0.9);
+                color: #fff;
+            }
+
+            .jfModsPage .enabledCheck {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: var(--mui-palette-primary-main);
+                color: #000;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                font-weight: 800;
+                z-index: 2;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            }
+
+            .jfModsPage .stateMsg {
+                padding: 48px 16px;
+                text-align: center;
+                color: var(--mui-palette-text-secondary);
+                font-size: 0.95rem;
+                grid-column: 1 / -1;
+            }
+        </style>
+
         <div data-role="content">
             <div class="content-primary">
 
                 <h2>Mods</h2>
 
-
-                <div id="mmTabs"
-                    style="display:flex;gap:4px;margin-bottom:1.5em;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:0;">
-                    <button type="button" class="mmTab mmTabActive" data-tab="marketplace"
-                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid #00a4dc;color:#00a4dc;font-size:.9em;font-weight:600;letter-spacing:.03em;">
-                        Marketplace
+                <div id="mmTabs" class="mui-tabs" role="tablist">
+                    <button type="button" class="mmTab mmTabActive mui-tab mui-tab-active" data-tab="marketplace"
+                        role="tab" aria-selected="true" tabindex="0">
+                        <span class="mui-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z" />
+                            </svg>
+                        </span>
+                        <span>Marketplace</span>
                     </button>
-                    <button type="button" class="mmTab" data-tab="health"
-                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:rgba(255,255,255,0.5);font-size:.9em;font-weight:600;letter-spacing:.03em;">
-                        Health
+                    <button type="button" class="mmTab mui-tab" data-tab="health" role="tab" aria-selected="false"
+                        tabindex="-1">
+                        <span class="mui-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z" />
+                            </svg>
+                        </span>
+                        <span>Health</span>
                     </button>
-                    <button type="button" class="mmTab" data-tab="settings"
-                        style="padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:rgba(255,255,255,0.5);font-size:.9em;font-weight:600;letter-spacing:.03em;">
-                        Settings
+                    <button type="button" class="mmTab mui-tab" data-tab="settings" role="tab" aria-selected="false"
+                        tabindex="-1">
+                        <span class="mui-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                            </svg>
+                        </span>
+                        <span>Settings</span>
                     </button>
                 </div>
 
-
                 <div id="tabMarketplace">
-                    <div class="activeBar" id="mm-activeBar" style="display:none">
+                    <div class="mui-alert-banner mui-alert-banner-info" id="mm-activeBar" style="display:none">
                         <span><strong id="activeCount">0</strong> mod(s) active</span>
-                        <button type="button" id="btnDisableAll"
-                            style="margin-left:auto;padding:6px 16px;border-radius:4px;border:1px solid rgba(220,80,80,0.5);background:rgba(220,80,80,0.18);color:#e08080;cursor:pointer;font-size:.82em;font-weight:600;letter-spacing:.02em;">
+                        <button type="button" id="btnDisableAll" class="mui-btn-outlined mui-btn-outlined-danger"
+                            style="margin-left:auto;padding:4px 14px;font-size:0.75rem;">
                             Disable All
                         </button>
                     </div>
 
-
-                    <div id="whatsNewBar"
-                        style="display:none;gap:10px;padding:.65em 1em;background:rgba(255,200,50,.08);border:1px solid rgba(255,200,50,.25);border-radius:4px;margin-top:1em;margin-bottom:1em;font-size:.88em;align-items:center;">
-                        <span>🆕</span>
+                    <div id="whatsNewBar" class="mui-alert-banner mui-alert-banner-warning" style="display:none">
+                        <span class="mui-alert-icon" style="display:inline-flex;align-items:center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-10 5h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                            </svg>
+                        </span>
                         <span id="whatsNewText" style="flex:1"></span>
-                        <button type="button" id="btnWhatsNewChangelog"
-                            style="display:none;background:rgba(255,200,50,.18);border:1px solid rgba(255,200,50,.4);border-radius:4px;color:#ffd966;cursor:pointer;font-size:.82em;font-weight:600;padding:4px 10px;white-space:nowrap;">What's
+                        <button type="button" id="btnWhatsNewChangelog" class="mui-btn-outlined"
+                            style="display:none;color:#ffa726;border-color:rgba(255,167,38,0.5);padding:4px 12px;font-size:0.75rem;">What's
                             New</button>
-                        <button type="button" id="btnWhatsNewUpdate"
-                            style="background:#00a4dc;border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:.82em;font-weight:600;padding:4px 10px;white-space:nowrap;">Update
-                            Now</button>
+                        <button type="button" id="btnWhatsNewUpdate" class="mui-btn-contained"
+                            style="padding:4px 14px;font-size:0.75rem;">Update Now</button>
                         <button type="button" id="btnWhatsNewDismiss"
-                            style="background:none;border:none;cursor:pointer;opacity:.5;font-size:1.1em;line-height:1;padding:0 4px;">✕</button>
+                            style="background:none;border:none;cursor:pointer;opacity:0.6;color:inherit;font-size:1.1rem;padding:0 6px;">✕</button>
                     </div>
 
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="modsUrl">Mod Repository URL</label>
+                        <label class="inputLabel" for="modsUrl">Mod Repository URL</label>
                         <input type="url" id="modsUrl" class="emby-input"
                             placeholder="https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/mods.json" />
                     </div>
                     <div id="mm-sourceStatus"
-                        style="display:none;margin:6px 0 14px;font-size:.82em;padding:5px 10px;border-radius:4px;">
+                        style="display:none;margin:6px 0 16px;font-size:0.8125rem;padding:6px 12px;border-radius:6px;">
                     </div>
-                    <div style="margin-bottom:1.5em">
-                        <button is="emby-button" type="button" id="mm-btnLoad" class="raised emby-button">Load
-                            Mods</button>
+                    <div style="margin-bottom:1.75rem">
+                        <button type="button" id="mm-btnLoad" class="mui-btn-contained">Load Mods</button>
                     </div>
 
-                    <div class="inputContainer" style="margin-bottom:.25em">
-                        <label class="inputLabel inputLabelUnfocused" for="mm-searchInput">Search</label>
-                        <input type="text" id="mm-searchInput" class="emby-input" placeholder="Search mods…" />
+                    <div style="display:flex;gap:16px;align-items:flex-end;margin-bottom:12px;flex-wrap:wrap;">
+                        <div class="inputContainer" style="flex:1;min-width:220px;margin:0;">
+                            <label class="inputLabel" for="mm-searchInput">Search</label>
+                            <input type="text" id="mm-searchInput" class="emby-input" placeholder="Search mods…" />
+                        </div>
+                        <div class="selectContainer" style="min-width:200px;margin:0;">
+                            <label class="selectLabel" for="mm-sortSelect">Sort by</label>
+                            <select is="emby-select" id="mm-sortSelect" class="emby-select-withcolor emby-select">
+                                <option value="recently-updated" selected>Recently Updated</option>
+                                <option value="newest">Newest</option>
+                                <option value="name">Name (A–Z)</option>
+                                <option value="name-desc">Name (Z–A)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div id="typeFilters"
-                        style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;margin-bottom:4px;"></div>
+                        style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;margin-bottom:8px;"></div>
                     <div id="mm-tagFilters"
-                        style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:16px;"></div>
+                        style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:20px;"></div>
 
                     <div id="modGrid" class="itemsContainer vertical-wrap">
                         <div class="stateMsg">Enter a repository URL above and click <strong>Load Mods</strong>.</div>
                     </div>
 
-                    <div style="margin-top:1.5em;display:flex;align-items:center;gap:1em;flex-wrap:wrap">
-                        <span id="mm-pendingLabel" style="font-size:.85em;opacity:.6">No pending changes</span>
-                        <button is="emby-button" type="button" id="mm-btnSave" class="raised button-submit emby-button"
-                            disabled>Save &amp; Apply</button>
+                    <div style="margin-top:2rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap">
+                        <span id="mm-pendingLabel" style="font-size:0.875rem;opacity:0.7">No pending changes</span>
+                        <button type="button" id="mm-btnSave" class="mui-btn-contained" disabled>Save &amp;
+                            Apply</button>
                     </div>
-                    <p style="font-size:.8em;opacity:.45;margin-top:.75em">
+                    <p style="font-size:0.8125rem;opacity:0.5;margin-top:0.75rem">
                         After saving, hard-refresh with <strong>Ctrl+Shift+R</strong> to see changes.
                     </p>
                 </div>
 
 
                 <div id="tabHealth" style="display:none">
-                    <div style="display:flex;align-items:center;gap:1em;margin-bottom:1em;">
-                        <h3 style="margin:0;font-size:1em;font-weight:600;">Server Mod Health</h3>
-                        <button type="button" id="btnRefreshHealth"
-                            style="padding:4px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.82em;">
+                    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+                        <h3 style="margin:0;font-size:1.125rem;font-weight:600;color:rgba(255,255,255,0.87);">Server Mod
+                            Health</h3>
+                        <button type="button" id="btnRefreshHealth" class="mui-btn-outlined"
+                            style="padding:4px 14px;font-size:0.75rem;">
                             ↻ Refresh
                         </button>
                     </div>
                     <div id="pluginHealthSummary" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:1.5em;">
                     </div>
-                    <div id="healthGrid" style="display:flex;flex-direction:column;gap:10px;">
-                        <div class="stateMsg" style="opacity:.4;font-size:.9em">Loading health data…</div>
+                    <div id="healthGrid" style="display:flex;flex-direction:column;gap:12px;">
+                        <div class="stateMsg" style="opacity:.5;font-size:0.875rem">Loading health data…</div>
                     </div>
                 </div>
 
 
                 <div id="mm-tabSettings" style="display:none">
 
-
-                    <div
-                        style="padding:.75em 1em;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:1em;">
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.9em;">
-                            <input type="checkbox" id="chkDebug" is="emby-checkbox" />
+                    <div class="card" style="padding:20px;margin-bottom:20px;">
+                        <label
+                            style="display:flex;align-items:center;gap:12px;cursor:pointer;font-size:0.875rem;font-weight:500;">
+                            <input type="checkbox" id="chkDebug" is="emby-checkbox"
+                                style="width:18px;height:18px;accent-color:#90caf9;" />
                             <span>Enable debug logging (writes to Jellyfin log)</span>
                         </label>
-                        <p style="font-size:.78em;opacity:.4;margin:.4em 0 0 24px">Takes effect immediately — no page
-                            reload needed.</p>
+                        <p style="font-size:0.8125rem;color:rgba(255,255,255,0.5);margin:6px 0 0 30px;">Takes effect
+                            immediately — no page reload needed.</p>
                     </div>
 
-
-                    <div style="padding:1em;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:1em;">
-                        <div style="display:flex;align-items:center;gap:1em;margin-bottom:.75em;">
-                            <p style="margin:0;font-size:.9em;font-weight:600;">Mod Cache</p>
-                            <button type="button" id="btnRefreshCacheInfo"
-                                style="padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.78em;">
+                    <div class="card" style="padding:20px;margin-bottom:20px;">
+                        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+                            <p style="margin:0;font-size:1.0rem;font-weight:600;color:rgba(255,255,255,0.87);">Mod Cache
+                            </p>
+                            <button type="button" id="btnRefreshCacheInfo" class="mui-btn-outlined"
+                                style="padding:3px 12px;font-size:0.75rem;">
                                 ↻ Refresh
                             </button>
                         </div>
-                        <p style="margin:0 0 .75em;font-size:.8em;opacity:.55;">
+                        <p style="margin:0 0 16px;font-size:0.8125rem;color:rgba(255,255,255,0.6);line-height:1.5;">
                             Cached files are pre-compiled JS/CSS downloads stored on disk.
                             Purging forces a fresh download and re-compilation on next page load.
                             <strong>Permissions only apply to server-side JS</strong> — CSS and browser JS are
                             unaffected.
                         </p>
-                        <div id="cacheInfoBar" style="font-size:.82em;opacity:.6;margin-bottom:.75em;">Loading…</div>
+                        <div id="cacheInfoBar"
+                            style="font-size:0.8125rem;color:rgba(255,255,255,0.6);margin-bottom:12px;">Loading…</div>
                         <div id="cacheModList"
-                            style="display:flex;flex-direction:column;gap:6px;margin-bottom:.75em;max-height:220px;overflow-y:auto;">
+                            style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:240px;overflow-y:auto;">
                         </div>
-                        <div style="display:flex;gap:.6em;flex-wrap:wrap;">
-                            <button type="button" id="btnPurgeAll"
-                                style="padding:6px 16px;border-radius:4px;border:1px solid rgba(220,80,80,0.5);background:rgba(220,80,80,0.18);color:#e08080;cursor:pointer;font-size:.82em;font-weight:600;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                            <button type="button" id="btnPurgeAll" class="mui-btn-outlined mui-btn-outlined-danger"
+                                style="padding:6px 16px;font-size:0.8125rem;">
                                 Purge All Cache
                             </button>
-                            <button type="button" id="btnPurgeSelected"
-                                style="padding:6px 16px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;font-size:.82em;"
-                                disabled>
+                            <button type="button" id="btnPurgeSelected" class="mui-btn-outlined"
+                                style="padding:6px 16px;font-size:0.8125rem;" disabled>
                                 Purge Selected
                             </button>
                         </div>
-                        <p id="cacheActionResult" style="margin:.6em 0 0;font-size:.8em;color:#60e090;display:none;">
+                        <p id="cacheActionResult"
+                            style="margin:12px 0 0;font-size:0.8125rem;color:#66bb6a;display:none;">
                         </p>
                     </div>
 
-
-                    <div style="padding:.75em 1em;background:rgba(255,255,255,0.04);border-radius:6px;">
-                        <p style="margin:0 0 .3em;font-size:.9em;font-weight:600;">Plugin Info</p>
-                        <p style="margin:0;font-size:.82em;opacity:.55;" id="pluginVersionLabel">Loading…</p>
+                    <div class="card" style="padding:20px;">
+                        <p style="margin:0 0 6px;font-size:1.0rem;font-weight:600;color:rgba(255,255,255,0.87);">Plugin
+                            Info</p>
+                        <p style="margin:0;font-size:0.8125rem;color:rgba(255,255,255,0.6);" id="pluginVersionLabel">
+                            Loading…</p>
                     </div>
                 </div>
 
@@ -310,8 +685,8 @@
             (function () {
                 var PLUGIN_ID = 'd4e5f6a7-b8c9-0123-defa-456789012345';
 
-                var CHIP_OFF = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;';
-                var CHIP_ON = 'display:inline-block;padding:5px 14px;border-radius:999px;border:1px solid #00a4dc;background:#00a4dc;color:#fff;font-size:12px;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;font-weight:700;';
+                var CHIP_OFF = 'display:inline-flex;align-items:center;padding:4px 12px;border-radius:9999px;border:1px solid rgba(255,255,255,0.23);background:transparent;color:rgba(255,255,255,0.7);font-size:12px;font-weight:500;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;transition:all 150ms cubic-bezier(0.4,0,0.2,1);';
+                var CHIP_ON = 'display:inline-flex;align-items:center;padding:4px 12px;border-radius:9999px;border:1px solid #90caf9;background:rgba(144,202,249,0.16);color:#90caf9;font-size:12px;font-weight:600;line-height:1.4;cursor:pointer;user-select:none;box-sizing:border-box;transition:all 150ms cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 0 1px #90caf9;';
 
                 /**
                  * Returns the best localised description for a mod.
@@ -352,8 +727,43 @@
                     config: {},
                     activeTags: [],
                     typeFilter: 'all',
+                    sortBy: 'recently-updated',
                     query: ''
                 };
+
+                function getModType(m) {
+                    var hasCss = !!m.cssUrl || (m.files && m.files.some(function (f) { return f.type === 'css'; }));
+                    var hasJs = !!m.jsUrl || (m.files && m.files.some(function (f) { return f.type === 'js'; }));
+                    var hasServer = !!m.serverJs || (m.files && m.files.some(function (f) { return f.type === 'server' || f.type === 'serverjs'; }));
+                    var count = [hasCss, hasJs, hasServer].filter(Boolean).length;
+                    if (count > 1) return 'mixed';
+                    if (hasCss) return 'css';
+                    if (hasJs) return 'js';
+                    if (hasServer) return 'server';
+                    return ((m.type || 'js') || 'js').toLowerCase();
+                }
+
+                function sortItems(list, sortBy) {
+                    return list.slice().sort(function (a, b) {
+                        if (sortBy === 'name') {
+                            return getLocalizedTitle(a).localeCompare(getLocalizedTitle(b), undefined, { sensitivity: 'base' });
+                        }
+                        if (sortBy === 'name-desc') {
+                            return getLocalizedTitle(b).localeCompare(getLocalizedTitle(a), undefined, { sensitivity: 'base' });
+                        }
+                        if (sortBy === 'newest') {
+                            var dateA = new Date(a.createdAt || a.date || (a.files && a.files[0] && a.files[0].date) || 0).getTime();
+                            var dateB = new Date(b.createdAt || b.date || (b.files && b.files[0] && b.files[0].date) || 0).getTime();
+                            if (dateB !== dateA) return dateB - dateA;
+                            return getLocalizedTitle(a).localeCompare(getLocalizedTitle(b));
+                        }
+                        // Default: recently-updated
+                        var updateA = new Date(a.updatedAt || a.date || a.createdAt || (a.files && a.files[0] && a.files[0].date) || 0).getTime();
+                        var updateB = new Date(b.updatedAt || b.date || b.createdAt || (b.files && b.files[0] && b.files[0].date) || 0).getTime();
+                        if (updateB !== updateA) return updateB - updateA;
+                        return getLocalizedTitle(a).localeCompare(getLocalizedTitle(b));
+                    });
+                }
 
                 var modalContext = null;
 
@@ -394,7 +804,7 @@
                     catch (e) { return fallback; }
                 }
 
-                var OFFICIAL_MODS_URL = 'https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/mods.json';
+                var OFFICIAL_MODS_URL = 'https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/mods.v2.json';
 
                 function updateModSourceStatus() {
                     var url = (el('modsUrl').value || '').trim();
@@ -403,9 +813,9 @@
                     if (!url) { statusEl.style.display = 'none'; return; }
                     statusEl.style.display = 'block';
                     if (url === OFFICIAL_MODS_URL) {
-                        statusEl.innerHTML = '<span style="color:#4ade80;font-weight:600;">Official JellyFrame repository</span>';
+                        statusEl.innerHTML = '<span style="color:#66bb6a;font-weight:600;">Official JellyFrame repository</span>';
                     } else {
-                        statusEl.innerHTML = '<span style="color:#fbbf24;font-weight:600;">Unofficial source</span><span style="opacity:.55;"> - only load repositories you trust</span>';
+                        statusEl.innerHTML = '<span style="color:#ffa726;font-weight:600;">Unofficial source</span><span style="opacity:.6;"> - only load repositories you trust</span>';
                     }
                 }
 
@@ -435,11 +845,7 @@
                 function buildTypeChips(mods) {
                     var types = ['all'], seen = {};
                     mods.forEach(function (m) {
-                        var parts = [];
-                        if (m.cssUrl) parts.push('css');
-                        if (m.jsUrl) parts.push('js');
-                        if (m.serverJs) parts.push('server');
-                        var t = parts.length > 1 ? 'mixed' : (parts[0] || (m.type || 'js').toLowerCase());
+                        var t = getModType(m);
                         if (!seen[t]) { seen[t] = true; types.push(t); }
                     });
                     var c = el('typeFilters');
@@ -489,13 +895,11 @@
                             getLocalizedDescription(m).toLowerCase().includes(q);
                         var mt = state.activeTags.length === 0 ||
                             state.activeTags.every(function (t) { return (m.tags || []).includes(t); });
-                        var mtype = state.typeFilter === 'all' ||
-                            (state.typeFilter === 'css' && !!m.cssUrl && !m.jsUrl && !m.serverJs) ||
-                            (state.typeFilter === 'js' && !!m.jsUrl && !m.cssUrl && !m.serverJs) ||
-                            (state.typeFilter === 'server' && !!m.serverJs && !m.cssUrl && !m.jsUrl) ||
-                            (state.typeFilter === 'mixed' && ([!!m.cssUrl, !!m.jsUrl, !!m.serverJs].filter(Boolean).length > 1));
+                        var mtype = state.typeFilter === 'all' || getModType(m) === state.typeFilter;
                         return mq && mt && mtype;
                     });
+
+                    list = sortItems(list, state.sortBy || 'recently-updated');
 
                     var grid = el('modGrid');
                     if (list.length === 0) {
@@ -515,20 +919,7 @@
                     var hasSrv = !!(mod.serverJs || "");
 
                     var card = document.createElement('div');
-                    card.className = 'card overflowBackdropCard' + (isOn ? ' enabledCard' : '') + (mod.editorsChoice ? ' editorsChoiceCard' : '');
-                    card.style.cssText = 'min-width:200px;max-width:260px;pointer-events:none;position:relative;';
-
-                    var cardBox = document.createElement('div');
-                    cardBox.className = 'cardBox';
-
-                    var cardScalable = document.createElement('div');
-                    cardScalable.className = 'cardScalable';
-
-                    var cardPadder = document.createElement('div');
-                    cardPadder.className = 'cardPadder cardPadder-backdrop';
-
-                    var cardContent = document.createElement('div');
-                    cardContent.className = 'cardContent';
+                    card.className = 'card mui-card overflowBackdropCard' + (isOn ? ' enabledCard' : '') + (mod.editorsChoice ? ' editorsChoiceCard' : '');
 
                     var imgContainer = document.createElement('div');
                     imgContainer.className = 'cardImageContainer coveredImage';
@@ -545,19 +936,20 @@
                         var img = document.createElement('img');
                         img.src = (mod.previewUrl || "");
                         img.alt = (mod.name || "");
-                        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;display:block;pointer-events:none;';
                         img.onerror = function () {
                             img.remove();
                             var fallback = document.createElement('div');
-                            fallback.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5em;opacity:.2;pointer-events:none;';
-                            fallback.textContent = hasCss && !hasJs && !hasSrv ? '🎨' : hasSrv ? '🖥' : '⚙';
+                            fallback.className = 'cardImageFallback';
+                            fallback.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;min-height:160px;display:flex;align-items:center;justify-content:center;opacity:.25;pointer-events:none;color:#90caf9;';
+                            fallback.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
                             imgContainer.appendChild(fallback);
                         };
                         imgContainer.appendChild(img);
                     } else {
                         var fallback = document.createElement('div');
-                        fallback.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5em;opacity:.2;pointer-events:none;';
-                        fallback.textContent = hasCss && !hasJs && !hasSrv ? '🎨' : hasSrv ? '🖥' : '⚙';
+                        fallback.className = 'cardImageFallback';
+                        fallback.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;min-height:160px;display:flex;align-items:center;justify-content:center;opacity:.25;pointer-events:none;color:#90caf9;';
+                        fallback.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
                         imgContainer.appendChild(fallback);
                     }
 
@@ -583,50 +975,41 @@
 
                     if (hasVars) {
                         var varsBadge = document.createElement('div');
-                        varsBadge.style.cssText = 'position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:3px;font-size:9px;padding:1px 6px;z-index:1;letter-spacing:.04em;pointer-events:none;';
+                        varsBadge.style.cssText = 'position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.85);border-radius:4px;font-size:10px;font-weight:600;padding:2px 7px;z-index:1;letter-spacing:.04em;pointer-events:none;';
                         varsBadge.textContent = 'CONFIGURABLE';
                         imgContainer.appendChild(varsBadge);
                     }
 
                     if (_shotCount > 1) {
                         var shotsBadge = document.createElement('div');
-                        shotsBadge.style.cssText = 'position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:3px;font-size:9px;padding:1px 6px;z-index:1;letter-spacing:.04em;pointer-events:none;';
-                        shotsBadge.textContent = '\uD83D\uDCF7 ' + _shotCount;
+                        shotsBadge.style.cssText = 'position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.85);border-radius:4px;font-size:10px;font-weight:600;padding:2px 7px;z-index:1;letter-spacing:.04em;pointer-events:none;display:inline-flex;align-items:center;gap:3px;';
+                        shotsBadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12m-3.2 0a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>' + _shotCount;
                         imgContainer.appendChild(shotsBadge);
                     }
 
                     if (mod.editorsChoice) {
                         var ecBadge = document.createElement('div');
-                        ecBadge.textContent = '\u2605 Editor\'s Choice';
-                        ecBadge.style.cssText = 'position:absolute;top:8px;right:8px;z-index:3;background:linear-gradient(135deg,rgba(255,185,0,0.92),rgba(200,128,0,0.92));border:1px solid rgba(255,215,80,0.6);border-radius:4px;padding:2px 8px;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#1a1100;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 1px 5px rgba(160,100,0,0.5);pointer-events:none;';
+                        ecBadge.style.cssText = 'position:absolute;top:8px;right:8px;z-index:3;background:linear-gradient(135deg,#ffa726,#f57c00);border:1px solid rgba(255,255,255,0.4);border-radius:4px;padding:3px 8px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#000;box-shadow:0 2px 6px rgba(0,0,0,0.4);pointer-events:none;display:inline-flex;align-items:center;gap:3px;';
+                        ecBadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>Editor\'s Choice';
                         imgContainer.appendChild(ecBadge);
                     }
 
-                    cardContent.appendChild(imgContainer);
-                    cardPadder.appendChild(cardContent);
-                    cardScalable.appendChild(cardPadder);
-                    cardBox.appendChild(cardScalable);
-
-                    if (mod.editorsChoice) {
-                        cardBox.style.outline = '2px solid rgba(255,185,0,0.7)';
-                        cardBox.style.outlineOffset = '-2px';
-                        cardBox.style.borderRadius = '4px';
-                    }
-
-
+                    card.appendChild(imgContainer);
 
                     var footer = document.createElement('div');
                     footer.className = 'cardFooter';
+                    footer.style.cssText = 'padding:14px 14px 12px;';
 
                     var nameEl = document.createElement('div');
                     nameEl.className = 'cardText';
-                    nameEl.style.fontWeight = 'bold';
+                    nameEl.style.cssText = 'font-size:0.95rem;font-weight:600;color:rgba(255,255,255,0.87);line-height:1.4;margin-bottom:2px;';
                     nameEl.textContent = getLocalizedTitle(mod);
                     footer.appendChild(nameEl);
 
                     if ((mod.author || "")) {
                         var authEl = document.createElement('div');
                         authEl.className = 'cardText cardText-secondary';
+                        authEl.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.6);margin-bottom:6px;';
                         authEl.textContent = 'by ' + (mod.author || "");
                         footer.appendChild(authEl);
                     }
@@ -635,7 +1018,7 @@
                     if (_modDesc) {
                         var descEl = document.createElement('div');
                         descEl.className = 'cardText cardText-secondary';
-                        descEl.style.cssText = 'font-size:.8em;opacity:.7;margin-top:.2em;white-space:normal;word-break:break-word;overflow-wrap:break-word;';
+                        descEl.style.cssText = 'font-size:0.8125rem;color:rgba(255,255,255,0.7);line-height:1.5;margin-top:4px;white-space:normal;word-break:break-word;';
                         var TRUNCATE_LEN = 100;
                         if (_modDesc.length <= TRUNCATE_LEN) {
                             descEl.textContent = _modDesc;
@@ -644,7 +1027,7 @@
                             var readMoreBtn = document.createElement('button');
                             readMoreBtn.type = 'button';
                             readMoreBtn.textContent = 'more';
-                            readMoreBtn.style.cssText = 'background:none;border:none;padding:0;color:#00a4dc;cursor:pointer;font-size:inherit;font-family:inherit;pointer-events:auto;text-decoration:underline;';
+                            readMoreBtn.style.cssText = 'background:none;border:none;padding:0;color:#90caf9;cursor:pointer;font-size:inherit;font-family:inherit;pointer-events:auto;text-decoration:underline;font-weight:500;';
                             readMoreBtn.addEventListener('click', function (e) {
                                 e.stopPropagation();
                                 openPreviewModal(mod);
@@ -657,10 +1040,10 @@
 
                     if (((mod.tags || []) || []).length > 0) {
                         var tagRow = document.createElement('div');
-                        tagRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:.5em;margin-bottom:.2em';
+                        tagRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;margin-bottom:4px;';
                         (mod.tags || []).slice(0, 4).forEach(function (tag) {
                             var t = document.createElement('span');
-                            t.style.cssText = 'display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);line-height:1.6;';
+                            t.style.cssText = 'display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.7);line-height:1.5;';
                             t.textContent = tag;
                             tagRow.appendChild(t);
                         });
@@ -669,32 +1052,32 @@
 
                     if ((mod.permissions || []).length > 0) {
                         var permRow = document.createElement('div');
-                        permRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:.5em;';
+                        permRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;';
                         var permColors = {
-                            'http': '#e08020',
-                            'jellyfin.read': '#2080e0',
-                            'jellyfin.write': '#c04040',
-                            'jellyfin.delete': '#8b0000',
-                            'jellyfin.tasks': '#b05000',
-                            'jellyfin.refresh': '#6b3fa0',
-                            'jellyfin.livetv': '#1a7a5e',
-                            'jellyfin.admin': '#7a1a1a',
-                            'store': '#20a060',
-                            'shared-store': '#0e7a5e',
-                            'scheduler': '#8040c0',
-                            'webhooks': '#20a0a0',
-                            'rpc': '#a06020',
-                            'bus': '#606060',
-                            'filesystem': '#c47a00',
-                            'os': '#5a3e8a',
-                            'db': '#1a6b8a',
-                            'db.shared': '#0d4d6b'
+                            'http': '#ffa726',
+                            'jellyfin.read': '#29b6f6',
+                            'jellyfin.write': '#f44336',
+                            'jellyfin.delete': '#d32f2f',
+                            'jellyfin.tasks': '#fb8c00',
+                            'jellyfin.refresh': '#ab47bc',
+                            'jellyfin.livetv': '#26a69a',
+                            'jellyfin.admin': '#e53935',
+                            'store': '#66bb6a',
+                            'shared-store': '#43a047',
+                            'scheduler': '#7e57c2',
+                            'webhooks': '#00acc1',
+                            'rpc': '#8d6e63',
+                            'bus': '#78909c',
+                            'filesystem': '#ffb74d',
+                            'os': '#9575cd',
+                            'db': '#4fc3f7',
+                            'db.shared': '#0288d1'
                         };
                         (mod.permissions || []).forEach(function (p) {
                             var badge = document.createElement('span');
-                            var col = permColors[p] || '#555';
-                            badge.style.cssText = 'display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.03em;background:' + col + '22;border:1px solid ' + col + '66;color:' + col + ';line-height:1.6;';
-                            badge.textContent = '🔒 ' + p;
+                            var col = permColors[p] || '#90a4ae';
+                            badge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.03em;background:' + col + '22;border:1px solid ' + col + '66;color:' + col + ';line-height:1.5;';
+                            badge.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>' + escHtml(p);
                             badge.title = 'Permission required: ' + p;
                             permRow.appendChild(badge);
                         });
@@ -703,12 +1086,12 @@
 
                     if ((mod.requires || []).length > 0) {
                         var reqEl = document.createElement('div');
-                        reqEl.style.cssText = 'margin-top:.45em;font-size:.78em;opacity:.6;';
+                        reqEl.style.cssText = 'margin-top:8px;font-size:0.75rem;opacity:0.7;';
                         var missingDeps = (mod.requires || []).filter(function (dep) {
                             return !currentIds().includes(dep);
                         });
                         if (missingDeps.length > 0) {
-                            reqEl.style.color = '#fbbf24';
+                            reqEl.style.color = '#ffa726';
                             reqEl.textContent = 'Requires: ' + missingDeps.join(', ') + ' (will be auto-enabled)';
                         } else {
                             reqEl.textContent = '↳ Requires: ' + (mod.requires || []).join(', ');
@@ -717,12 +1100,12 @@
                     }
 
                     var btnRow = document.createElement('div');
-                    btnRow.style.cssText = 'display:flex;gap:.4em;margin-top:.6em;padding-bottom:.4em';
+                    btnRow.style.cssText = 'display:flex;gap:8px;margin-top:12px;padding-bottom:2px;';
 
                     var toggleBtn = document.createElement('button');
                     toggleBtn.type = 'button';
-                    toggleBtn.style.cssText = 'flex:1;padding:.4em .5em;font-size:.78em;border-radius:4px;border:none;cursor:pointer;font-weight:600;pointer-events:auto;'
-                        + (isOn ? 'background:#00a4dc;color:#fff;' : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);');
+                    toggleBtn.style.cssText = 'flex:1;padding:6px 12px;font-size:0.75rem;font-weight:600;letter-spacing:0.02857em;text-transform:uppercase;border-radius:6px;border:none;cursor:pointer;pointer-events:auto;transition:all 150ms;'
+                        + (isOn ? 'background:#90caf9;color:rgba(0,0,0,0.87);box-shadow:0 1px 3px rgba(0,0,0,0.3);' : 'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.87);border:1px solid rgba(255,255,255,0.16);');
                     toggleBtn.textContent = isOn ? '✓ Enabled' : 'Enable';
                     toggleBtn.addEventListener('click', function (e) {
                         e.stopPropagation();
@@ -733,8 +1116,8 @@
                     if (isOn && hasVars) {
                         var cfgBtn = document.createElement('button');
                         cfgBtn.type = 'button';
-                        cfgBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;pointer-events:auto;';
-                        cfgBtn.textContent = '⚙';
+                        cfgBtn.style.cssText = 'padding:6px 10px;font-size:0.85rem;border:1px solid rgba(255,255,255,0.2);border-radius:6px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.87);cursor:pointer;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;transition:all 150ms;';
+                        cfgBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
                         cfgBtn.title = 'Configure variables';
                         cfgBtn.addEventListener('click', function (e) {
                             e.stopPropagation();
@@ -747,8 +1130,8 @@
                         (function (m) {
                             var editBtn = document.createElement('button');
                             editBtn.type = 'button';
-                            editBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;pointer-events:auto;';
-                            editBtn.textContent = '\u270E';
+                            editBtn.style.cssText = 'padding:6px 10px;font-size:0.85rem;border:1px solid rgba(255,255,255,0.2);border-radius:6px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.87);cursor:pointer;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;transition:all 150ms;';
+                            editBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
                             editBtn.title = 'Edit cached files';
                             editBtn.addEventListener('click', function (e) {
                                 e.stopPropagation();
@@ -760,7 +1143,7 @@
 
                     if ((mod.sourceUrl || "")) {
                         var srcBtn = document.createElement('a');
-                        srcBtn.style.cssText = 'padding:.4em .65em;font-size:.78em;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;pointer-events:auto;';
+                        srcBtn.style.cssText = 'padding:6px 10px;font-size:0.85rem;border:1px solid rgba(255,255,255,0.2);border-radius:6px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.87);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;pointer-events:auto;transition:all 150ms;';
                         srcBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
                         srcBtn.title = 'View source';
                         srcBtn.href = (mod.sourceUrl || "");
@@ -771,8 +1154,7 @@
                     }
 
                     footer.appendChild(btnRow);
-                    cardBox.appendChild(footer);
-                    card.appendChild(cardBox);
+                    card.appendChild(footer);
                     return card;
                 }
 
@@ -790,34 +1172,38 @@
                         'position:fixed',
                         'inset:0',
                         'background:rgba(0,0,0,0.75)',
+                        'backdrop-filter:blur(6px)',
+                        '-webkit-backdrop-filter:blur(6px)',
                         'z-index:100000',
                         'display:flex',
                         'align-items:center',
                         'justify-content:center',
-                        'padding:20px'
+                        'padding:20px',
+                        'box-sizing:border-box'
                     ].join(';');
 
                     var dialog = document.createElement('div');
                     dialog.style.cssText = [
-                        'background:#1a1d21',
+                        'background:#1e1e1e',
                         'border:1px solid rgba(255,255,255,0.12)',
-                        'border-radius:10px',
+                        'border-radius:16px',
                         'padding:28px',
                         'width:100%',
-                        'max-width:440px',
-                        'box-shadow:0 24px 60px rgba(0,0,0,0.7)',
+                        'max-width:480px',
+                        'box-shadow:0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12)',
                         'position:relative',
                         'overflow-y:auto',
-                        'max-height:90vh'
+                        'max-height:90vh',
+                        'box-sizing:border-box'
                     ].join(';');
 
                     var title = document.createElement('div');
-                    title.style.cssText = 'font-size:1.05em;font-weight:bold;margin-bottom:4px;color:#fff;';
+                    title.style.cssText = 'font-size:1.25rem;font-weight:600;margin-bottom:6px;color:rgba(255,255,255,0.87);';
                     title.textContent = (mod.name || "");
                     dialog.appendChild(title);
 
                     var subtitle = document.createElement('div');
-                    subtitle.style.cssText = 'font-size:.78em;opacity:.5;margin-bottom:20px;';
+                    subtitle.style.cssText = 'font-size:0.8125rem;color:rgba(255,255,255,0.6);margin-bottom:24px;line-height:1.43;';
                     subtitle.textContent = 'Configure variables. Leave blank to use the default.';
                     dialog.appendChild(subtitle);
 
@@ -825,16 +1211,16 @@
                     varContainer.id = 'mmModalVars';
                     vars.forEach(function (v) {
                         var row = document.createElement('div');
-                        row.style.marginBottom = '16px';
+                        row.style.marginBottom = '20px';
 
                         var lbl = document.createElement('div');
-                        lbl.style.cssText = 'font-size:.82em;font-weight:600;margin-bottom:3px;';
+                        lbl.style.cssText = 'font-size:0.875rem;font-weight:500;margin-bottom:4px;color:rgba(255,255,255,0.87);';
                         lbl.textContent = (v.name || v.key || "") || v.key;
                         row.appendChild(lbl);
 
                         if ((v.description || "")) {
                             var desc = document.createElement('div');
-                            desc.style.cssText = 'font-size:.72em;opacity:.5;margin-bottom:5px;';
+                            desc.style.cssText = 'font-size:0.75rem;color:rgba(255,255,255,0.55);margin-bottom:8px;line-height:1.4;';
                             desc.textContent = (v.description || "");
                             row.appendChild(desc);
                         }
@@ -855,7 +1241,7 @@
                             input.value = savedBool;
                             input.name = 'mm-var-' + v.key;
                             input.id = 'mm-var-' + v.key;
-                            input.style.cssText = 'width:100%;padding:7px 10px;background:#1a1a2e;border:1px solid rgba(255,255,255,0.18);border-radius:5px;color:#e8e8f0;font-size:.85em;font-family:inherit;box-sizing:border-box;appearance:none;-webkit-appearance:none;cursor:pointer;';
+                            input.style.cssText = 'width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.23);border-radius:8px;color:#fff;font-size:0.875rem;font-family:inherit;box-sizing:border-box;appearance:none;-webkit-appearance:none;cursor:pointer;';
                             input.dataset.varKey = v.key;
                             row.appendChild(input);
                         } else if (inputType === 'color') {
@@ -873,7 +1259,7 @@
                             input.placeholder = (v.default || "") || '';
                             input.name = 'mm-var-' + v.key;
                             input.id = 'mm-var-' + v.key;
-                            input.style.cssText = 'width:100%;padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:5px;color:inherit;font-size:.85em;font-family:inherit;box-sizing:border-box;';
+                            input.style.cssText = 'width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.23);border-radius:8px;color:inherit;font-size:0.875rem;font-family:inherit;box-sizing:border-box;';
                             input.dataset.varKey = v.key;
                             row.appendChild(input);
                         }
@@ -882,18 +1268,18 @@
                     dialog.appendChild(varContainer);
 
                     var actions = document.createElement('div');
-                    actions.style.cssText = 'display:flex;gap:8px;margin-top:20px;justify-content:flex-end;';
+                    actions.style.cssText = 'display:flex;gap:12px;margin-top:24px;justify-content:flex-end;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;';
 
                     var cancelBtn = document.createElement('button');
                     cancelBtn.type = 'button';
                     cancelBtn.textContent = 'Cancel';
-                    cancelBtn.style.cssText = 'padding:7px 18px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);cursor:pointer;font-size:.88em;';
+                    cancelBtn.style.cssText = 'padding:7px 18px;border-radius:8px;border:1px solid rgba(255,255,255,0.23);background:transparent;color:rgba(255,255,255,0.87);cursor:pointer;font-size:0.875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.02857em;transition:all 150ms;';
                     cancelBtn.addEventListener('click', closeModal);
 
                     var saveBtn = document.createElement('button');
-                    saveBtn.setAttribute('is', 'emby-button');
-                    saveBtn.className = 'raised button-submit emby-button';
+                    saveBtn.type = 'button';
                     saveBtn.textContent = 'Save';
+                    saveBtn.style.cssText = 'padding:8px 22px;border-radius:8px;border:none;background:#90caf9;color:rgba(0,0,0,0.87);cursor:pointer;font-size:0.875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.02857em;box-shadow:0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12);transition:all 150ms;';
                     saveBtn.addEventListener('click', saveModalVars);
 
                     actions.appendChild(cancelBtn);
@@ -931,22 +1317,23 @@
                     overlay.id = 'smPreviewOverlay';
                     overlay.style.cssText = [
                         'position:fixed', 'inset:0', 'background:rgba(0,0,0,0.82)',
+                        'backdrop-filter:blur(6px)', '-webkit-backdrop-filter:blur(6px)',
                         'z-index:100001', 'display:flex', 'align-items:center',
                         'justify-content:center', 'padding:20px', 'cursor:pointer'
                     ].join(';');
 
                     var dialog = document.createElement('div');
                     dialog.style.cssText = [
-                        'background:#1a1d21',
-                        'border:1px solid rgba(255,255,255,0.1)',
-                        'border-radius:12px',
+                        'background:#1e1e1e',
+                        'border:1px solid rgba(255,255,255,0.12)',
+                        'border-radius:16px',
                         'width:100%',
-                        'max-width:640px',
+                        'max-width:680px',
                         'max-height:88vh',
                         'display:flex',
                         'flex-direction:column',
                         'overflow:hidden',
-                        'box-shadow:0 32px 80px rgba(0,0,0,0.8)',
+                        'box-shadow:0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12)',
                         'cursor:default',
                         'position:relative'
                     ].join(';');
@@ -955,13 +1342,14 @@
                     closeBtn.type = 'button';
                     closeBtn.textContent = '\u2715';
                     closeBtn.style.cssText = [
-                        'position:absolute', 'top:12px', 'right:12px',
-                        'z-index:10', 'background:rgba(0,0,0,0.5)',
+                        'position:absolute', 'top:14px', 'right:14px',
+                        'z-index:10', 'background:rgba(0,0,0,0.6)',
                         'border:none', 'border-radius:50%',
-                        'width:28px', 'height:28px',
-                        'color:rgba(255,255,255,0.7)', 'cursor:pointer',
-                        'font-size:.9em', 'line-height:1',
-                        'display:flex', 'align-items:center', 'justify-content:center'
+                        'width:32px', 'height:32px',
+                        'color:rgba(255,255,255,0.87)', 'cursor:pointer',
+                        'font-size:1rem', 'line-height:1',
+                        'display:flex', 'align-items:center', 'justify-content:center',
+                        'transition:background-color 150ms'
                     ].join(';');
                     closeBtn.addEventListener('click', function (e) { e.stopPropagation(); overlay.remove(); });
                     dialog.appendChild(closeBtn);
@@ -969,10 +1357,10 @@
                     var imgArea = document.createElement('div');
                     imgArea.style.cssText = [
                         'position:relative',
-                        'background:#111',
+                        'background:#121212',
                         'flex-shrink:0',
                         'overflow:hidden',
-                        'border-radius:12px 12px 0 0',
+                        'border-radius:16px 16px 0 0',
                         'max-height:52vh',
                         'display:flex',
                         'align-items:center',
@@ -989,8 +1377,8 @@
                         imgEl = document.createElement('div');
                         imgEl.style.cssText = 'width:100%;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:.4;';
                         var noIcon = document.createElement('div');
-                        noIcon.style.cssText = 'font-size:3em;';
-                        noIcon.textContent = '\uD83D\uDDBC';
+                        noIcon.style.cssText = 'color:#90caf9;display:flex;align-items:center;justify-content:center;';
+                        noIcon.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>';
                         var noText = document.createElement('div');
                         noText.style.cssText = 'font-size:.82em;letter-spacing:.05em;';
                         noText.textContent = 'No preview available';
@@ -1266,11 +1654,6 @@
                     });
                 }
 
-                var mmPageEl2 = document.querySelector('.jfModsConfigPage');
-                (mmPageEl2 ? mmPageEl2 : document).querySelectorAll('.mmTab').forEach(function (btn) {
-                    btn.addEventListener('click', function () { switchTab(btn.dataset.tab); });
-                });
-
                 var mmPageEl = document.querySelector('.jfModsConfigPage');
                 if (mmPageEl) {
                     mmPageEl.addEventListener('viewshow', loadConfig);
@@ -1543,6 +1926,10 @@
                 });
                 el('modsUrl').addEventListener('input', updateModSourceStatus);
                 el('mm-searchInput').addEventListener('input', function () { state.query = this.value; render(); });
+                var sortSelect = el('mm-sortSelect');
+                if (sortSelect) {
+                    sortSelect.addEventListener('change', function () { state.sortBy = this.value; render(); });
+                }
                 el('mm-btnSave').addEventListener('click', doSave);
                 el('btnDisableAll').addEventListener('click', function () {
                     state.pendingIds = [];
@@ -1561,13 +1948,17 @@
                 var TAB_PANELS = { marketplace: 'tabMarketplace', health: 'tabHealth', settings: 'mm-tabSettings' };
                 function switchTab(name) {
                     Object.keys(TAB_PANELS).forEach(function (k) {
-                        document.getElementById(TAB_PANELS[k]).style.display = k === name ? '' : 'none';
+                        var panel = document.getElementById(TAB_PANELS[k]);
+                        if (panel) panel.style.display = k === name ? '' : 'none';
                     });
                     var mmRoot = document.querySelector('.jfModsConfigPage') || document;
                     mmRoot.querySelectorAll('.mmTab').forEach(function (btn) {
-                        var active = btn.dataset.tab === name;
-                        btn.style.borderBottomColor = active ? '#00a4dc' : 'transparent';
-                        btn.style.color = active ? '#00a4dc' : 'rgba(255,255,255,0.5)';
+                        var tabKey = btn.getAttribute('data-tab') || btn.dataset.tab;
+                        var active = tabKey === name;
+                        btn.classList.toggle('mmTabActive', active);
+                        btn.classList.toggle('mui-tab-active', active);
+                        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+                        btn.setAttribute('tabindex', active ? '0' : '-1');
                     });
                     if (name === 'health') loadHealth();
                     if (name === 'settings') {
@@ -1576,7 +1967,30 @@
                         loadCacheInfo();
                     }
                 }
+
+                document.querySelectorAll('.mmTab').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var tabKey = this.getAttribute('data-tab') || this.dataset.tab;
+                        if (tabKey) switchTab(tabKey);
+                    });
+                });
                 var selectedCacheModIds = [];
+
+                function formatCacheDate(d) {
+                    if (!d || isNaN(d.getTime()) || d.getTime() === 0) return '—';
+                    var now = new Date();
+                    var diffMs = now - d;
+                    var diffMin = Math.floor(diffMs / 60000);
+                    var diffHr = Math.floor(diffMin / 60);
+                    var diffDay = Math.floor(diffHr / 24);
+                    var rel = '';
+                    if (diffMin < 1) rel = 'just now';
+                    else if (diffMin < 60) rel = diffMin + 'm ago';
+                    else if (diffHr < 24) rel = diffHr + 'h ago';
+                    else if (diffDay < 30) rel = diffDay + 'd ago';
+                    else rel = d.toLocaleDateString();
+                    return rel + ' (' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ')';
+                }
 
                 function loadCacheInfo() {
                     var infoBar = document.getElementById('cacheInfoBar');
@@ -1594,24 +2008,30 @@
 
                             var grouped = {};
                             (data.entries || []).forEach(function (e) {
-                                if (!grouped[e.modId]) grouped[e.modId] = [];
-                                grouped[e.modId].push(e);
+                                var key = e.modId || 'unknown';
+                                if (!grouped[key]) grouped[key] = [];
+                                grouped[key].push(e);
                             });
 
                             if (Object.keys(grouped).length === 0) {
-                                modList.innerHTML = '<div style="font-size:.82em;opacity:.45;padding:.4em 0;">Cache is empty.</div>';
+                                modList.innerHTML = '<div style="font-size:0.8125rem;color:rgba(255,255,255,0.5);padding:8px 0;">Cache is empty.</div>';
                                 return;
                             }
 
                             Object.keys(grouped).sort().forEach(function (modId) {
                                 var files = grouped[modId];
                                 var modKb = (files.reduce(function (s, f) { return s + f.sizeBytes; }, 0) / 1024).toFixed(1);
+                                var latestTimestamp = Math.max.apply(null, files.map(function (f) {
+                                    return f.modified ? new Date(f.modified).getTime() : 0;
+                                }));
+                                var latestDate = latestTimestamp > 0 ? new Date(latestTimestamp) : null;
+
                                 var row = document.createElement('div');
-                                row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:4px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);cursor:pointer;user-select:none;';
+                                row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);cursor:pointer;user-select:none;transition:background-color 150ms;';
 
                                 var chk = document.createElement('input');
                                 chk.type = 'checkbox';
-                                chk.style.cssText = 'flex-shrink:0;accent-color:#00a4dc;cursor:pointer;';
+                                chk.style.cssText = 'flex-shrink:0;accent-color:#90caf9;cursor:pointer;width:16px;height:16px;';
                                 chk.addEventListener('change', function () {
                                     if (chk.checked) {
                                         if (!selectedCacheModIds.includes(modId)) selectedCacheModIds.push(modId);
@@ -1622,14 +2042,32 @@
                                 });
 
                                 var label = document.createElement('div');
-                                label.style.cssText = 'flex:1;font-size:.83em;';
-                                var typeList = files.map(function (f) { return f.type; }).join(', ');
-                                label.innerHTML = '<span style="font-weight:600;">' + escHtml(modId) + '</span>'
-                                    + '<span style="opacity:.45;margin-left:.5em;">v' + escHtml(files[0].version) + '</span>'
-                                    + '<span style="opacity:.35;margin-left:.5em;font-size:.9em;">[' + typeList + ']</span>';
+                                label.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;';
+
+                                var distinctTypes = [];
+                                files.forEach(function (f) {
+                                    var t = (f.type || 'js').toUpperCase();
+                                    if (!distinctTypes.includes(t)) distinctTypes.push(t);
+                                });
+                                var badgesHtml = distinctTypes.map(function (t) {
+                                    return '<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(144,202,249,0.12);color:#90caf9;font-size:0.7rem;font-weight:600;">' + escHtml(t) + '</span>';
+                                }).join(' ');
+
+                                var topRow = '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">'
+                                    + '<span style="font-weight:600;font-size:0.875rem;color:rgba(255,255,255,0.87);">' + escHtml(modId) + '</span>'
+                                    + '<span style="color:rgba(255,255,255,0.5);font-size:0.75rem;">v' + escHtml(files[0].version || '1.0.0') + '</span>'
+                                    + badgesHtml
+                                    + '</div>';
+
+                                var bottomRow = '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'
+                                    + '<span>Cached: ' + escHtml(formatCacheDate(latestDate)) + '</span>'
+                                    + '<span>' + files.length + ' file' + (files.length > 1 ? 's' : '') + '</span>'
+                                    + '</div>';
+
+                                label.innerHTML = topRow + bottomRow;
 
                                 var size = document.createElement('div');
-                                size.style.cssText = 'font-size:.78em;opacity:.4;flex-shrink:0;font-variant-numeric:tabular-nums;';
+                                size.style.cssText = 'font-size:0.8125rem;font-weight:500;color:rgba(255,255,255,0.7);flex-shrink:0;font-variant-numeric:tabular-nums;';
                                 size.textContent = modKb + ' KB';
 
                                 row.appendChild(chk);
@@ -1687,7 +2125,7 @@
                 function loadHealth() {
                     var grid = document.getElementById('healthGrid');
                     var summary = document.getElementById('pluginHealthSummary');
-                    grid.innerHTML = '<div class="stateMsg" style="opacity:.4;font-size:.9em">Loading…</div>';
+                    grid.innerHTML = '<div class="stateMsg" style="opacity:.5;font-size:.9em">Loading health data…</div>';
 
                     ApiClient.ajax({ url: ApiClient.getUrl('JellyFrame/api/health'), type: 'GET', dataType: 'json' })
                         .then(function (data) {
@@ -1700,23 +2138,23 @@
                             ];
                             chips.forEach(function (c) {
                                 var chip = document.createElement('div');
-                                chip.style.cssText = 'padding:6px 14px;border-radius:20px;background:rgba(255,255,255,0.07);font-size:.82em;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:90px;';
-                                chip.innerHTML = '<span style="font-size:1.3em;font-weight:700;line-height:1.1;">' + c[1] + '</span><span style="opacity:.5;font-size:.88em;text-align:center;">' + c[0] + '</span>';
+                                chip.style.cssText = 'padding:10px 18px;border-radius:12px;background:#1e1e1e;border:1px solid rgba(255,255,255,0.12);font-size:0.875rem;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:110px;box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);';
+                                chip.innerHTML = '<span style="font-size:1.35rem;font-weight:700;line-height:1.2;color:#90caf9;">' + c[1] + '</span><span style="opacity:0.6;font-size:0.75rem;text-align:center;text-transform:uppercase;letter-spacing:0.02em;">' + c[0] + '</span>';
                                 summary.appendChild(chip);
                             });
 
                             grid.innerHTML = '';
                             if (!data.mods || data.mods.length === 0) {
-                                grid.innerHTML = '<div class="stateMsg" style="opacity:.4;font-size:.9em">No server mods loaded.</div>';
+                                grid.innerHTML = '<div class="stateMsg" style="opacity:.5;font-size:.9em">No server mods loaded.</div>';
                                 return;
                             }
                             data.mods.forEach(function (mod) {
                                 var card = document.createElement('div');
-                                card.style.cssText = 'padding:12px 16px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);';
+                                card.style.cssText = 'padding:16px 20px;border-radius:12px;background:#1e1e1e;border:1px solid rgba(255,255,255,0.12);box-shadow:0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);';
 
                                 var statusDot = mod.loaded
-                                    ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#20c060;margin-right:6px;vertical-align:middle;"></span>'
-                                    : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#c04040;margin-right:6px;vertical-align:middle;"></span>';
+                                    ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#66bb6a;margin-right:8px;vertical-align:middle;"></span>'
+                                    : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f44336;margin-right:8px;vertical-align:middle;"></span>';
 
                                 var loadedAt = mod.loadedAt ? new Date(mod.loadedAt).toLocaleTimeString() : '—';
 
@@ -1737,30 +2175,30 @@
                                 ];
 
                                 var metricHtml = metrics.map(function (m) {
-                                    return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:.82em;">'
-                                        + '<span style="opacity:.5;">' + m[0] + '</span>'
-                                        + '<span style="font-variant-numeric:tabular-nums;">' + m[1] + '</span>'
+                                    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.8125rem;">'
+                                        + '<span style="opacity:0.6;">' + m[0] + '</span>'
+                                        + '<span style="font-variant-numeric:tabular-nums;color:rgba(255,255,255,0.87);">' + m[1] + '</span>'
                                         + '</div>';
                                 }).join('');
 
                                 var crashHtml = '';
                                 if (mod.crashCount || mod.restartOnCrash) {
-                                    var crashColor = mod.crashCount ? '#e06060' : 'rgba(255,255,255,0.35)';
+                                    var crashColor = mod.crashCount ? '#f44336' : 'rgba(255,255,255,0.4)';
                                     var lastCrash = mod.lastCrashAt ? new Date(mod.lastCrashAt).toLocaleString() : 'never';
                                     var nextRestart = mod.nextRestartAt ? new Date(mod.nextRestartAt).toLocaleString() : '—';
-                                    crashHtml = '<div style="margin-top:8px;padding:8px 10px;border-radius:4px;background:rgba(224,96,96,0.08);border:1px solid rgba(224,96,96,0.18);font-size:.8em;">'
-                                        + '<div style="font-weight:600;color:' + crashColor + ';margin-bottom:4px;">Crash / Restart</div>'
-                                        + '<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="opacity:.5;">Crashes</span><span>' + (mod.crashCount || 0) + '</span></div>'
-                                        + '<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="opacity:.5;">Last crash</span><span>' + escHtml(lastCrash) + '</span></div>'
-                                        + (mod.lastError ? '<div style="padding:4px 0;opacity:.55;word-break:break-word;">' + escHtml(mod.lastError) + '</div>' : '')
-                                        + '<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="opacity:.5;">Restart on crash</span><span>' + (mod.restartOnCrash ? 'yes' : 'no') + '</span></div>'
-                                        + (mod.restartOnCrash && mod.nextRestartAt ? '<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="opacity:.5;">Next restart</span><span>' + escHtml(nextRestart) + '</span></div>' : '')
+                                    crashHtml = '<div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:rgba(244,67,54,0.08);border:1px solid rgba(244,67,54,0.25);font-size:0.8125rem;">'
+                                        + '<div style="font-weight:600;color:' + crashColor + ';margin-bottom:6px;">Crash / Restart</div>'
+                                        + '<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="opacity:.6;">Crashes</span><span>' + (mod.crashCount || 0) + '</span></div>'
+                                        + '<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="opacity:.6;">Last crash</span><span>' + escHtml(lastCrash) + '</span></div>'
+                                        + (mod.lastError ? '<div style="padding:6px 0;opacity:.7;word-break:break-word;color:#f44336;">' + escHtml(mod.lastError) + '</div>' : '')
+                                        + '<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="opacity:.6;">Restart on crash</span><span>' + (mod.restartOnCrash ? 'yes' : 'no') + '</span></div>'
+                                        + (mod.restartOnCrash && mod.nextRestartAt ? '<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="opacity:.6;">Next restart</span><span>' + escHtml(nextRestart) + '</span></div>' : '')
                                         + '</div>';
                                 }
 
-                                card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">'
-                                    + '<span style="font-weight:600;font-size:.95em;">' + statusDot + escHtml(mod.name || mod.id) + '</span>'
-                                    + '<span style="font-size:.75em;opacity:.4;">loaded ' + loadedAt + '</span>'
+                                card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;">'
+                                    + '<span style="font-weight:600;font-size:1.0rem;color:rgba(255,255,255,0.87);">' + statusDot + escHtml(mod.name || mod.id) + '</span>'
+                                    + '<span style="font-size:0.75rem;opacity:0.5;">loaded ' + loadedAt + '</span>'
                                     + '</div>'
                                     + metricHtml
                                     + crashHtml;

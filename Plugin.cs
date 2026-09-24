@@ -32,9 +32,10 @@ namespace Jellyfin.Plugin.JellyFrame
 
         public override string Name => "JellyFrame";
         public override Guid Id => Guid.Parse("d4e5f6a7-b8c9-0123-defa-456789012345");
-        public override string Description => "JellyFrame — a complete customization and extension framework for Jellyfin.";
+        public override string Description => "JellyFrame - a complete customization and extension framework for Jellyfin.";
 
         public static Plugin Instance { get; private set; }
+        public static Version ServerVersion { get; set; } = typeof(IApplicationPaths).Assembly.GetName().Version;
         public IServiceProvider ServiceProvider { get; private set; }
         public ServerModLoader ModLoader { get; private set; }
         public IApplicationPaths AppPaths { get; private set; }

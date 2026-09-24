@@ -5,17 +5,40 @@
     "author": "grimmdev",
     "description": "Tests every jf.* surface from server and browser. Shows a live results panel on all pages. For development use only.",
     "version": "1.0.0",
-    "jellyfin": "10.11+",
+    "createdAt": "2026-01-10",
+    "updatedAt": "2026-09-15",
+    "jellyfin": "10.10+",
     "tags": [
       "dev",
       "test",
       "debug"
     ],
     "previewUrl": "",
+    "screenshots": [],
     "sourceUrl": "https://github.com/Jellyfin-PG/JellyFrame",
-    "cssUrl": null,
-    "jsUrl": "https://raw.githubusercontent.com/Jellyfin-PG/JellyFrame/refs/heads/main/examples/test-all-client.js",
-    "serverJs": "https://raw.githubusercontent.com/Jellyfin-PG/JellyFrame/refs/heads/main/examples/test-all-server.js",
+    "files": [
+      {
+        "type": "js",
+        "url": "https://raw.githubusercontent.com/Jellyfin-PG/JellyFrame/refs/heads/main/examples/test-all-client.js",
+        "version": "1.0.0",
+        "date": "2026-09-15",
+        "jellyfin": "10.10+",
+        "changelog": [
+          "Initial test runner client panel",
+          "Added real-time test event listeners"
+        ]
+      },
+      {
+        "type": "server",
+        "url": "https://raw.githubusercontent.com/Jellyfin-PG/JellyFrame/refs/heads/main/examples/test-all-server.js",
+        "version": "1.0.0",
+        "date": "2026-09-15",
+        "jellyfin": "10.10+",
+        "changelog": [
+          "Initial test surface routes and scheduled tasks"
+        ]
+      }
+    ],
     "permissions": [
       "http",
       "jellyfin.read",
@@ -37,6 +60,15 @@
         "type": "text",
         "default": "hello from vars"
       }
+    ],
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "date": "2026-09-15",
+        "changes": [
+          "Initial release of comprehensive feature test suite"
+        ]
+      }
     ]
   },
   {
@@ -44,14 +76,43 @@
     "name": "Now Playing",
     "author": "grimmdev",
     "description": "Shows what's currently playing across all active Jellyfin sessions as a live ticker in the header. Polls every 15 seconds and updates instantly on playback events. Requires the server mod for session data.",
-    "version": "1.0.0",
+    "version": "1.2.0",
+    "createdAt": "2026-01-15",
+    "updatedAt": "2026-09-15",
     "jellyfin": "10.10+",
-    "tags": ["ui", "playback", "header", "server", "example"],
+    "tags": [
+      "ui",
+      "playback",
+      "header",
+      "server",
+      "sessions"
+    ],
     "previewUrl": "",
+    "screenshots": [],
     "sourceUrl": "https://github.com/Jellyfin-PG/JellyFrame",
-    "cssUrl": null,
-    "jsUrl": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/now-playing-browser.js",
-    "serverJs": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/now-playing-server.js",
+    "files": [
+      {
+        "type": "js",
+        "url": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/now-playing-browser.js",
+        "version": "1.2.0",
+        "date": "2026-09-15",
+        "jellyfin": "10.10+",
+        "changelog": [
+          "Live header ticker UI",
+          "Added smooth marquee animation"
+        ]
+      },
+      {
+        "type": "server",
+        "url": "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame@main/examples/now-playing-server.js",
+        "version": "1.2.0",
+        "date": "2026-09-15",
+        "jellyfin": "10.10+",
+        "changelog": [
+          "Session observer and playback event broadcaster"
+        ]
+      }
+    ],
     "permissions": [
       "jellyfin.read",
       "store",
@@ -80,6 +141,23 @@
         "description": "When enabled, the ticker also shows the username next to the currently playing title.",
         "type": "boolean",
         "default": "false"
+      }
+    ],
+    "changelog": [
+      {
+        "version": "1.2.0",
+        "date": "2026-09-15",
+        "changes": [
+          "Added smooth marquee ticker animation",
+          "Optimized session polling and WebSocket updates"
+        ]
+      },
+      {
+        "version": "1.0.0",
+        "date": "2026-01-15",
+        "changes": [
+          "Initial release"
+        ]
       }
     ]
   }

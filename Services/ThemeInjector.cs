@@ -80,6 +80,12 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                     return html;
                 }
 
+                if (!VersionRangeMatcher.IsCompatible(theme.Jellyfin, Plugin.ServerVersion))
+                {
+                    Log(true, $"Theme '{theme.Id}' requires Jellyfin '{theme.Jellyfin}', but server is '{Plugin.ServerVersion}' — skipping theme injection");
+                    return html;
+                }
+
                 Log(dbg, "Injecting theme: " + theme.Name + " v" + theme.Version);
 
                 var vars = BuildVarMap(theme, config);
@@ -133,17 +139,19 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             IApplicationPaths paths,
             bool dbg)
         {
-            if (!string.IsNullOrWhiteSpace(theme.CssUrl))
+            var baseCssFiles = theme.GetMatchingCssFiles(Plugin.ServerVersion);
+            foreach (var baseFile in baseCssFiles)
             {
-                var baseCss = ThemeResourceCache.GetThemeCssAsync(
-                    theme.Id, theme.Version, theme.CssUrl, vars, paths)
+                var baseCss = ThemeResourceCache.GetFileAsync(
+                    theme.Id, baseFile, vars, paths, theme.Version)
                     .GetAwaiter().GetResult();
                 Log(dbg, "Cache warmed: base CSS (" + (baseCss?.Length ?? 0) + " chars)");
             }
 
-            foreach (var addon in theme.Addons ?? new List<ThemeAddon>())
+            var addonFiles = theme.GetMatchingAddons(Plugin.ServerVersion);
+            foreach (var addon in addonFiles)
             {
-                if (string.IsNullOrWhiteSpace(addon.CssUrl)) continue;
+                if (string.IsNullOrWhiteSpace(addon.Url)) continue;
 
                 bool active;
                 if (!string.IsNullOrEmpty(addon.TriggerVar))
@@ -164,8 +172,8 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                     continue;
                 }
 
-                var addonCss = ThemeResourceCache.GetAddonCssAsync(
-                    theme.Id, addon.Id, theme.Version, addon.CssUrl, vars, paths)
+                var addonCss = ThemeResourceCache.GetFileAsync(
+                    theme.Id, addon, vars, paths, theme.Version)
                     .GetAwaiter().GetResult();
                 Log(dbg, "Cache warmed: addon '" + addon.Id + "' (" + (addonCss?.Length ?? 0) + " chars)");
             }
@@ -211,6 +219,19 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         }
     }
 
+    public class ThemeFileEntry
+    {
+        public string Type { get; set; } = "css"; // "css", "addon"
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+        public string TriggerVar { get; set; } = string.Empty;
+        public string Version { get; set; } = string.Empty;
+        public string Date { get; set; } = string.Empty;
+        public string Jellyfin { get; set; } = string.Empty;
+        public List<System.Text.Json.JsonElement> Changelog { get; set; } = new List<System.Text.Json.JsonElement>();
+    }
+
     public class ThemeEntry
     {
         public string Id { get; set; }
@@ -218,17 +239,128 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public string Author { get; set; }
         public string Description { get; set; }
         public string Version { get; set; }
+        public string CreatedAt { get; set; } = string.Empty;
+        public string UpdatedAt { get; set; } = string.Empty;
         public string Jellyfin { get; set; } = string.Empty;
         public List<string> Tags { get; set; } = new List<string>();
         public string PreviewUrl { get; set; } = string.Empty;
         public List<string> Screenshots { get; set; } = new List<string>();
         public string SourceUrl { get; set; } = string.Empty;
         public string CssUrl { get; set; }
+        public List<ThemeFileEntry> Files { get; set; } = new List<ThemeFileEntry>();
         public List<string> Preconnect { get; set; } = new List<string>();
         public List<ThemeVar> Vars { get; set; } = new List<ThemeVar>();
         public List<ThemeAddon> Addons { get; set; } = new List<ThemeAddon>();
         public bool EditorsChoice { get; set; } = false;
         public List<System.Text.Json.JsonElement> Changelog { get; set; } = new List<System.Text.Json.JsonElement>();
+
+        public List<ThemeFileEntry> GetMatchingCssFiles(Version serverVersion)
+        {
+            var results = new List<ThemeFileEntry>();
+            if (Files != null && Files.Count > 0)
+            {
+                foreach (var file in Files)
+                {
+                    if (file == null || string.IsNullOrWhiteSpace(file.Url)) continue;
+                    string fType = file.Type?.Trim().ToLowerInvariant() ?? "css";
+                    if (fType == "css" || fType == "base")
+                    {
+                        string constraint = !string.IsNullOrWhiteSpace(file.Jellyfin) ? file.Jellyfin : Jellyfin;
+                        if (VersionRangeMatcher.IsCompatible(constraint, serverVersion))
+                        {
+                            results.Add(file);
+                        }
+                    }
+                }
+            }
+
+            if (results.Count == 0 && (Files == null || !HasAnyBaseCss(Files)))
+            {
+                if (!string.IsNullOrWhiteSpace(CssUrl) && VersionRangeMatcher.IsCompatible(Jellyfin, serverVersion))
+                {
+                    results.Add(new ThemeFileEntry
+                    {
+                        Type = "css",
+                        Url = CssUrl,
+                        Version = Version,
+                        Jellyfin = Jellyfin,
+                        Changelog = Changelog
+                    });
+                }
+            }
+
+            return results;
+        }
+
+        public List<ThemeFileEntry> GetMatchingAddons(Version serverVersion)
+        {
+            var results = new List<ThemeFileEntry>();
+            if (Files != null && Files.Count > 0)
+            {
+                foreach (var file in Files)
+                {
+                    if (file == null || string.IsNullOrWhiteSpace(file.Url)) continue;
+                    string fType = file.Type?.Trim().ToLowerInvariant() ?? string.Empty;
+                    if (fType == "addon")
+                    {
+                        string constraint = !string.IsNullOrWhiteSpace(file.Jellyfin) ? file.Jellyfin : Jellyfin;
+                        if (VersionRangeMatcher.IsCompatible(constraint, serverVersion))
+                        {
+                            results.Add(file);
+                        }
+                    }
+                }
+            }
+
+            if (results.Count == 0 && (Files == null || !HasAnyAddon(Files)))
+            {
+                if (Addons != null)
+                {
+                    foreach (var addon in Addons)
+                    {
+                        if (addon == null || string.IsNullOrWhiteSpace(addon.CssUrl)) continue;
+                        if (VersionRangeMatcher.IsCompatible(Jellyfin, serverVersion))
+                        {
+                            results.Add(new ThemeFileEntry
+                            {
+                                Type = "addon",
+                                Id = addon.Id,
+                                Name = addon.Name,
+                                Url = addon.CssUrl,
+                                TriggerVar = addon.TriggerVar,
+                                Version = Version,
+                                Jellyfin = Jellyfin
+                            });
+                        }
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        private static bool HasAnyBaseCss(List<ThemeFileEntry> files)
+        {
+            if (files == null) return false;
+            foreach (var f in files)
+            {
+                if (f == null) continue;
+                var t = f.Type?.Trim().ToLowerInvariant();
+                if (t == "css" || t == "base") return true;
+            }
+            return false;
+        }
+
+        private static bool HasAnyAddon(List<ThemeFileEntry> files)
+        {
+            if (files == null) return false;
+            foreach (var f in files)
+            {
+                if (f == null) continue;
+                if (f.Type?.Trim().ToLowerInvariant() == "addon") return true;
+            }
+            return false;
+        }
     }
 
     public class ThemeVar
