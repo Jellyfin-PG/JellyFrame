@@ -91,6 +91,12 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                         continue;
                     }
 
+                    if (!VersionRangeMatcher.IsCompatible(mod.Jellyfin, Plugin.ServerVersion))
+                    {
+                        Log(true, $"Mod '{mod.Id}' requires Jellyfin '{mod.Jellyfin}', but server is '{Plugin.ServerVersion}' — skipping frontend injection");
+                        continue;
+                    }
+
                     foreach (var origin in mod.Preconnect ?? new List<string>())
                         if (!string.IsNullOrWhiteSpace(origin))
                             preconnects.Add(origin.Trim());
@@ -98,10 +104,11 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                     Dictionary<string, string> vars = BuildVarMap(mod, modVars);
                     Log(dbg, "Processing mod: '" + mod.Name + "' version=" + mod.Version + " vars=" + vars.Count);
 
-                    if (!string.IsNullOrWhiteSpace(mod.CssUrl))
+                    var cssFiles = mod.GetMatchingFiles("css", Plugin.ServerVersion);
+                    foreach (var cssFile in cssFiles)
                     {
-                        Log(dbg, "  -> CSS: " + mod.CssUrl);
-                        string css = ModResourceCache.GetCssAsync(mod, vars, paths)
+                        Log(dbg, "  -> CSS: " + cssFile.Url);
+                        string css = ModResourceCache.GetFileAsync(mod, cssFile, vars, paths)
                             .GetAwaiter().GetResult();
 
                         if (!string.IsNullOrWhiteSpace(css))
@@ -110,10 +117,11 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                             Log(dbg, "  -> CSS fetch failed or empty");
                     }
 
-                    if (!string.IsNullOrWhiteSpace(mod.JsUrl))
+                    var jsFiles = mod.GetMatchingFiles("js", Plugin.ServerVersion);
+                    foreach (var jsFile in jsFiles)
                     {
-                        Log(dbg, "  -> JS: " + mod.JsUrl);
-                        string js = ModResourceCache.GetJsAsync(mod, vars, paths)
+                        Log(dbg, "  -> JS: " + jsFile.Url);
+                        string js = ModResourceCache.GetFileAsync(mod, jsFile, vars, paths)
                             .GetAwaiter().GetResult();
 
                         if (!string.IsNullOrWhiteSpace(js))
@@ -172,20 +180,23 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                     injection.AppendLine("</script>");
                 }
 
+                var match = _bodyTagRegex.Match(html);
+                if (match.Success)
                 {
-                    string block = "\n" + StartMarker + "\n" + injection.ToString() + EndMarker + "\n";
-                    string before = html;
-                    html = _bodyTagRegex.Replace(html, block + "$1");
-                    Log(dbg, html == before
-                        ? "WARNING: </body> not found — injection failed"
-                        : "Injected successfully. New length: " + html.Length);
+                    html = _bodyTagRegex.Replace(html,
+                        "\n" + StartMarker + "\n" + injection.ToString() + EndMarker + "\n$1", 1);
+                    Log(dbg, "Mods injected before </body>");
+                }
+                else
+                {
+                    Log(dbg, "No </body> found to inject mods into");
                 }
 
                 return html;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("[JellyFrame] EXCEPTION in InjectMods: " + ex);
+                Log(true, "InjectMods EXCEPTION: " + ex);
                 return payload?.Contents ?? string.Empty;
             }
         }
@@ -197,45 +208,63 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var v in mod.Vars ?? new List<ModVar>())
+            {
                 if (!string.IsNullOrEmpty(v.Key))
                     result[v.Key] = v.Default ?? string.Empty;
+            }
 
             if (modVars.TryGetValue(mod.Id ?? string.Empty, out var saved))
+            {
                 foreach (var kv in saved)
                     result[kv.Key] = kv.Value;
+            }
 
             return result;
         }
 
-        private static List<ModEntry> LoadCachedMods(string json, bool dbg)
+        private static List<ModEntry> LoadCachedMods(string cachedJson, bool dbg)
         {
-            if (string.IsNullOrWhiteSpace(json)) return null;
+            if (string.IsNullOrWhiteSpace(cachedJson))
+                return new List<ModEntry>();
+
             try
             {
-                return JsonSerializer.Deserialize<List<ModEntry>>(json, JsonOpts);
+                return JsonSerializer.Deserialize<List<ModEntry>>(cachedJson, JsonOpts)
+                    ?? new List<ModEntry>();
             }
             catch (Exception ex)
             {
                 Log(dbg, "Failed to deserialize CachedMods: " + ex.Message);
-                return null;
+                return new List<ModEntry>();
             }
         }
 
-        private static Dictionary<string, Dictionary<string, string>> LoadModVars(string json, bool dbg)
+        private static Dictionary<string, Dictionary<string, string>> LoadModVars(string modVarsJson, bool dbg)
         {
-            if (string.IsNullOrWhiteSpace(json) || json == "{}")
-                return new Dictionary<string, Dictionary<string, string>>();
+            if (string.IsNullOrWhiteSpace(modVarsJson) || modVarsJson == "{}")
+                return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+
             try
             {
-                return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json, JsonOpts)
-                    ?? new Dictionary<string, Dictionary<string, string>>();
+                return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(modVarsJson, JsonOpts)
+                    ?? new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
             }
             catch (Exception ex)
             {
                 Log(dbg, "Failed to deserialize ModVars: " + ex.Message);
-                return new Dictionary<string, Dictionary<string, string>>();
+                return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
             }
         }
+    }
+
+    public class ModFileEntry
+    {
+        public string Type { get; set; } = string.Empty; // "js", "css", "server", "serverjs"
+        public string Url { get; set; } = string.Empty;
+        public string Version { get; set; } = string.Empty;
+        public string Date { get; set; } = string.Empty;
+        public string Jellyfin { get; set; } = string.Empty;
+        public List<System.Text.Json.JsonElement> Changelog { get; set; } = new List<System.Text.Json.JsonElement>();
     }
 
     public class ModVar
@@ -256,6 +285,8 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public string Author { get; set; }
         public string Description { get; set; }
         public string Version { get; set; }
+        public string CreatedAt { get; set; } = string.Empty;
+        public string UpdatedAt { get; set; } = string.Empty;
         public string Jellyfin { get; set; } = string.Empty;
         public List<string> Tags { get; set; } = new List<string>();
         public string PreviewUrl { get; set; } = string.Empty;
@@ -267,6 +298,8 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public string JsUrl { get; set; }
 
         public string ServerJs { get; set; } = string.Empty;
+
+        public List<ModFileEntry> Files { get; set; } = new List<ModFileEntry>();
 
         public List<string> Permissions { get; set; } = new List<string>();
 
@@ -285,5 +318,95 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         /// the server restarts or an admin manually re-enables the mod.
         /// </summary>
         public bool RestartOnCrash { get; set; } = false;
+
+        /// <summary>
+        /// Resolves all files of targetType ("css", "js", "server") compatible with the running Jellyfin server.
+        /// Falls back to legacy CssUrl, JsUrl, or ServerJs if Files array is omitted or has no matching entries.
+        /// </summary>
+        public List<ModFileEntry> GetMatchingFiles(string targetType, Version serverVersion)
+        {
+            var results = new List<ModFileEntry>();
+            string normalizedTarget = targetType?.Trim().ToLowerInvariant() ?? string.Empty;
+            bool isServerTarget = normalizedTarget == "server" || normalizedTarget == "serverjs";
+
+            if (Files != null && Files.Count > 0)
+            {
+                foreach (var file in Files)
+                {
+                    if (file == null || string.IsNullOrWhiteSpace(file.Url))
+                        continue;
+
+                    string fType = file.Type?.Trim().ToLowerInvariant() ?? string.Empty;
+                    bool typeMatches = isServerTarget
+                        ? (fType == "server" || fType == "serverjs")
+                        : (fType == normalizedTarget);
+
+                    if (typeMatches)
+                    {
+                        string constraint = !string.IsNullOrWhiteSpace(file.Jellyfin) ? file.Jellyfin : Jellyfin;
+                        if (VersionRangeMatcher.IsCompatible(constraint, serverVersion))
+                        {
+                            results.Add(file);
+                        }
+                    }
+                }
+            }
+
+            // Fallback to legacy fields if no matching files of targetType were found in Files
+            if (results.Count == 0 && (Files == null || !HasAnyFileOfType(Files, normalizedTarget, isServerTarget)))
+            {
+                if (VersionRangeMatcher.IsCompatible(Jellyfin, serverVersion))
+                {
+                    if (normalizedTarget == "css" && !string.IsNullOrWhiteSpace(CssUrl))
+                    {
+                        results.Add(new ModFileEntry
+                        {
+                            Type = "css",
+                            Url = CssUrl,
+                            Version = Version,
+                            Jellyfin = Jellyfin,
+                            Changelog = Changelog
+                        });
+                    }
+                    else if (normalizedTarget == "js" && !string.IsNullOrWhiteSpace(JsUrl))
+                    {
+                        results.Add(new ModFileEntry
+                        {
+                            Type = "js",
+                            Url = JsUrl,
+                            Version = Version,
+                            Jellyfin = Jellyfin,
+                            Changelog = Changelog
+                        });
+                    }
+                    else if (isServerTarget && !string.IsNullOrWhiteSpace(ServerJs))
+                    {
+                        results.Add(new ModFileEntry
+                        {
+                            Type = "server",
+                            Url = ServerJs,
+                            Version = Version,
+                            Jellyfin = Jellyfin,
+                            Changelog = Changelog
+                        });
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        private static bool HasAnyFileOfType(List<ModFileEntry> files, string normalizedTarget, bool isServerTarget)
+        {
+            if (files == null) return false;
+            foreach (var f in files)
+            {
+                if (f == null) continue;
+                string fType = f.Type?.Trim().ToLowerInvariant() ?? string.Empty;
+                if (isServerTarget && (fType == "server" || fType == "serverjs")) return true;
+                if (!isServerTarget && fType == normalizedTarget) return true;
+            }
+            return false;
+        }
     }
 }

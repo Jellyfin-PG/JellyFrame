@@ -48,21 +48,26 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
             var theme = themes?.Find(t =>
                 string.Equals(t.Id, themeId, StringComparison.OrdinalIgnoreCase));
 
-            if (theme == null || string.IsNullOrWhiteSpace(theme.CssUrl))
+            if (theme == null)
                 return NotFound();
 
             var vars = BuildVarMap(theme, config);
             var css = new StringBuilder();
 
-            var baseCss = await ThemeResourceCache.GetThemeCssAsync(
-                theme.Id, theme.Version, theme.CssUrl, vars, paths);
-
-            if (!string.IsNullOrWhiteSpace(baseCss))
-                css.AppendLine(baseCss);
-
-            foreach (var addon in theme.Addons ?? new List<ThemeAddon>())
+            var baseCssFiles = theme.GetMatchingCssFiles(Plugin.ServerVersion);
+            foreach (var baseFile in baseCssFiles)
             {
-                if (string.IsNullOrWhiteSpace(addon.CssUrl)) continue;
+                var baseCss = await ThemeResourceCache.GetFileAsync(
+                    theme.Id, baseFile, vars, paths, theme.Version);
+
+                if (!string.IsNullOrWhiteSpace(baseCss))
+                    css.AppendLine(baseCss);
+            }
+
+            var addonFiles = theme.GetMatchingAddons(Plugin.ServerVersion);
+            foreach (var addon in addonFiles)
+            {
+                if (string.IsNullOrWhiteSpace(addon.Url)) continue;
 
                 bool active = string.IsNullOrEmpty(addon.TriggerVar) ||
                               (vars.TryGetValue(addon.TriggerVar, out var tv) &&
@@ -70,8 +75,8 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
 
                 if (!active) continue;
 
-                var addonCss = await ThemeResourceCache.GetAddonCssAsync(
-                    theme.Id, addon.Id, theme.Version, addon.CssUrl, vars, paths);
+                var addonCss = await ThemeResourceCache.GetFileAsync(
+                    theme.Id, addon, vars, paths, theme.Version);
 
                 if (!string.IsNullOrWhiteSpace(addonCss))
                     css.AppendLine(addonCss);

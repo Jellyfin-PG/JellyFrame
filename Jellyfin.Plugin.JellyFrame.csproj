@@ -9,9 +9,9 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>Jellyfin.Plugin.JellyFrame</AssemblyName>
     <RootNamespace>Jellyfin.Plugin.JellyFrame</RootNamespace>
-    <Version>1.5.2.0</Version>
-    <AssemblyVersion>1.5.2.0</AssemblyVersion>
-    <FileVersion>1.5.2.0</FileVersion>
+    <Version>1.5.3.0</Version>
+    <AssemblyVersion>1.5.3.0</AssemblyVersion>
+    <FileVersion>1.5.3.0</FileVersion>
     <Authors>Jellyfin-PG</Authors>
     <RepositoryUrl>https://github.com/Jellyfin-PG/JellyFrame</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -32,5 +32,46 @@
     <EmbeddedResource Include="Configuration\modsPage.html" />
     <EmbeddedResource Include="Configuration\themesPage.html" />
   </ItemGroup>
+
+  <UsingTask TaskName="BundleConfigurationPages" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <SourceDir ParameterType="System.String" Required="true" />
+      <OutputDir ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (!Directory.Exists(SourceDir)) return true;
+          var regex = new Regex(@"/\*\s*@include\s+([^\*]+)\s*\*/|<!--\s*@include\s+([^>]+)\s*-->", RegexOptions.Compiled);
+          foreach (var templateFile in Directory.GetFiles(SourceDir, "*.html", SearchOption.TopDirectoryOnly))
+          {
+              var fileName = Path.GetFileName(templateFile);
+              var content = File.ReadAllText(templateFile);
+              var bundled = regex.Replace(content, match =>
+              {
+                  var relPath = (match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value).Trim();
+                  var fullIncludePath = Path.Combine(SourceDir, relPath);
+                  if (File.Exists(fullIncludePath))
+                  {
+                      return File.ReadAllText(fullIncludePath);
+                  }
+                  Log.LogWarning("Include file not found: " + fullIncludePath);
+                  return match.Value;
+              });
+              var destFile = Path.Combine(OutputDir, fileName);
+              File.WriteAllText(destFile, bundled);
+              Log.LogMessage(Microsoft.Build.Framework.MessageImportance.Normal, "Bundled configuration page: " + fileName);
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="BundlePagesBeforeBuild" BeforeTargets="BeforeBuild;BeforeCompile;AssignTargetPaths">
+    <BundleConfigurationPages SourceDir="$(MSBuildProjectDirectory)\Configuration\src" OutputDir="$(MSBuildProjectDirectory)\Configuration" />
+  </Target>
 
 </Project>

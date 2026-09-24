@@ -24,22 +24,37 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private static SemaphoreSlim GetUrlLock(string url)
             => _urlLocks.GetOrAdd(url, _ => new SemaphoreSlim(1, 1));
 
+        public static Task<string> GetFileAsync(
+            ModEntry mod,
+            ModFileEntry file,
+            Dictionary<string, string> vars,
+            IApplicationPaths paths)
+        {
+            if (file == null || string.IsNullOrWhiteSpace(file.Url))
+                return Task.FromResult<string>(null);
+
+            string fType = file.Type?.Trim().ToLowerInvariant() ?? "js";
+            if (fType == "server") fType = "serverjs";
+            string version = !string.IsNullOrWhiteSpace(file.Version) ? file.Version : mod.Version;
+            return GetResourceAsync(mod, fType, file.Url, (fType == "serverjs" ? null : vars), paths, version);
+        }
+
         public static Task<string> GetJsAsync(
             ModEntry mod,
             Dictionary<string, string> vars,
             IApplicationPaths paths)
-            => GetResourceAsync(mod, "js", mod.JsUrl, vars, paths);
+            => GetResourceAsync(mod, "js", mod.JsUrl, vars, paths, mod?.Version);
 
         public static Task<string> GetCssAsync(
             ModEntry mod,
             Dictionary<string, string> vars,
             IApplicationPaths paths)
-            => GetResourceAsync(mod, "css", mod.CssUrl, vars, paths);
+            => GetResourceAsync(mod, "css", mod.CssUrl, vars, paths, mod?.Version);
 
         public static Task<string> GetServerJsAsync(
             ModEntry mod,
             IApplicationPaths paths)
-            => GetResourceAsync(mod, "serverjs", mod.ServerJs, vars: null, paths: paths);
+            => GetResourceAsync(mod, "serverjs", mod.ServerJs, vars: null, paths: paths, version: mod?.Version);
 
         public static void InvalidateMod(string modId, IApplicationPaths paths)
         {
@@ -93,7 +108,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             foreach (var file in Directory.GetFiles(cacheDir, SafeId(modId) + "__*"))
             {
                 var name = Path.GetFileNameWithoutExtension(file);
-                if (name.Split(new[] { "__" }, StringSplitOptions.None).Length == 4)
+                if (name.Split(new[] { "__" }, StringSplitOptions.None).Length >= 4)
                     try { File.Delete(file); } catch { }
             }
         }
@@ -103,16 +118,18 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             string type,
             string url,
             Dictionary<string, string> vars,
-            IApplicationPaths paths)
+            IApplicationPaths paths,
+            string version = null)
         {
             if (string.IsNullOrWhiteSpace(url))
                 return null;
 
+            var effectiveVersion = !string.IsNullOrWhiteSpace(version) ? version : mod?.Version;
             var cacheDir = GetCacheDir(paths);
 
             var cacheFile = (type == "serverjs" || vars == null)
-                ? GetCacheFilePath(cacheDir, mod.Id, mod.Version, type, varsHash: null)
-                : GetCacheFilePath(cacheDir, mod.Id, mod.Version, type, varsHash: HashVars(vars));
+                ? GetCacheFilePath(cacheDir, mod.Id, effectiveVersion, type, url, varsHash: null)
+                : GetCacheFilePath(cacheDir, mod.Id, effectiveVersion, type, url, varsHash: HashVars(vars));
 
             if (File.Exists(cacheFile))
             {
@@ -124,11 +141,10 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             await urlLock.WaitAsync();
             try
             {
-
                 if (File.Exists(cacheFile))
                     return await File.ReadAllTextAsync(cacheFile, Encoding.UTF8);
 
-                EvictStale(cacheDir, mod.Id, type);
+                EvictStale(cacheDir, mod.Id, type, url);
 
                 string raw;
                 try
@@ -190,13 +206,22 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private static string GetCacheDir(IApplicationPaths paths)
             => Path.Combine(paths.DataPath, "JellyFrame", "mods");
 
-        private static string GetCacheFilePath(string cacheDir, string modId, string version, string type, string varsHash)
+        private static string GetCacheFilePath(string cacheDir, string modId, string version, string type, string url, string varsHash)
         {
             var ext = type == "css" ? "css" : "js";
+            var uHash = HashUrl(url);
             var name = varsHash != null
-                ? $"{SafeId(modId)}__{SafeId(version)}__{type}__{varsHash}.{ext}"
-                : $"{SafeId(modId)}__{SafeId(version)}__{type}.{ext}";
+                ? $"{SafeId(modId)}__{SafeId(version)}__{type}__{uHash}__{varsHash}.{ext}"
+                : $"{SafeId(modId)}__{SafeId(version)}__{type}__{uHash}.{ext}";
             return Path.Combine(cacheDir, name);
+        }
+
+        private static string HashUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return "nourl";
+            uint h = 2166136261u;
+            foreach (char c in url) h = (h ^ c) * 16777619u;
+            return h.ToString("x8");
         }
 
         private static string HashVars(Dictionary<string, string> vars)
@@ -218,16 +243,17 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             return h.ToString("x8");
         }
 
-        private static void EvictStale(string cacheDir, string modId, string type)
+        private static void EvictStale(string cacheDir, string modId, string type, string url)
         {
             if (!Directory.Exists(cacheDir)) return;
 
+            var uHash = HashUrl(url);
             foreach (var file in Directory.GetFiles(cacheDir, SafeId(modId) + "__*"))
             {
                 var name = Path.GetFileNameWithoutExtension(file);
                 var parts = name.Split(new[] { "__" }, StringSplitOptions.None);
 
-                if (parts.Length >= 3 && parts[2] == type)
+                if (parts.Length >= 4 && parts[2] == type && parts[3] == uHash)
                     try { File.Delete(file); } catch { }
             }
         }

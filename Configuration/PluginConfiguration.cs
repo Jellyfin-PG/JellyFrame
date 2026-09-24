@@ -7,7 +7,7 @@ namespace Jellyfin.Plugin.JellyFrame.Configuration
     {
         public int ConfigVersion { get; set; } = 0;
 
-        public string ModsUrl { get; set; } = "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/mods.json";
+        public string ModsUrl { get; set; } = "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/mods.v2.json";
 
         public List<string> EnabledMods { get; set; } = new List<string>();
 
@@ -15,7 +15,7 @@ namespace Jellyfin.Plugin.JellyFrame.Configuration
 
         public string ModVars { get; set; } = "{}";
 
-        public string ThemesUrl { get; set; } = "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/themes.json";
+        public string ThemesUrl { get; set; } = "https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/themes.v2.json";
 
         public string ActiveTheme { get; set; } = string.Empty;
 

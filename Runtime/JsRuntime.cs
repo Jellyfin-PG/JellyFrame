@@ -54,13 +54,15 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             _engine.SetValue("console", new JsConsole(_logger, _context.ModId));
             _engine.Execute(
                 "var jf = {" +
-                "  vars:      __jfCtx.Vars," +
-                "  log:       __jfCtx.Log," +
-                "  cache:     __jfCtx.Cache," +
-                "  perms:     __jfCtx.Perms," +
-                "  routes:    __jfCtx.Routes," +
-                "  http:      __jfCtx.Http," +
-                "  jellyfin:  __jfCtx.Jellyfin," +
+                "  vars:            __jfCtx.Vars," +
+                "  serverVersion:   __jfCtx.ServerVersion," +
+                "  jellyfinVersion: __jfCtx.ServerVersion," +
+                "  log:             __jfCtx.Log," +
+                "  cache:           __jfCtx.Cache," +
+                "  perms:           __jfCtx.Perms," +
+                "  routes:          __jfCtx.Routes," +
+                "  http:            __jfCtx.Http," +
+                "  jellyfin:        __jfCtx.Jellyfin," +
                 "  store:     __jfCtx.Store," +
                 "  userStore: __jfCtx.UserStore," +
                 "  kv:        __jfCtx.Kv," +

@@ -140,7 +140,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
                 var serverMods = new List<ModEntry>();
                 foreach (var m in mods)
-                    if (enabledSet.Contains(m.Id) && !string.IsNullOrWhiteSpace(m.ServerJs))
+                    if (enabledSet.Contains(m.Id) && m.GetMatchingFiles("server", Plugin.ServerVersion).Count > 0)
                         serverMods.Add(m);
 
                 var modIndex = new Dictionary<string, ModEntry>(StringComparer.OrdinalIgnoreCase);
@@ -173,21 +173,37 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             if (_runtimes.TryRemove(mod.Id, out var old))
                 old.Dispose();
 
-            _logger.LogInformation("[JellyFrame] Fetching server script for {Id} from {Url}", mod.Id, mod.ServerJs);
-
-            string script;
-            try
+            var serverFiles = mod.GetMatchingFiles("server", Plugin.ServerVersion);
+            if (serverFiles.Count == 0)
             {
-                script = await ModResourceCache.GetServerJsAsync(mod, _paths);
-                if (string.IsNullOrWhiteSpace(script))
+                _logger.LogInformation("[JellyFrame] No compatible server scripts for mod '{Id}' on Jellyfin '{ServerVer}' — skipping server runtime",
+                    mod.Id, Plugin.ServerVersion);
+                return;
+            }
+
+            var scripts = new List<string>();
+            foreach (var sFile in serverFiles)
+            {
+                _logger.LogInformation("[JellyFrame] Fetching server script for {Id} from {Url}", mod.Id, sFile.Url);
+                try
                 {
-                    _logger.LogError("[JellyFrame] Server script empty or fetch failed for {Id}", mod.Id);
-                    return;
+                    string script = await ModResourceCache.GetFileAsync(mod, sFile, vars: null, _paths);
+                    if (string.IsNullOrWhiteSpace(script))
+                    {
+                        _logger.LogError("[JellyFrame] Server script empty or fetch failed for {Id} from {Url}", mod.Id, sFile.Url);
+                        continue;
+                    }
+                    scripts.Add(script);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[JellyFrame] Failed to fetch server script for {Id} from {Url}", mod.Id, sFile.Url);
                 }
             }
-            catch (Exception ex)
+
+            if (scripts.Count == 0)
             {
-                _logger.LogError(ex, "[JellyFrame] Failed to fetch server script for {Id}", mod.Id);
+                _logger.LogError("[JellyFrame] No server scripts could be loaded for {Id}", mod.Id);
                 return;
             }
 
@@ -239,7 +255,10 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
             try
             {
-                runtime.LoadScript(script);
+                foreach (var script in scripts)
+                {
+                    runtime.LoadScript(script);
+                }
             }
             catch (Exception ex)
             {
@@ -256,7 +275,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 
         public async Task EnableModAsync(ModEntry mod, Dictionary<string, Dictionary<string, string>> modVars)
         {
-            if (string.IsNullOrWhiteSpace(mod.ServerJs)) return;
+            if (mod.GetMatchingFiles("server", Plugin.ServerVersion).Count == 0) return;
             await _loadLock.WaitAsync();
             try { await LoadModCoreAsync(mod, modVars, CancellationToken.None); }
             finally { _loadLock.Release(); }

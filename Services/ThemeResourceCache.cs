@@ -32,6 +32,22 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private static SemaphoreSlim GetUrlLock(string url)
             => _urlLocks.GetOrAdd(url, _ => new SemaphoreSlim(1, 1));
 
+        public static Task<string> GetFileAsync(
+            string themeId,
+            ThemeFileEntry file,
+            Dictionary<string, string> vars,
+            IApplicationPaths paths,
+            string defaultVersion)
+        {
+            if (file == null || string.IsNullOrWhiteSpace(file.Url))
+                return Task.FromResult<string>(null);
+
+            string version = !string.IsNullOrWhiteSpace(file.Version) ? file.Version : defaultVersion;
+            string type = string.Equals(file.Type?.Trim(), "addon", StringComparison.OrdinalIgnoreCase) ? "addon" : "base";
+            string id = type == "addon" && !string.IsNullOrWhiteSpace(file.Id) ? $"{themeId}--{file.Id}" : themeId;
+            return GetResourceAsync(id, version, type, file.Url, vars, paths);
+        }
+
         public static Task<string> GetThemeCssAsync(
             string themeId,
             string version,
@@ -75,7 +91,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "__*"))
             {
                 var name = Path.GetFileNameWithoutExtension(file);
-                if (name.Split(new[] { "__" }, StringSplitOptions.None).Length == 4)
+                if (name.Split(new[] { "__" }, StringSplitOptions.None).Length >= 4)
                     try { File.Delete(file); } catch { }
             }
             foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "--*"))
@@ -83,7 +99,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 var name = Path.GetFileNameWithoutExtension(file);
                 var dashIdx = name.IndexOf("--", System.StringComparison.Ordinal);
                 var remainder = dashIdx >= 0 ? name.Substring(dashIdx + 2) : name;
-                if (remainder.Split(new[] { "__" }, System.StringSplitOptions.None).Length == 4)
+                if (remainder.Split(new[] { "__" }, System.StringSplitOptions.None).Length >= 4)
                     try { File.Delete(file); } catch { }
             }
         }
@@ -118,8 +134,8 @@ namespace Jellyfin.Plugin.JellyFrame.Services
 
             var cacheDir = GetCacheDir(paths);
             var cacheFile = vars != null
-                ? GetCacheFilePath(cacheDir, id, version, type, HashVars(vars))
-                : GetCacheFilePath(cacheDir, id, version, type, null);
+                ? GetCacheFilePath(cacheDir, id, version, type, url, HashVars(vars))
+                : GetCacheFilePath(cacheDir, id, version, type, url, null);
 
             if (File.Exists(cacheFile))
                 try { return await File.ReadAllTextAsync(cacheFile, Encoding.UTF8); } catch { }
@@ -131,7 +147,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 if (File.Exists(cacheFile))
                     return await File.ReadAllTextAsync(cacheFile, Encoding.UTF8);
 
-                EvictStale(cacheDir, id, type);
+                EvictStale(cacheDir, id, type, url);
 
                 string raw;
                 try { raw = await Http.GetStringAsync(url); }
@@ -165,21 +181,31 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private static string GetCacheDir(IApplicationPaths paths)
             => Path.Combine(paths.DataPath, "JellyFrame", "themes");
 
-        private static string GetCacheFilePath(string cacheDir, string id, string version, string type, string varsHash)
+        private static string GetCacheFilePath(string cacheDir, string id, string version, string type, string url, string varsHash)
         {
+            var uHash = HashUrl(url);
             var name = varsHash != null
-                ? $"{SafeId(id)}__{SafeId(version)}__{type}__{varsHash}.css"
-                : $"{SafeId(id)}__{SafeId(version)}__{type}.css";
+                ? $"{SafeId(id)}__{SafeId(version)}__{type}__{uHash}__{varsHash}.css"
+                : $"{SafeId(id)}__{SafeId(version)}__{type}__{uHash}.css";
             return Path.Combine(cacheDir, name);
         }
 
-        private static void EvictStale(string cacheDir, string id, string type)
+        private static string HashUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return "nourl";
+            uint h = 2166136261u;
+            foreach (char c in url) h = (h ^ c) * 16777619u;
+            return h.ToString("x8");
+        }
+
+        private static void EvictStale(string cacheDir, string id, string type, string url)
         {
             if (!Directory.Exists(cacheDir)) return;
+            var uHash = HashUrl(url);
             foreach (var file in Directory.GetFiles(cacheDir, SafeId(id) + "__*"))
             {
                 var parts = Path.GetFileNameWithoutExtension(file).Split(new[] { "__" }, StringSplitOptions.None);
-                if (parts.Length >= 3 && parts[2] == type)
+                if (parts.Length >= 4 && parts[2] == type && parts[3] == uHash)
                     try { File.Delete(file); } catch { }
             }
         }

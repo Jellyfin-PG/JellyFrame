@@ -82,6 +82,7 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         }
 
         public string ModId { get; }
+        public string ServerVersion => Plugin.ServerVersion?.ToString() ?? "unknown";
         public Dictionary<string, string> Vars { get; }
         public RoutesSurface Routes { get; }
         public CacheSurface Cache { get; }
