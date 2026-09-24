@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>JellyFrame - Mods</title>
+</head>
+
+<body>
+    <div id="JellyFrameConfigurationPage" data-role="page"
+        class="page type-interior pluginConfigurationPage jfModsConfigPage jfModsPage"
+        data-require="emby-input,emby-button,emby-select">
+
+        <style>
+            :root {
+                --mui-palette-primary-main: #90caf9;
+                --mui-palette-primary-dark: #42a5f5;
+                --mui-palette-primary-contrast: rgba(0, 0, 0, 0.87);
+                --mui-palette-secondary-main: #ce93d8;
+                --mui-palette-success-main: #66bb6a;
+                --mui-palette-warning-main: #ffa726;
+                --mui-palette-error-main: #f44336;
+                --mui-palette-info-main: #29b6f6;
+                --mui-palette-bg-default: #121212;
+                --mui-palette-bg-paper: #1e1e1e;
+                --mui-palette-bg-elevated: #262626;
+                --mui-palette-text-primary: rgba(255, 255, 255, 0.87);
+                --mui-palette-text-secondary: rgba(255, 255, 255, 0.60);
+                --mui-palette-divider: rgba(255, 255, 255, 0.12);
+                --mui-shape-radius-sm: 4px;
+                --mui-shape-radius-md: 8px;
+                --mui-shape-radius-lg: 12px;
+                --mui-shape-radius-pill: 9999px;
+                --mui-shadow-elevation-1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-2: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-4: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-8: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+                --mui-shadow-elevation-24: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
+            }
+
+            .jfModsPage {
+                font-family: "Roboto", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif !important;
+                color: var(--mui-palette-text-primary) !important;
+                box-sizing: border-box !important;
+                padding: 16px 24px !important;
+                max-width: 1300px !important;
+                margin: 0 auto !important;
+            }
+
+            .jfModsPage h2 {
+                font-size: 2.0rem !important;
+                font-weight: 600 !important;
+                line-height: 1.25 !important;
+                letter-spacing: -0.00833em !important;
+                margin: 0 0 20px 0 !important;
+                color: var(--mui-palette-text-primary) !important;
+            }
+
+            /* MUI Tabs Navigation */
+            .jfModsPage .mui-tabs {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 0 !important;
+                margin-bottom: 24px !important;
+                border-bottom: 1px solid var(--mui-palette-divider) !important;
+                padding-bottom: 0 !important;
+                width: 100% !important;
+                min-height: 48px !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+            }
+
+            .jfModsPage .mmTab,
+            .jfModsPage .mui-tab {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 8px !important;
+                min-height: 48px !important;
+                min-width: 90px !important;
+                padding: 12px 20px !important;
+                border: none !important;
+                background: transparent !important;
+                cursor: pointer !important;
+                border-bottom: 2px solid transparent !important;
+                margin-bottom: -1px !important;
+                color: var(--mui-palette-text-secondary) !important;
+                font-family: inherit !important;
+                font-size: 0.875rem !important;
+                font-weight: 500 !important;
+                line-height: 1.25 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1), background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                position: relative !important;
+                box-sizing: border-box !important;
+                user-select: none !important;
+                outline: none !important;
+                border-top-left-radius: var(--mui-shape-radius-sm) !important;
+                border-top-right-radius: var(--mui-shape-radius-sm) !important;
+            }
+
+            .jfModsPage .mmTab:hover,
+            .jfModsPage .mui-tab:hover {
+                color: var(--mui-palette-text-primary) !important;
+                background-color: rgba(255, 255, 255, 0.04) !important;
+            }
+
+            .jfModsPage .mmTab:focus-visible,
+            .jfModsPage .mui-tab:focus-visible {
+                outline: 2px solid var(--mui-palette-primary-main) !important;
+                outline-offset: -2px !important;
+            }
+
+            .jfModsPage .mmTab.mmTabActive,
+            .jfModsPage .mmTabActive,
+            .jfModsPage .mui-tab-active {
+                color: var(--mui-palette-primary-main) !important;
+                border-bottom: 2px solid var(--mui-palette-primary-main) !important;
+                font-weight: 600 !important;
+                background-color: transparent !important;
+            }
+
+            .jfModsPage .mui-tab-icon {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 1.1rem !important;
+                line-height: 1 !important;
+            }
+
+            /* MUI Alert Banners */
+            .jfModsPage .mui-alert-banner {
+                display: flex;
+                align-items: center !important;
+                gap: 12px !important;
+                padding: 12px 18px !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                margin-bottom: 20px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.5 !important;
+                transition: all 200ms ease !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfModsPage .mui-alert-banner-info {
+                background-color: rgba(144, 202, 249, 0.1) !important;
+                border: 1px solid rgba(144, 202, 249, 0.3) !important;
+                color: var(--mui-palette-primary-main) !important;
+            }
+
+            .jfModsPage .mui-alert-banner-warning {
+                background-color: rgba(255, 167, 38, 0.1) !important;
+                border: 1px solid rgba(255, 167, 38, 0.35) !important;
+                color: var(--mui-palette-warning-main) !important;
+            }
+
+            /* MUI Outlined Inputs & Form Controls */
+            .jfModsPage .inputContainer,
+            .jfModsPage .selectContainer {
+                margin-bottom: 16px !important;
+            }
+
+            .jfModsPage .inputLabel,
+            .jfModsPage .selectLabel {
+                font-size: 0.75rem !important;
+                font-weight: 600 !important;
+                color: var(--mui-palette-text-secondary) !important;
+                margin-bottom: 6px !important;
+                display: block !important;
+                letter-spacing: 0.01em !important;
+                text-transform: uppercase !important;
+            }
+
+            .jfModsPage input.emby-input,
+            .jfModsPage select.emby-select {
+                width: 100% !important;
+                padding: 10px 14px !important;
+                background-color: rgba(255, 255, 255, 0.04) !important;
+                border: 1px solid rgba(255, 255, 255, 0.23) !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                color: var(--mui-palette-text-primary) !important;
+                font-family: inherit !important;
+                font-size: 0.875rem !important;
+                box-sizing: border-box !important;
+                transition: border-color 200ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 200ms ease, background-color 200ms ease !important;
+            }
+
+            .jfModsPage input.emby-input:hover,
+            .jfModsPage select.emby-select:hover {
+                border-color: rgba(255, 255, 255, 0.4) !important;
+                background-color: rgba(255, 255, 255, 0.06) !important;
+            }
+
+            .jfModsPage input.emby-input:focus,
+            .jfModsPage select.emby-select:focus {
+                border-color: var(--mui-palette-primary-main) !important;
+                outline: none !important;
+                box-shadow: 0 0 0 1px var(--mui-palette-primary-main) !important;
+                background-color: rgba(255, 255, 255, 0.07) !important;
+            }
+
+            /* MUI Buttons */
+            .jfModsPage .mui-btn-contained,
+            button.mui-btn-contained,
+            a.mui-btn-contained {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: var(--mui-palette-primary-main) !important;
+                color: var(--mui-palette-primary-contrast) !important;
+                font-family: inherit !important;
+                font-weight: 600 !important;
+                padding: 8px 22px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.75 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                border: none !important;
+                cursor: pointer !important;
+                box-shadow: var(--mui-shadow-elevation-2) !important;
+                transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                text-decoration: none !important;
+                user-select: none !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfModsPage .mui-btn-contained:hover:not(:disabled),
+            button.mui-btn-contained:hover:not(:disabled) {
+                background-color: var(--mui-palette-primary-dark) !important;
+                box-shadow: var(--mui-shadow-elevation-4) !important;
+            }
+
+            .jfModsPage .mui-btn-contained:active:not(:disabled) {
+                transform: scale(0.98) !important;
+            }
+
+            .jfModsPage .mui-btn-contained:disabled,
+            button.mui-btn-contained:disabled {
+                background-color: rgba(255, 255, 255, 0.12) !important;
+                color: rgba(255, 255, 255, 0.3) !important;
+                box-shadow: none !important;
+                cursor: default !important;
+                pointer-events: none !important;
+            }
+
+            .jfModsPage .mui-btn-outlined,
+            button.mui-btn-outlined,
+            a.mui-btn-outlined {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: transparent !important;
+                color: var(--mui-palette-primary-main) !important;
+                border: 1px solid rgba(144, 202, 249, 0.5) !important;
+                font-family: inherit !important;
+                font-weight: 600 !important;
+                padding: 7px 18px !important;
+                font-size: 0.875rem !important;
+                line-height: 1.75 !important;
+                letter-spacing: 0.02857em !important;
+                text-transform: uppercase !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                cursor: pointer !important;
+                transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                text-decoration: none !important;
+                user-select: none !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfModsPage .mui-btn-outlined:hover:not(:disabled),
+            button.mui-btn-outlined:hover:not(:disabled) {
+                background-color: rgba(144, 202, 249, 0.08) !important;
+                border-color: var(--mui-palette-primary-main) !important;
+            }
+
+            .jfModsPage .mui-btn-outlined-danger,
+            button.mui-btn-outlined-danger {
+                color: var(--mui-palette-error-main) !important;
+                border-color: rgba(244, 67, 54, 0.5) !important;
+                background-color: rgba(244, 67, 54, 0.04) !important;
+            }
+
+            .jfModsPage .mui-btn-outlined-danger:hover:not(:disabled),
+            button.mui-btn-outlined-danger:hover:not(:disabled) {
+                background-color: rgba(244, 67, 54, 0.12) !important;
+                border-color: var(--mui-palette-error-main) !important;
+            }
+
+            /* MUI Segmented Button Group (Toggle Switch) */
+            .jfModsPage .mui-segmented-group {
+                display: inline-flex !important;
+                background-color: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.15) !important;
+                border-radius: var(--mui-shape-radius-md) !important;
+                padding: 3px !important;
+                gap: 2px !important;
+                align-items: center !important;
+                user-select: none !important;
+                box-sizing: border-box !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+            }
+
+            .jfModsPage .mui-segmented-btn {
+                all: unset !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 6px !important;
+                padding: 6px 16px !important;
+                font-family: inherit !important;
+                font-size: 0.8125rem !important;
+                font-weight: 500 !important;
+                line-height: 1.25 !important;
+                letter-spacing: 0.02em !important;
+                color: var(--mui-palette-text-secondary) !important;
+                border-radius: 6px !important;
+                cursor: pointer !important;
+                transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+                            color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+                            box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+                box-sizing: border-box !important;
+                white-space: nowrap !important;
+            }
+
+            .jfModsPage .mui-segmented-btn:hover {
+                color: var(--mui-palette-text-primary) !important;
+                background-color: rgba(255, 255, 255, 0.06) !important;
+            }
+
+            .jfModsPage .mui-segmented-btn.active,
+            .jfModsPage .mui-segmented-btn[aria-checked="true"] {
+                background-color: var(--mui-palette-primary-main) !important;
+                color: var(--mui-palette-primary-contrast) !important;
+                font-weight: 700 !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            .jfModsPage .mui-segmented-btn:focus-visible {
+                outline: 2px solid var(--mui-palette-primary-main) !important;
+                outline-offset: 1px !important;
+            }
+
+            /* MUI Cards Grid */
+            .jfModsPage #modGrid,
+            #modGrid {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+                gap: 20px !important;
+                padding: 16px 0 24px 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* MUI Card Containers */
+            .jfModsPage .card,
+            .jfModsPage .mui-card,
+            .jfModsPage .overflowBackdropCard {
+                background-color: var(--mui-palette-bg-paper) !important;
+                border-radius: var(--mui-shape-radius-lg) !important;
+                border: 1px solid var(--mui-palette-divider) !important;
+                box-shadow: var(--mui-shadow-elevation-1) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+                pointer-events: auto !important;
+                transition: box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1), transform 200ms ease, border-color 250ms ease !important;
+            }
+
+            .jfModsPage .card:hover,
+            .jfModsPage .mui-card:hover {
+                box-shadow: var(--mui-shadow-elevation-4) !important;
+                border-color: rgba(144, 202, 249, 0.4) !important;
+                transform: translateY(-2px) !important;
+            }
+
+            .jfModsPage .card.enabledCard {
+                border-color: var(--mui-palette-primary-main) !important;
+                box-shadow: 0 0 0 1px var(--mui-palette-primary-main), var(--mui-shadow-elevation-2) !important;
+            }
+
+            .jfModsPage .card.editorsChoiceCard {
+                border-color: rgba(255, 167, 38, 0.6) !important;
+            }
+
+            .jfModsPage .card.editorsChoiceCard.enabledCard {
+                border-color: var(--mui-palette-primary-main) !important;
+            }
+
+            .jfModsPage #mm-tabSettings .card,
+            .jfModsPage #mm-tabSettings .mui-card,
+            #mm-tabSettings .card,
+            #mm-tabSettings .mui-card {
+                margin: 0 0 24px 0 !important;
+                padding: 24px !important;
+            }
+
+            .jfModsPage #mm-tabSettings .card:last-child,
+            .jfModsPage #mm-tabSettings .mui-card:last-child,
+            #mm-tabSettings .card:last-child,
+            #mm-tabSettings .mui-card:last-child {
+                margin-bottom: 0 !important;
+            }
+
+            .jfModsPage .cardBox,
+            .jfModsPage .cardScalable,
+            .jfModsPage .cardPadder,
+            .jfModsPage .cardContent {
+                display: flex !important;
+                flex-direction: column !important;
+                flex: 1 1 auto !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                border-radius: 0 !important;
+                outline: none !important;
+                box-shadow: none !important;
+                pointer-events: auto !important;
+                position: relative !important;
+            }
+
+            .jfModsPage .cardImageContainer {
+                display: block !important;
+                width: 100% !important;
+                height: 160px !important;
+                min-height: 160px !important;
+                max-height: 160px !important;
+                flex: 0 0 160px !important;
+                position: relative !important;
+                overflow: hidden !important;
+                background-size: cover !important;
+                background-position: top center !important;
+                background-color: rgba(0, 0, 0, 0.35) !important;
+                border-top-left-radius: var(--mui-shape-radius-lg) !important;
+                border-top-right-radius: var(--mui-shape-radius-lg) !important;
+                box-sizing: border-box !important;
+            }
+
+            .jfModsPage .cardImageContainer img {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 160px !important;
+                min-height: 160px !important;
+                max-height: 160px !important;
+                object-fit: cover !important;
+                object-position: top center !important;
+                display: block !important;
+                pointer-events: none !important;
+            }
+
+            .jfModsPage .cardFooter {
+                display: flex !important;
+                flex-direction: column !important;
+                flex: 1 1 auto !important;
+                padding: 14px 16px !important;
+                background: transparent !important;
+                box-sizing: border-box !important;
+            }
+
+            /* MUI Badges & Chips on Cards */
+            .jfModsPage .typeBadge {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                padding: 3px 8px;
+                border-radius: var(--mui-shape-radius-sm);
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                z-index: 2;
+                pointer-events: none;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+            }
+
+            .jfModsPage .typeBadge-js {
+                background: rgba(255, 167, 38, 0.9);
+                color: #000;
+                font-weight: 800;
+            }
+
+            .jfModsPage .typeBadge-css {
+                background: rgba(41, 182, 246, 0.9);
+                color: #000;
+                font-weight: 800;
+            }
+
+            .jfModsPage .typeBadge-both {
+                background: rgba(171, 71, 188, 0.9);
+                color: #fff;
+            }
+
+            .jfModsPage .typeBadge-srv {
+                background: rgba(102, 187, 106, 0.9);
+                color: #000;
+                font-weight: 800;
+            }
+
+            .jfModsPage .typeBadge-mixed {
+                background: rgba(255, 112, 67, 0.9);
+                color: #fff;
+            }
+
+            .jfModsPage .enabledCheck {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: var(--mui-palette-primary-main);
+                color: #000;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                font-weight: 800;
+                z-index: 2;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            }
+
+            .jfModsPage .stateMsg {
+                padding: 48px 16px;
+                text-align: center;
+                color: var(--mui-palette-text-secondary);
+                font-size: 0.95rem;
+                grid-column: 1 / -1;
+            }
+        </style>
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <h2>Mods</h2>
+
+                <div id="mmTabs" class="mui-tabs" role="tablist">
+                    <button type="button" class="mmTab mmTabActive mui-tab mui-tab-active" data-tab="marketplace"
+                        role="tab" aria-selected="true" tabindex="0">
+                        <span class="mui-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z" />
+                            </svg>
+                        </span>
+                        <span>Marketplace</span>
+                    </button>
+                    <button type="button" class="mmTab mui-tab" data-tab="health" role="tab" aria-selected="false"
+                        tabindex="-1">
+                        <span class="mui-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z" />
+                            </svg>
+                        </span>
+                        <span>Health</span>
+                    </button>
+                    <button type="button" class="mmTab mui-tab" data-tab="settings" role="tab" aria-selected="false"
+                        tabindex="-1">
+                        <span class="mui-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                            </svg>
+                        </span>
+                        <span>Settings</span>
+                    </button>
+                </div>
+
+                <div id="tabMarketplace">
+                    <div class="mui-alert-banner mui-alert-banner-info" id="mm-activeBar" style="display:none">
+                        <span><strong id="activeCount">0</strong> mod(s) active</span>
+                        <button type="button" id="btnDisableAll" class="mui-btn-outlined mui-btn-outlined-danger"
+                            style="margin-left:auto;padding:4px 14px;font-size:0.75rem;">
+                            Disable All
+                        </button>
+                    </div>
+
+                    <div id="whatsNewBar" class="mui-alert-banner mui-alert-banner-warning" style="display:none">
+                        <span class="mui-alert-icon" style="display:inline-flex;align-items:center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-10 5h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                            </svg>
+                        </span>
+                        <span id="whatsNewText" style="flex:1"></span>
+                        <button type="button" id="btnWhatsNewChangelog" class="mui-btn-outlined"
+                            style="display:none;color:#ffa726;border-color:rgba(255,167,38,0.5);padding:4px 12px;font-size:0.75rem;">What's
+                            New</button>
+                        <button type="button" id="btnWhatsNewUpdate" class="mui-btn-contained"
+                            style="padding:4px 14px;font-size:0.75rem;">Update Now</button>
+                        <button type="button" id="btnWhatsNewDismiss"
+                            style="background:none;border:none;cursor:pointer;opacity:0.6;color:inherit;font-size:1.1rem;padding:0 6px;">✕</button>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel" for="modsUrl">Mod Repository URL</label>
+                        <input type="url" id="modsUrl" class="emby-input"
+                            placeholder="https://cdn.jsdelivr.net/gh/Jellyfin-PG/JellyFrame-Resources@main/mods.json" />
+                    </div>
+                    <div id="mm-sourceStatus"
+                        style="display:none;margin:6px 0 16px;font-size:0.8125rem;padding:6px 12px;border-radius:6px;">
+                    </div>
+                    <div style="margin-bottom:1.75rem">
+                        <button type="button" id="mm-btnLoad" class="mui-btn-contained">Load Mods</button>
+                    </div>
+
+                    <div style="display:flex;gap:16px;align-items:flex-end;margin-bottom:12px;flex-wrap:wrap;">
+                        <div class="inputContainer" style="flex:1;min-width:220px;margin:0;">
+                            <label class="inputLabel" for="mm-searchInput">Search</label>
+                            <input type="text" id="mm-searchInput" class="emby-input" placeholder="Search mods…" />
+                        </div>
+                        <div class="selectContainer" style="min-width:200px;margin:0;">
+                            <label class="selectLabel" for="mm-sortSelect">Sort by</label>
+                            <select is="emby-select" id="mm-sortSelect" class="emby-select-withcolor emby-select">
+                                <option value="recently-updated" selected>Recently Updated</option>
+                                <option value="newest">Newest</option>
+                                <option value="name">Name (A–Z)</option>
+                                <option value="name-desc">Name (Z–A)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:14px;margin-bottom:12px;">
+                        <div style="font-size:0.75rem;font-weight:600;color:var(--mui-palette-text-secondary);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Mod Type</div>
+                        <div id="typeFilters"></div>
+                    </div>
+
+                    <div id="tagFiltersSection" style="margin-top:12px;margin-bottom:20px;">
+                        <div style="font-size:0.75rem;font-weight:600;color:var(--mui-palette-text-secondary);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Tags</div>
+                        <div id="mm-tagFilters" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                    </div>
+
+                    <div id="modGrid" class="itemsContainer vertical-wrap">
+                        <div class="stateMsg">Enter a repository URL above and click <strong>Load Mods</strong>.</div>
+                    </div>
+
+                    <div style="margin-top:2rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap">
+                        <span id="mm-pendingLabel" style="font-size:0.875rem;opacity:0.7">No pending changes</span>
+                        <button type="button" id="mm-btnSave" class="mui-btn-contained" disabled>Save &amp;
+                            Apply</button>
+                    </div>
+                    <p style="font-size:0.8125rem;opacity:0.5;margin-top:0.75rem">
+                        After saving, hard-refresh with <strong>Ctrl+Shift+R</strong> to see changes.
+                    </p>
+                </div>
+
+
+                <div id="tabHealth" style="display:none">
+                    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+                        <h3 style="margin:0;font-size:1.125rem;font-weight:600;color:rgba(255,255,255,0.87);">Server Mod
+                            Health</h3>
+                        <button type="button" id="btnRefreshHealth" class="mui-btn-outlined"
+                            style="padding:4px 14px;font-size:0.75rem;">
+                            ↻ Refresh
+                        </button>
+                    </div>
+                    <div id="pluginHealthSummary" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:1.5em;">
+                    </div>
+                    <div id="healthGrid" style="display:flex;flex-direction:column;gap:12px;">
+                        <div class="stateMsg" style="opacity:.5;font-size:0.875rem">Loading health data…</div>
+                    </div>
+                </div>
+
+
+                <div id="mm-tabSettings" style="display:none">
+
+                    <div class="card" style="padding:20px;margin-bottom:20px;">
+                        <label
+                            style="display:flex;align-items:center;gap:12px;cursor:pointer;font-size:0.875rem;font-weight:500;">
+                            <input type="checkbox" id="chkDebug" is="emby-checkbox"
+                                style="width:18px;height:18px;accent-color:#90caf9;" />
+                            <span>Enable debug logging (writes to Jellyfin log)</span>
+                        </label>
+                        <p style="font-size:0.8125rem;color:rgba(255,255,255,0.5);margin:6px 0 0 30px;">Takes effect
+                            immediately — no page reload needed.</p>
+                    </div>
+
+                    <div class="card" style="padding:20px;margin-bottom:20px;">
+                        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+                            <p style="margin:0;font-size:1.0rem;font-weight:600;color:rgba(255,255,255,0.87);">Mod Cache
+                            </p>
+                            <button type="button" id="btnRefreshCacheInfo" class="mui-btn-outlined"
+                                style="padding:3px 12px;font-size:0.75rem;">
+                                ↻ Refresh
+                            </button>
+                        </div>
+                        <p style="margin:0 0 16px;font-size:0.8125rem;color:rgba(255,255,255,0.6);line-height:1.5;">
+                            Cached files are pre-compiled JS/CSS downloads stored on disk.
+                            Purging forces a fresh download and re-compilation on next page load.
+                            <strong>Permissions only apply to server-side JS</strong> — CSS and browser JS are
+                            unaffected.
+                        </p>
+                        <div id="cacheInfoBar"
+                            style="font-size:0.8125rem;color:rgba(255,255,255,0.6);margin-bottom:12px;">Loading…</div>
+                        <div id="cacheModList"
+                            style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:240px;overflow-y:auto;">
+                        </div>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                            <button type="button" id="btnPurgeAll" class="mui-btn-outlined mui-btn-outlined-danger"
+                                style="padding:6px 16px;font-size:0.8125rem;">
+                                Purge All Cache
+                            </button>
+                            <button type="button" id="btnPurgeSelected" class="mui-btn-outlined"
+                                style="padding:6px 16px;font-size:0.8125rem;" disabled>
+                                Purge Selected
+                            </button>
+                        </div>
+                        <p id="cacheActionResult"
+                            style="margin:12px 0 0;font-size:0.8125rem;color:#66bb6a;display:none;">
+                        </p>
+                    </div>
+
+                    <div class="card" style="padding:20px;">
+                        <p style="margin:0 0 6px;font-size:1.0rem;font-weight:600;color:rgba(255,255,255,0.87);">Plugin
+                            Info</p>
+                        <p style="margin:0;font-size:0.8125rem;color:rgba(255,255,255,0.6);" id="pluginVersionLabel">
+                            Loading…</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            /* @include shared/core.js */
+            /* @include shared/colorPicker.js */
+            /* @include shared/cacheEditor.js */
+            /* @include mods/modsApp.js */
+        </script>
+
+    </div>
+</body>
+
+</html>
