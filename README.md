@@ -13,10 +13,6 @@
     <img src="https://img.shields.io/github/downloads/Jellyfin-PG/JellyFrame/total?label=downloads" />
   </a>
 
-  <a href="https://github.com/orgs/Jellyfin-PG/projects/3">
-    <img src="https://img.shields.io/badge/Project-Board-blue" />
-  </a>
-
   <a href="https://discord.gg/v7P9CAvCKZ">
     <img src="https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white" />
   </a>
