@@ -1,10 +1,98 @@
 <div align="center">
+
+<svg width="760" height="58" viewBox="0 0 760 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Outer navigation bar -->
+  <rect x="1" y="1" width="758" height="56" rx="28"
+        stroke="#30363D" stroke-width="1.5"/>
+
+  <!-- Jellyfin 10.11.x -->
   <a href="https://jellyfin.org/">
-    <img src="https://img.shields.io/badge/Jellyfin%2010.11.x-Supported-00A4DC?style=for-the-badge&logo=jellyfin&logoColor=white&labelColor=1f2937" height="28">
+    <rect x="12" y="11" width="145" height="36" rx="18"
+          stroke="#00A4DC" stroke-width="1.5"/>
+    <circle cx="29" cy="29" r="4" fill="#00A4DC"/>
+    <text x="40" y="34"
+          fill="#00A4DC"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+          font-weight="600">
+      Jellyfin 10.11.x
+    </text>
   </a>
+
+  <!-- Jellyfin 12.x.x -->
   <a href="https://jellyfin.org/">
-    <img src="https://img.shields.io/badge/Jellyfin%2012.x.x-Supported-00A4DC?style=for-the-badge&logo=jellyfin&logoColor=white&labelColor=1f2937" height="28">
+    <rect x="166" y="11" width="135" height="36" rx="18"
+          stroke="#00A4DC" stroke-width="1.5"/>
+    <circle cx="183" cy="29" r="4" fill="#00A4DC"/>
+    <text x="194" y="34"
+          fill="#00A4DC"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+          font-weight="600">
+      Jellyfin 12.x.x
+    </text>
   </a>
+
+  <!-- Separator -->
+  <line x1="312" y1="17" x2="312" y2="41"
+        stroke="#30363D" stroke-width="1"/>
+
+  <!-- Build -->
+  <a href="https://github.com/Jellyfin-PG/Loom/actions">
+    <rect x="325" y="11" width="105" height="36" rx="18"
+          stroke="#3FB950" stroke-width="1.5"/>
+    <circle cx="342" cy="29" r="4" fill="#3FB950"/>
+    <text x="353" y="34"
+          fill="#3FB950"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+          font-weight="600">
+      Build
+    </text>
+  </a>
+
+  <!-- Releases -->
+  <a href="https://github.com/Jellyfin-PG/Loom/releases">
+    <rect x="439" y="11" width="105" height="36" rx="18"
+          stroke="#A371F7" stroke-width="1.5"/>
+    <text x="456" y="34"
+          fill="#A371F7"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+          font-weight="600">
+      Releases
+    </text>
+  </a>
+
+  <!-- Downloads -->
+  <a href="https://github.com/Jellyfin-PG/Loom/releases">
+    <rect x="553" y="11" width="105" height="36" rx="18"
+          stroke="#58A6FF" stroke-width="1.5"/>
+    <text x="570" y="34"
+          fill="#58A6FF"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+          font-weight="600">
+      Downloads
+    </text>
+  </a>
+
+  <!-- Discord -->
+  <a href="https://discord.gg/v7P9CAvCKZ">
+    <rect x="667" y="11" width="81" height="36" rx="18"
+          stroke="#5865F2" stroke-width="1.5"/>
+    <text x="683" y="34"
+          fill="#5865F2"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="13"
+          font-weight="600">
+      Discord
+    </text>
+  </a>
+
+</svg>
+
 </div>
 
 <div align="center">
