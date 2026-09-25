@@ -8,7 +8,7 @@
 </div>
 
 <div align="center">
-  <img src="assets/jellyframe.png" alt="Jellyframe Logo" width="120" />
+  <img src="assets/jellyframe.png" alt="Jellyframe Logo" width="360" />
   <h1>Jellyframe</h1>
   <p>A complete customization and extension framework for Jellyfin. Install community mods and themes from the dashboard, or build your own with a full server-side JavaScript API.</p>
 </div>
