@@ -16,6 +16,12 @@
   <a href="https://discord.gg/v7P9CAvCKZ">
     <img src="https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white" />
   </a>
+  <a href="https://jellyfin.org/">
+    <img src="https://img.shields.io/badge/Jellyfin%2010.11.x-Supported-00A4DC?style=for-the-badge&logo=jellyfin&logoColor=white&labelColor=1f2937" height="28">
+  </a>
+  <a href="https://jellyfin.org/">
+    <img src="https://img.shields.io/badge/Jellyfin%2012.x.x-Supported-00A4DC?style=for-the-badge&logo=jellyfin&logoColor=white&labelColor=1f2937" height="28">
+  </a>
 </p>
 
 ---
