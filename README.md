@@ -15,12 +15,17 @@
 </div>
 
 <p align="center">
-  <a href="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/release.yml">
-    <img src="https://img.shields.io/badge/build-passing-brightgreen" />
+  <a href="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/ci.yml">
+    <img src="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
   </a>
-  
+  <a href="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/codeql.yml">
+    <img src="https://github.com/Jellyfin-PG/JellyFrame/actions/workflows/codeql.yml/badge.svg" alt="CodeQL Status" />
+  </a>
+  <a href="https://github.com/Jellyfin-PG/JellyFrame/releases/latest">
+    <img src="https://img.shields.io/github/v/release/Jellyfin-PG/JellyFrame?logo=github&color=blue" alt="Latest Release" />
+  </a>
   <a href="https://github.com/Jellyfin-PG/JellyFrame/releases">
-    <img src="https://img.shields.io/github/downloads/Jellyfin-PG/JellyFrame/total?label=downloads" />
+    <img src="https://img.shields.io/github/downloads/Jellyfin-PG/JellyFrame/total?label=downloads" alt="Total Downloads" />
   </a>
 </p>
 
