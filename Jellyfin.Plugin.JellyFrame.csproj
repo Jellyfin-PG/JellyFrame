@@ -22,7 +22,7 @@
     <PackageReference Include="Jellyfin.Controller" Version="10.11.0" />
     <PackageReference Include="Jellyfin.Model" Version="10.11.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" ExcludeAssets="runtime" />
-    <PackageReference Include="Jint" Version="4.1.0" />
+    <PackageReference Include="Jint" Version="4.18.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
   </ItemGroup>
