@@ -28,6 +28,17 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private static readonly Regex _bodyTagRegex = new Regex(@"(</body>)", RegexOptions.Compiled);
         private static readonly Regex _headTagRegex = new Regex(@"(</head>)", RegexOptions.Compiled);
 
+        // Pre-computed injection cache
+        private static string _cachedPreconnectMarkup;
+        private static string _cachedInjectionMarkup;
+        private static volatile bool _cacheValid;
+        private static readonly object _buildLock = new object();
+
+        public static void InvalidateCache()
+        {
+            _cacheValid = false;
+        }
+
         private static void Log(bool debug, string msg)
         {
             if (debug) Console.Error.WriteLine("[JellyFrame] " + msg);
@@ -38,7 +49,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             try
             {
                 string html = payload?.Contents;
-                if (string.IsNullOrEmpty(html))
+                if (string.IsNullOrEmpty(html) || !html.Contains("</body>"))
                     return html ?? string.Empty;
 
                 PluginConfiguration config = Plugin.Instance?.Configuration;
@@ -47,114 +58,146 @@ namespace Jellyfin.Plugin.JellyFrame.Services
 
                 bool dbg = config.DebugLogging;
 
-                if (!html.Contains("</body>"))
-                    return html;
-
                 var paths = Plugin.Instance?.AppPaths;
                 if (paths != null)
                     html = ThemeInjector.InjectTheme(html, config, paths);
 
                 Log(dbg, "InjectMods called. HTML length: " + html.Length);
 
-                if (config.EnabledMods == null || config.EnabledMods.Count == 0)
-                {
-                    Log(dbg, "No mods enabled — skipping");
-                    return html;
-                }
-
-                List<ModEntry> allMods = LoadCachedMods(config.CachedMods, dbg);
-                if (allMods == null || allMods.Count == 0)
-                {
-                    Log(dbg, "CachedMods empty — load and save mods in config first");
-                    return html;
-                }
-
-                Dictionary<string, Dictionary<string, string>> modVars = LoadModVars(config.ModVars, dbg);
-
+                // Strip any existing mod markup
                 html = _modsBlockRegex.Replace(html, string.Empty);
-
                 html = _preconnectBlockRegex.Replace(html, string.Empty);
 
-                var cssBlocks = new List<string>();
-                var jsBlocks = new List<string>();
-                var preconnects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (string modId in config.EnabledMods)
+                if (!_cacheValid)
                 {
-                    string trimmedId = modId?.Trim();
-                    ModEntry mod = allMods.Find(m =>
-                        string.Equals(m.Id?.Trim(), trimmedId, StringComparison.OrdinalIgnoreCase));
-
-                    if (mod == null)
+                    lock (_buildLock)
                     {
-                        Log(dbg, "Mod '" + trimmedId + "' not found in cache");
-                        continue;
-                    }
-
-                    if (!VersionRangeMatcher.IsCompatible(mod.Jellyfin, Plugin.ServerVersion))
-                    {
-                        Log(true, $"Mod '{mod.Id}' requires Jellyfin '{mod.Jellyfin}', but server is '{Plugin.ServerVersion}' — skipping frontend injection");
-                        continue;
-                    }
-
-                    foreach (var origin in mod.Preconnect ?? new List<string>())
-                        if (!string.IsNullOrWhiteSpace(origin))
-                            preconnects.Add(origin.Trim());
-
-                    Dictionary<string, string> vars = BuildVarMap(mod, modVars);
-                    Log(dbg, "Processing mod: '" + mod.Name + "' version=" + mod.Version + " vars=" + vars.Count);
-
-                    var cssFiles = mod.GetMatchingFiles("css", Plugin.ServerVersion);
-                    foreach (var cssFile in cssFiles)
-                    {
-                        Log(dbg, "  -> CSS: " + cssFile.Url);
-                        string css = ModResourceCache.GetFileAsync(mod, cssFile, vars, paths)
-                            .GetAwaiter().GetResult();
-
-                        if (!string.IsNullOrWhiteSpace(css))
-                            cssBlocks.Add(css);
-                        else
-                            Log(dbg, "  -> CSS fetch failed or empty");
-                    }
-
-                    var jsFiles = mod.GetMatchingFiles("js", Plugin.ServerVersion);
-                    foreach (var jsFile in jsFiles)
-                    {
-                        Log(dbg, "  -> JS: " + jsFile.Url);
-                        string js = ModResourceCache.GetFileAsync(mod, jsFile, vars, paths)
-                            .GetAwaiter().GetResult();
-
-                        if (!string.IsNullOrWhiteSpace(js))
-                            jsBlocks.Add(js);
-                        else
-                            Log(dbg, "  -> JS fetch failed or empty");
+                        if (!_cacheValid)
+                        {
+                            RebuildCache(config, paths, dbg);
+                        }
                     }
                 }
 
-                if (preconnects.Count > 0)
+                if (!string.IsNullOrEmpty(_cachedPreconnectMarkup))
                 {
-                    var headSb = new StringBuilder();
-                    headSb.Append("\n<!-- JellyFrame-Mods-Preconnect-Start -->\n");
-                    foreach (var origin in preconnects)
-                    {
-                        var safe = origin.Replace("&", "&amp;").Replace("\"", "&quot;");
-                        headSb.Append("<link rel=\"preconnect\" href=\"").Append(safe).Append("\">\n");
-                        headSb.Append("<link rel=\"dns-prefetch\" href=\"").Append(safe).Append("\">\n");
-                    }
-                    headSb.Append("<!-- JellyFrame-Mods-Preconnect-End -->\n");
-                    html = _headTagRegex.Replace(html, headSb.ToString() + "$1");
-                    Log(dbg, "Injected " + preconnects.Count + " preconnect origin(s)");
+                    html = _headTagRegex.Replace(html, _cachedPreconnectMarkup + "$1");
+                    Log(dbg, "Injected preconnect origins from cache");
                 }
 
-                Log(dbg, "Totals — cssBlocks: " + cssBlocks.Count + ", jsBlocks: " + jsBlocks.Count);
-
-                if (cssBlocks.Count == 0 && jsBlocks.Count == 0)
+                if (!string.IsNullOrEmpty(_cachedInjectionMarkup))
                 {
-                    Log(dbg, "Nothing to inject");
-                    return html;
+                    html = _bodyTagRegex.Replace(html, _cachedInjectionMarkup + "$1", 1);
+                    Log(dbg, "Mods injected before </body>");
                 }
 
+                return html;
+            }
+            catch (Exception ex)
+            {
+                Log(true, "InjectMods EXCEPTION: " + ex);
+                return payload?.Contents ?? string.Empty;
+            }
+        }
+
+        private static void RebuildCache(PluginConfiguration config, IApplicationPaths paths, bool dbg)
+        {
+            _cachedPreconnectMarkup = null;
+            _cachedInjectionMarkup = null;
+
+            if (config.EnabledMods == null || config.EnabledMods.Count == 0)
+            {
+                Log(dbg, "No mods enabled — skipping cache build");
+                _cacheValid = true;
+                return;
+            }
+
+            List<ModEntry> allMods = LoadCachedMods(config.CachedMods, dbg);
+            if (allMods == null || allMods.Count == 0)
+            {
+                Log(dbg, "CachedMods empty — load and save mods in config first");
+                _cacheValid = true;
+                return;
+            }
+
+            Dictionary<string, Dictionary<string, string>> modVars = LoadModVars(config.ModVars, dbg);
+
+            var cssBlocks = new List<string>();
+            var jsBlocks = new List<string>();
+            var preconnects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (string modId in config.EnabledMods)
+            {
+                string trimmedId = modId?.Trim();
+                ModEntry mod = allMods.Find(m =>
+                    string.Equals(m.Id?.Trim(), trimmedId, StringComparison.OrdinalIgnoreCase));
+
+                if (mod == null)
+                {
+                    Log(dbg, "Mod '" + trimmedId + "' not found in cache");
+                    continue;
+                }
+
+                if (!VersionRangeMatcher.IsCompatible(mod.Jellyfin, Plugin.ServerVersion))
+                {
+                    Log(true, $"Mod '{mod.Id}' requires Jellyfin '{mod.Jellyfin}', but server is '{Plugin.ServerVersion}' — skipping frontend injection");
+                    continue;
+                }
+
+                foreach (var origin in mod.Preconnect ?? new List<string>())
+                    if (!string.IsNullOrWhiteSpace(origin))
+                        preconnects.Add(origin.Trim());
+
+                Dictionary<string, string> vars = BuildVarMap(mod, modVars);
+                Log(dbg, "Processing mod: '" + mod.Name + "' version=" + mod.Version + " vars=" + vars.Count);
+
+                var cssFiles = mod.GetMatchingFiles("css", Plugin.ServerVersion);
+                foreach (var cssFile in cssFiles)
+                {
+                    Log(dbg, "  -> CSS: " + cssFile.Url);
+                    string css = ModResourceCache.GetFileAsync(mod, cssFile, vars, paths)
+                        .GetAwaiter().GetResult();
+
+                    if (!string.IsNullOrWhiteSpace(css))
+                        cssBlocks.Add(css);
+                    else
+                        Log(dbg, "  -> CSS fetch failed or empty");
+                }
+
+                var jsFiles = mod.GetMatchingFiles("js", Plugin.ServerVersion);
+                foreach (var jsFile in jsFiles)
+                {
+                    Log(dbg, "  -> JS: " + jsFile.Url);
+                    string js = ModResourceCache.GetFileAsync(mod, jsFile, vars, paths)
+                        .GetAwaiter().GetResult();
+
+                    if (!string.IsNullOrWhiteSpace(js))
+                        jsBlocks.Add(js);
+                    else
+                        Log(dbg, "  -> JS fetch failed or empty");
+                }
+            }
+
+            if (preconnects.Count > 0)
+            {
+                var headSb = new StringBuilder();
+                headSb.Append("\n<!-- JellyFrame-Mods-Preconnect-Start -->\n");
+                foreach (var origin in preconnects)
+                {
+                    var safe = origin.Replace("&", "&amp;").Replace("\"", "&quot;");
+                    headSb.Append("<link rel=\"preconnect\" href=\"").Append(safe).Append("\">\n");
+                    headSb.Append("<link rel=\"dns-prefetch\" href=\"").Append(safe).Append("\">\n");
+                }
+                headSb.Append("<!-- JellyFrame-Mods-Preconnect-End -->\n");
+                _cachedPreconnectMarkup = headSb.ToString();
+            }
+
+            Log(dbg, "Totals — cssBlocks: " + cssBlocks.Count + ", jsBlocks: " + jsBlocks.Count);
+
+            if (cssBlocks.Count > 0 || jsBlocks.Count > 0)
+            {
                 var injection = new StringBuilder();
+                injection.Append("\n").Append(StartMarker).Append("\n");
 
                 if (cssBlocks.Count > 0)
                 {
@@ -180,25 +223,11 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                     injection.AppendLine("</script>");
                 }
 
-                var match = _bodyTagRegex.Match(html);
-                if (match.Success)
-                {
-                    html = _bodyTagRegex.Replace(html,
-                        "\n" + StartMarker + "\n" + injection.ToString() + EndMarker + "\n$1", 1);
-                    Log(dbg, "Mods injected before </body>");
-                }
-                else
-                {
-                    Log(dbg, "No </body> found to inject mods into");
-                }
+                injection.Append(EndMarker).Append("\n");
+                _cachedInjectionMarkup = injection.ToString();
+            }
 
-                return html;
-            }
-            catch (Exception ex)
-            {
-                Log(true, "InjectMods EXCEPTION: " + ex);
-                return payload?.Contents ?? string.Empty;
-            }
+            _cacheValid = true;
         }
 
         private static Dictionary<string, string> BuildVarMap(

@@ -124,6 +124,9 @@ namespace Jellyfin.Plugin.JellyFrame
 
         private void OnConfigurationChanged(object sender, BasePluginConfiguration baseConfig)
         {
+            Services.ModInjector.InvalidateCache();
+            Services.ThemeInjector.InvalidateCache();
+
             var config = (PluginConfiguration)baseConfig;
             var paths = AppPaths;
 

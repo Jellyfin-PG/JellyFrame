@@ -12,7 +12,12 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
 {
     public class RoutesSurface
     {
-        public record RouteHandler(string Method, string Path, JsValue Handler);
+        public record RouteHandler(string Method, string Path, string[] PatternParts, JsValue Handler);
+
+        private static readonly char[] SlashSeparator = new[] { '/' };
+
+        private static string[] SplitPath(string path)
+            => string.IsNullOrEmpty(path) ? Array.Empty<string>() : path.Split(SlashSeparator, StringSplitOptions.RemoveEmptyEntries);
 
         private readonly List<RouteHandler> _routes = new();
         private readonly List<JsValue> _middleware = new();
@@ -29,19 +34,34 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public IReadOnlyList<RouteHandler> Routes => _routes;
 
         public void Get(string path, JsValue handler)
-            => _routes.Add(new RouteHandler("GET", Normalize(path), handler));
+        {
+            var norm = Normalize(path);
+            _routes.Add(new RouteHandler("GET", norm, SplitPath(norm), handler));
+        }
 
         public void Post(string path, JsValue handler)
-            => _routes.Add(new RouteHandler("POST", Normalize(path), handler));
+        {
+            var norm = Normalize(path);
+            _routes.Add(new RouteHandler("POST", norm, SplitPath(norm), handler));
+        }
 
         public void Put(string path, JsValue handler)
-            => _routes.Add(new RouteHandler("PUT", Normalize(path), handler));
+        {
+            var norm = Normalize(path);
+            _routes.Add(new RouteHandler("PUT", norm, SplitPath(norm), handler));
+        }
 
         public void Delete(string path, JsValue handler)
-            => _routes.Add(new RouteHandler("DELETE", Normalize(path), handler));
+        {
+            var norm = Normalize(path);
+            _routes.Add(new RouteHandler("DELETE", norm, SplitPath(norm), handler));
+        }
 
         public void Patch(string path, JsValue handler)
-            => _routes.Add(new RouteHandler("PATCH", Normalize(path), handler));
+        {
+            var norm = Normalize(path);
+            _routes.Add(new RouteHandler("PATCH", norm, SplitPath(norm), handler));
+        }
 
         /// <summary>
         /// Register a middleware function that runs before every route handler
@@ -78,12 +98,13 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             if (string.IsNullOrEmpty(subPath)) subPath = "/";
 
             var method = context.Request.Method.ToUpperInvariant();
+            var pathParts = SplitPath(subPath);
 
             foreach (var route in _routes)
             {
                 if (!string.Equals(route.Method, method, StringComparison.OrdinalIgnoreCase))
                     continue;
-                if (!MatchPath(route.Path, subPath, out var pathParams))
+                if (!MatchPath(route.PatternParts, pathParts, out var pathParams))
                     continue;
 
                 var req = await BuildRequest(context, pathParams);
@@ -125,19 +146,21 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
             return false;
         }
 
-        private static bool MatchPath(string pattern, string path, out Dictionary<string, string> pathParams)
+        private static bool MatchPath(string[] patternParts, string[] pathParts, out Dictionary<string, string> pathParams)
         {
-            pathParams = new Dictionary<string, string>();
-            var patternParts = pattern.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            var pathParts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (patternParts.Length != pathParts.Length)
+            {
+                pathParams = null;
+                return false;
+            }
 
-            if (patternParts.Length != pathParts.Length) return false;
-
+            pathParams = new Dictionary<string, string>(StringComparer.Ordinal);
             for (int i = 0; i < patternParts.Length; i++)
             {
-                if (patternParts[i].StartsWith(":"))
-                    pathParams[patternParts[i].TrimStart(':')] = pathParts[i];
-                else if (!string.Equals(patternParts[i], pathParts[i], StringComparison.OrdinalIgnoreCase))
+                var p = patternParts[i];
+                if (p.Length > 0 && p[0] == ':')
+                    pathParams[p.Substring(1)] = pathParts[i];
+                else if (!string.Equals(p, pathParts[i], StringComparison.OrdinalIgnoreCase))
                     return false;
             }
             return true;

@@ -28,6 +28,28 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private static readonly JsonSerializerOptions JsonOpts =
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
+        private static readonly Regex _themeBlockRegex = new Regex(
+            Regex.Escape(StartMarker) + @"[\s\S]*?" + Regex.Escape(EndMarker) + @"\n?",
+            RegexOptions.Compiled);
+
+        private static readonly Regex _preconnectBlockRegex = new Regex(
+            @"<!-- JellyFrame-Theme-Preconnect-Start -->[\s\S]*?<!-- JellyFrame-Theme-Preconnect-End -->\n?",
+            RegexOptions.Compiled);
+
+        private static readonly Regex _headTagRegex = new Regex(@"(</head>)", RegexOptions.Compiled);
+        private static readonly Regex _bodyTagRegex = new Regex(@"(</body>)", RegexOptions.Compiled);
+
+        // Pre-computed injection cache
+        private static string _cachedPreconnectMarkup;
+        private static string _cachedThemeLinkMarkup;
+        private static volatile bool _cacheValid;
+        private static readonly object _buildLock = new object();
+
+        public static void InvalidateCache()
+        {
+            _cacheValid = false;
+        }
+
         private static void Log(bool debug, string msg)
         {
             if (debug) Console.Error.WriteLine("[JellyFrame:Theme] " + msg);
@@ -40,85 +62,42 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 if (string.IsNullOrEmpty(html) || !html.Contains("</body>"))
                     return html ?? string.Empty;
 
-                bool dbg = config.DebugLogging;
+                bool dbg = config?.DebugLogging ?? false;
 
-                html = Regex.Replace(
-                    html,
-                    Regex.Escape(StartMarker) + @"[\s\S]*?" + Regex.Escape(EndMarker) + @"\n?",
-                    string.Empty);
+                // Strip any existing theme markup using compiled regexes
+                html = _themeBlockRegex.Replace(html, string.Empty);
+                html = _preconnectBlockRegex.Replace(html, string.Empty);
 
-                html = Regex.Replace(
-                    html,
-                    @"<!-- JellyFrame-Theme-Preconnect-Start -->[\s\S]*?<!-- JellyFrame-Theme-Preconnect-End -->\n?",
-                    string.Empty);
-
-                if (string.IsNullOrWhiteSpace(config.ActiveTheme) ||
+                if (config == null ||
+                    string.IsNullOrWhiteSpace(config.ActiveTheme) ||
                     string.IsNullOrWhiteSpace(config.CachedThemes))
                 {
                     Log(dbg, "No active theme configured.");
                     return html;
                 }
 
-                List<ThemeEntry> themes;
-                try
+                if (!_cacheValid)
                 {
-                    themes = JsonSerializer.Deserialize<List<ThemeEntry>>(config.CachedThemes, JsonOpts)
-                             ?? new List<ThemeEntry>();
-                }
-                catch (Exception ex)
-                {
-                    Log(dbg, "Failed to parse CachedThemes: " + ex.Message);
-                    return html;
-                }
-
-                var theme = themes.Find(t =>
-                    string.Equals(t.Id, config.ActiveTheme, StringComparison.OrdinalIgnoreCase));
-
-                if (theme == null)
-                {
-                    Log(dbg, "Active theme '" + config.ActiveTheme + "' not found in cache.");
-                    return html;
-                }
-
-                if (!VersionRangeMatcher.IsCompatible(theme.Jellyfin, Plugin.ServerVersion))
-                {
-                    Log(true, $"Theme '{theme.Id}' requires Jellyfin '{theme.Jellyfin}', but server is '{Plugin.ServerVersion}' — skipping theme injection");
-                    return html;
-                }
-
-                Log(dbg, "Injecting theme: " + theme.Name + " v" + theme.Version);
-
-                var vars = BuildVarMap(theme, config);
-
-                WarmCache(theme, vars, paths, dbg);
-
-                var hash = HashVars(vars);
-                var linkHref = "/JellyFrame/themes/" + Uri.EscapeDataString(theme.Id)
-                             + "/compiled.css?v=" + hash;
-
-                if (theme.Preconnect != null && theme.Preconnect.Count > 0)
-                {
-                    var headSb = new System.Text.StringBuilder();
-                    headSb.Append("\n<!-- JellyFrame-Theme-Preconnect-Start -->\n");
-                    foreach (var origin in theme.Preconnect)
+                    lock (_buildLock)
                     {
-                        if (string.IsNullOrWhiteSpace(origin)) continue;
-                        var safe = origin.Trim().Replace("&", "&amp;").Replace("\"", "&quot;");
-                        headSb.Append("<link rel=\"preconnect\" href=\"").Append(safe).Append("\">\n");
-                        headSb.Append("<link rel=\"dns-prefetch\" href=\"").Append(safe).Append("\">\n");
+                        if (!_cacheValid)
+                        {
+                            RebuildCache(config, paths, dbg);
+                        }
                     }
-                    headSb.Append("<!-- JellyFrame-Theme-Preconnect-End -->\n");
-                    html = Regex.Replace(html, @"(</head>)", headSb.ToString() + "$1");
                 }
 
-                var sb = new System.Text.StringBuilder();
-                sb.Append("\n").Append(StartMarker).Append("\n");
-                sb.Append("<link rel=\"stylesheet\" data-jellyframe-theme=\"1\"")
-                  .Append(" href=\"").Append(linkHref).Append("\">\n");
-                sb.Append(EndMarker).Append("\n");
+                if (!string.IsNullOrEmpty(_cachedPreconnectMarkup))
+                {
+                    html = _headTagRegex.Replace(html, _cachedPreconnectMarkup + "$1");
+                }
 
-                html = Regex.Replace(html, @"(</body>)", sb.ToString() + "$1");
-                Log(dbg, "Theme link injected: " + linkHref);
+                if (!string.IsNullOrEmpty(_cachedThemeLinkMarkup))
+                {
+                    html = _bodyTagRegex.Replace(html, _cachedThemeLinkMarkup + "$1");
+                    Log(dbg, "Theme link injected");
+                }
+
                 return html;
             }
             catch (Exception ex)
@@ -126,6 +105,75 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 Console.Error.WriteLine("[JellyFrame:Theme] EXCEPTION: " + ex);
                 return html;
             }
+        }
+
+        private static void RebuildCache(PluginConfiguration config, IApplicationPaths paths, bool dbg)
+        {
+            _cachedPreconnectMarkup = null;
+            _cachedThemeLinkMarkup = null;
+
+            List<ThemeEntry> themes;
+            try
+            {
+                themes = JsonSerializer.Deserialize<List<ThemeEntry>>(config.CachedThemes, JsonOpts)
+                         ?? new List<ThemeEntry>();
+            }
+            catch (Exception ex)
+            {
+                Log(dbg, "Failed to parse CachedThemes: " + ex.Message);
+                _cacheValid = true;
+                return;
+            }
+
+            var theme = themes.Find(t =>
+                string.Equals(t.Id, config.ActiveTheme, StringComparison.OrdinalIgnoreCase));
+
+            if (theme == null)
+            {
+                Log(dbg, "Active theme '" + config.ActiveTheme + "' not found in cache.");
+                _cacheValid = true;
+                return;
+            }
+
+            if (!VersionRangeMatcher.IsCompatible(theme.Jellyfin, Plugin.ServerVersion))
+            {
+                Log(true, $"Theme '{theme.Id}' requires Jellyfin '{theme.Jellyfin}', but server is '{Plugin.ServerVersion}' — skipping theme injection");
+                _cacheValid = true;
+                return;
+            }
+
+            Log(dbg, "Rebuilding theme injection cache: " + theme.Name + " v" + theme.Version);
+
+            var vars = BuildVarMap(theme, config);
+            WarmCache(theme, vars, paths, dbg);
+
+            var hash = HashVars(vars);
+            var linkHref = "/JellyFrame/themes/" + Uri.EscapeDataString(theme.Id)
+                         + "/compiled.css?v=" + hash;
+
+            if (theme.Preconnect != null && theme.Preconnect.Count > 0)
+            {
+                var headSb = new System.Text.StringBuilder();
+                headSb.Append("\n<!-- JellyFrame-Theme-Preconnect-Start -->\n");
+                foreach (var origin in theme.Preconnect)
+                {
+                    if (string.IsNullOrWhiteSpace(origin)) continue;
+                    var safe = origin.Trim().Replace("&", "&amp;").Replace("\"", "&quot;");
+                    headSb.Append("<link rel=\"preconnect\" href=\"").Append(safe).Append("\">\n");
+                    headSb.Append("<link rel=\"dns-prefetch\" href=\"").Append(safe).Append("\">\n");
+                }
+                headSb.Append("<!-- JellyFrame-Theme-Preconnect-End -->\n");
+                _cachedPreconnectMarkup = headSb.ToString();
+            }
+
+            var sb = new System.Text.StringBuilder();
+            sb.Append("\n").Append(StartMarker).Append("\n");
+            sb.Append("<link rel=\"stylesheet\" data-jellyframe-theme=\"1\"")
+              .Append(" href=\"").Append(linkHref).Append("\">\n");
+            sb.Append(EndMarker).Append("\n");
+            _cachedThemeLinkMarkup = sb.ToString();
+
+            _cacheValid = true;
         }
 
         /// <summary>
