@@ -22,10 +22,6 @@
   <a href="https://github.com/Jellyfin-PG/JellyFrame/releases">
     <img src="https://img.shields.io/github/downloads/Jellyfin-PG/JellyFrame/total?label=downloads" />
   </a>
-
-  <a href="https://discord.gg/v7P9CAvCKZ">
-    <img src="https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white" />
-  </a>
 </p>
 
 ---
