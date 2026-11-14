@@ -29,8 +29,19 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> _urlLocks
             = new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.Ordinal);
 
+        private static readonly ConcurrentDictionary<string, string> _memoryCache
+            = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
         private static SemaphoreSlim GetUrlLock(string url)
             => _urlLocks.GetOrAdd(url, _ => new SemaphoreSlim(1, 1));
+
+        public static void InvalidatePath(string absolutePath)
+        {
+            if (string.IsNullOrWhiteSpace(absolutePath)) return;
+            _memoryCache.TryRemove(absolutePath, out _);
+            ThemeInjector.InvalidateCache();
+            ModInjector.InvalidateCache();
+        }
 
         public static Task<string> GetFileAsync(
             string themeId,
@@ -68,48 +79,108 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         public static void InvalidateTheme(string themeId, IApplicationPaths paths)
         {
             var cacheDir = GetCacheDir(paths);
-            if (!Directory.Exists(cacheDir)) return;
-            foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "__*"))
-                try { File.Delete(file); } catch { }
-            foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "--*"))
-                try { File.Delete(file); } catch { }
+            if (Directory.Exists(cacheDir))
+            {
+                foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "__*"))
+                    try { File.Delete(file); } catch { }
+                foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "--*"))
+                    try { File.Delete(file); } catch { }
+            }
+
+            var safe = SafeId(themeId);
+            var p1 = safe + "__";
+            var p2 = safe + "--";
+            foreach (var key in _memoryCache.Keys)
+            {
+                var fn = Path.GetFileName(key);
+                if (fn.StartsWith(p1, StringComparison.OrdinalIgnoreCase) ||
+                    fn.StartsWith(p2, StringComparison.OrdinalIgnoreCase))
+                {
+                    _memoryCache.TryRemove(key, out _);
+                }
+            }
+
+            ThemeInjector.InvalidateCache();
+            ModInjector.InvalidateCache();
         }
 
         public static void InvalidateAddon(string themeId, string addonId, IApplicationPaths paths)
         {
             var cacheDir = GetCacheDir(paths);
-            if (!Directory.Exists(cacheDir)) return;
-            var prefix = SafeId(themeId + "--" + addonId) + "__";
-            foreach (var file in Directory.GetFiles(cacheDir, prefix + "*"))
-                try { File.Delete(file); } catch { }
+            if (Directory.Exists(cacheDir))
+            {
+                var prefix = SafeId(themeId + "--" + addonId) + "__";
+                foreach (var file in Directory.GetFiles(cacheDir, prefix + "*"))
+                    try { File.Delete(file); } catch { }
+            }
+
+            var memPrefix = SafeId(themeId + "--" + addonId) + "__";
+            foreach (var key in _memoryCache.Keys)
+            {
+                if (Path.GetFileName(key).StartsWith(memPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    _memoryCache.TryRemove(key, out _);
+                }
+            }
+
+            ThemeInjector.InvalidateCache();
+            ModInjector.InvalidateCache();
         }
 
         public static void InvalidateCompiled(string themeId, IApplicationPaths paths)
         {
             var cacheDir = GetCacheDir(paths);
-            if (!Directory.Exists(cacheDir)) return;
-            foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "__*"))
+            if (Directory.Exists(cacheDir))
             {
-                var name = Path.GetFileNameWithoutExtension(file);
-                if (name.Split(new[] { "__" }, StringSplitOptions.None).Length >= 4)
-                    try { File.Delete(file); } catch { }
+                foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "__*"))
+                {
+                    var name = Path.GetFileNameWithoutExtension(file);
+                    if (name.Split(new[] { "__" }, StringSplitOptions.None).Length >= 4)
+                        try { File.Delete(file); } catch { }
+                }
+                foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "--*"))
+                {
+                    var name = Path.GetFileNameWithoutExtension(file);
+                    var dashIdx = name.IndexOf("--", System.StringComparison.Ordinal);
+                    var remainder = dashIdx >= 0 ? name.Substring(dashIdx + 2) : name;
+                    if (remainder.Split(new[] { "__" }, System.StringSplitOptions.None).Length >= 4)
+                        try { File.Delete(file); } catch { }
+                }
             }
-            foreach (var file in Directory.GetFiles(cacheDir, SafeId(themeId) + "--*"))
+
+            var safe = SafeId(themeId);
+            var p1 = safe + "__";
+            var p2 = safe + "--";
+            foreach (var key in _memoryCache.Keys)
             {
-                var name = Path.GetFileNameWithoutExtension(file);
-                var dashIdx = name.IndexOf("--", System.StringComparison.Ordinal);
-                var remainder = dashIdx >= 0 ? name.Substring(dashIdx + 2) : name;
-                if (remainder.Split(new[] { "__" }, System.StringSplitOptions.None).Length >= 4)
-                    try { File.Delete(file); } catch { }
+                var fn = Path.GetFileNameWithoutExtension(key);
+                if (fn.StartsWith(p1, StringComparison.OrdinalIgnoreCase) ||
+                    fn.StartsWith(p2, StringComparison.OrdinalIgnoreCase))
+                {
+                    var parts = fn.Split(new[] { "__" }, StringSplitOptions.None);
+                    if (parts.Length >= 4)
+                    {
+                        _memoryCache.TryRemove(key, out _);
+                    }
+                }
             }
+
+            ThemeInjector.InvalidateCache();
+            ModInjector.InvalidateCache();
         }
 
         public static void ClearAll(IApplicationPaths paths)
         {
             var cacheDir = GetCacheDir(paths);
-            if (!Directory.Exists(cacheDir)) return;
-            foreach (var file in Directory.GetFiles(cacheDir))
-                try { File.Delete(file); } catch { }
+            if (Directory.Exists(cacheDir))
+            {
+                foreach (var file in Directory.GetFiles(cacheDir))
+                    try { File.Delete(file); } catch { }
+            }
+
+            _memoryCache.Clear();
+            ThemeInjector.InvalidateCache();
+            ModInjector.InvalidateCache();
         }
 
         public static (int fileCount, long totalBytes, string cacheDir) GetInfo(IApplicationPaths paths)
@@ -137,15 +208,33 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 ? GetCacheFilePath(cacheDir, id, version, type, url, HashVars(vars))
                 : GetCacheFilePath(cacheDir, id, version, type, url, null);
 
+            if (_memoryCache.TryGetValue(cacheFile, out var memContent))
+                return memContent;
+
             if (File.Exists(cacheFile))
-                try { return await File.ReadAllTextAsync(cacheFile, Encoding.UTF8); } catch { }
+            {
+                try
+                {
+                    var content = await File.ReadAllTextAsync(cacheFile, Encoding.UTF8);
+                    _memoryCache[cacheFile] = content;
+                    return content;
+                }
+                catch { }
+            }
 
             var urlLock = GetUrlLock(url);
             await urlLock.WaitAsync();
             try
             {
+                if (_memoryCache.TryGetValue(cacheFile, out var memContent2))
+                    return memContent2;
+
                 if (File.Exists(cacheFile))
-                    return await File.ReadAllTextAsync(cacheFile, Encoding.UTF8);
+                {
+                    var content = await File.ReadAllTextAsync(cacheFile, Encoding.UTF8);
+                    _memoryCache[cacheFile] = content;
+                    return content;
+                }
 
                 EvictStale(cacheDir, id, type, url);
 
@@ -160,6 +249,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 var compiled = vars != null ? SubstituteVars(raw, vars) : raw;
                 Directory.CreateDirectory(cacheDir);
                 await File.WriteAllTextAsync(cacheFile, compiled, Encoding.UTF8);
+                _memoryCache[cacheFile] = compiled;
                 return compiled;
             }
             finally
@@ -206,7 +296,10 @@ namespace Jellyfin.Plugin.JellyFrame.Services
             {
                 var parts = Path.GetFileNameWithoutExtension(file).Split(new[] { "__" }, StringSplitOptions.None);
                 if (parts.Length >= 4 && parts[2] == type && parts[3] == uHash)
+                {
                     try { File.Delete(file); } catch { }
+                    _memoryCache.TryRemove(file, out _);
+                }
             }
         }
 

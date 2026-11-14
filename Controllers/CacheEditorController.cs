@@ -162,6 +162,10 @@ namespace Jellyfin.Plugin.JellyFrame.Controllers
             try
             {
                 System.IO.File.WriteAllText(absolutePath, body.Content ?? string.Empty, Encoding.UTF8);
+                Services.ThemeResourceCache.InvalidatePath(absolutePath);
+                Services.ModResourceCache.InvalidatePath(absolutePath);
+                Services.ModInjector.InvalidateCache();
+                Services.ThemeInjector.InvalidateCache();
                 Services.FileTransformationRegistrar.UpdateLoomInjection();
                 return Ok(new { ok = true, path });
             }

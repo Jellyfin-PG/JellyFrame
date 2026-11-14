@@ -315,19 +315,35 @@ namespace Jellyfin.Plugin.JellyFrame.Runtime
         public async Task<bool> TryHandleRequestAsync(HttpContext context)
         {
             var requestPath = context.Request.Path.Value ?? string.Empty;
-            foreach (var runtime in _runtimes.Values)
+            const string prefix = "/JellyFrame/mods/";
+            if (!requestPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            // Direct O(1) lookup: extract modId from /JellyFrame/mods/{modId}/api...
+            var afterPrefix = requestPath.Substring(prefix.Length);
+            var slashIdx = afterPrefix.IndexOf('/');
+            if (slashIdx <= 0)
+                return false;
+
+            var modId = afterPrefix.Substring(0, slashIdx);
+            var remainder = afterPrefix.Substring(slashIdx);
+
+            if (!remainder.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (_runtimes.TryGetValue(modId, out var runtime) && runtime.IsLoaded)
             {
-                if (!runtime.IsLoaded) continue;
-                // Cheap prefix check — avoids lock acquisition and route iteration inside the runtime
-                // for the vast majority of requests that belong to a different mod or no mod at all.
-                if (!requestPath.StartsWith("/JellyFrame/mods/" + runtime.ModId + "/api",
-                        StringComparison.OrdinalIgnoreCase)) continue;
-                try { if (await runtime.HandleRequestAsync(context)) return true; }
+                try
+                {
+                    if (await runtime.HandleRequestAsync(context))
+                        return true;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "[JellyFrame] Route handler error in mod {Id}", runtime.ModId);
                 }
             }
+
             return false;
         }
 

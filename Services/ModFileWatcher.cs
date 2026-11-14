@@ -85,6 +85,7 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private void FireJsReload(string modId)
         {
             if (_disposed) return;
+            ModInjector.InvalidateCache();
             _logger.LogInformation(
                 "[JellyFrame] Hot-reload triggered for mod '{Id}' — server JS cache changed", modId);
             _ = _onModChanged(modId).ContinueWith(t =>
@@ -98,6 +99,8 @@ namespace Jellyfin.Plugin.JellyFrame.Services
         private void FireCssReload(string modId)
         {
             if (_disposed || _onCssChanged == null) return;
+            ModInjector.InvalidateCache();
+            ThemeInjector.InvalidateCache();
             _logger.LogInformation(
                 "[JellyFrame] CSS hot-reload triggered for mod '{Id}' — CSS cache changed", modId);
             _ = _onCssChanged(modId).ContinueWith(t =>
