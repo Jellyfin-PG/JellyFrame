@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,8 +101,11 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 Set("callbackClass",    typeof(ModInjector).FullName);
                 Set("callbackMethod",   nameof(ModInjector.InjectMods));
 
-                pluginInterfaceType.GetMethod("RegisterTransformation")
-                    ?.Invoke(null, new[] { payload });
+                var registerMethod = pluginInterfaceType.GetMethod("RegisterTransformation", new[] { payload.GetType() })
+                    ?? pluginInterfaceType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                        .FirstOrDefault(m => m.Name == "RegisterTransformation" && m.GetParameters().Length == 1);
+
+                registerMethod?.Invoke(null, new[] { payload });
 
                 _logger.LogInformation("[JellyFrame] Successfully registered mod injection with {DisplayName}.", displayName);
             }
@@ -129,8 +133,11 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 var pluginInterfaceType = targetAssembly.GetType(typeName);
                 if (pluginInterfaceType == null) return;
 
-                pluginInterfaceType.GetMethod("DeregisterTransformation")
-                    ?.Invoke(null, new object[] { TransformationId });
+                var deregisterMethod = pluginInterfaceType.GetMethod("DeregisterTransformation", new[] { typeof(Guid) })
+                    ?? pluginInterfaceType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                        .FirstOrDefault(m => m.Name == "DeregisterTransformation" && m.GetParameters().Length == 1);
+
+                deregisterMethod?.Invoke(null, new object[] { TransformationId });
 
                 _logger.LogInformation("[JellyFrame] Successfully deregistered from {DisplayName}.", displayName);
             }
@@ -186,8 +193,11 @@ namespace Jellyfin.Plugin.JellyFrame.Services
                 Set("callbackClass",    typeof(ModInjector).FullName);
                 Set("callbackMethod",   nameof(ModInjector.InjectMods));
 
-                pluginInterfaceType.GetMethod("UpdateTransformation")
-                    ?.Invoke(null, new[] { payload });
+                var updateMethod = pluginInterfaceType.GetMethod("UpdateTransformation", new[] { payload.GetType() })
+                    ?? pluginInterfaceType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                        .FirstOrDefault(m => m.Name == "UpdateTransformation" && m.GetParameters().Length == 1);
+
+                updateMethod?.Invoke(null, new[] { payload });
             }
             catch
             {
